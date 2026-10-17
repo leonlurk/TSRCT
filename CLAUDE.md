@@ -337,7 +337,7 @@ in the code. (It is implemented now.)
 - Preferences go through `pcPrefGet/pcPrefSet(key, value, scope)`:
   `window`→`sessionStorage` (default), `browser`→`localStorage`, `server`→the `config` table.
   Scope is a per-window vs per-browser decision, not a durability one.
-- **Any frontend change must bump `sw.js` `CACHE_NAME` (currently `tsrct-v420`).**
+- **Any frontend change must bump `sw.js` `CACHE_NAME` (currently `tsrct-v421`).**
 
 ### Service Worker
 `sw.js` caches the PWA shell, room CSS and room JS. Bump `CACHE_NAME` on every asset change and add

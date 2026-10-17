@@ -130,6 +130,45 @@ for (const f of FORBIDDEN) {
     if (!/Desktop\.voice\.wantRecording/.test(a.slice(a.indexOf('function dictating'), a.indexOf('function dictating') + 600))) fail('the orb does not see his prompt dictation (Desktop.voice.wantRecording)'); else ok();
 }
 
+// ── 6. the handoffs tag never sits on the phone's quick keys (2026-10-17) ───
+// It docks beside the terminal's FREEZE toggle. Drawn before the terminal was on
+// screen (boot, a room open) it fell back to the screen corner, over ATT, until
+// the next weights poll - up to 15 s. The real dockPill() is run on a fake page:
+// no terminal yet, then the terminal appears, then one second passes.
+{
+    const w = fs.readFileSync(path.join(ROOT, 'src/js/session-weight.js'), 'utf8');
+    const starts = ['let redockTimer', 'function dockPill'].map(s => w.indexOf(s)).filter(n => n >= 0);
+    const i = Math.min(...starts), j = w.indexOf('function namesOf');
+    const timers = [];
+    const page = { toggles: [] };
+    const fakeEl = () => {
+        const cls = new Set();
+        return { style: {}, parentElement: null, offsetWidth: 60, offsetParent: {},
+            classList: { add: c => cls.add(c), remove: c => cls.delete(c), contains: c => cls.has(c) },
+            appendChild(c) { c.parentElement = this; } };
+    };
+    const body = fakeEl();
+    const document = { body, querySelectorAll: () => page.toggles };
+    const getComputedStyle = () => ({ right: '10px' });
+    const setTimeout = (fn, ms) => { timers.push([fn, ms]); return timers.length; };
+    let dockPill = null;
+    try { dockPill = new Function('document', 'getComputedStyle', 'setTimeout', `${w.slice(i, j)}; return dockPill;`)(document, getComputedStyle, setTimeout); } catch (e) { fail(`dockPill does not compile: ${e.message}`); }
+    if (typeof dockPill !== 'function') fail('session-weight.js has no dockPill()');
+    else {
+        const pill = fakeEl();
+        pill.classList.add('visible');
+        dockPill(pill);
+        if (pill.classList.contains('sw-docked')) fail('the tag docked with no terminal on screen'); else ok();
+        const host = fakeEl();
+        const toggle = fakeEl(); host.appendChild(toggle);
+        page.toggles.push(toggle);
+        for (const [fn, ms] of timers.splice(0)) if (ms <= 1000) fn();
+        if (!pill.classList.contains('sw-docked')) fail('the handoffs tag stays in the corner (over ATT) after the terminal appears, until the next poll');
+        else ok();
+        if (pill.classList.contains('sw-docked') && pill.parentElement !== host) fail('the tag docked outside the terminal'); else ok();
+    }
+}
+
 if (bad) {
     console.error(`\n[check-ui] ${bad} failure(s). Las dos listas son lib/uiActions.js y src/js/ui-actions.js.`);
     process.exit(1);

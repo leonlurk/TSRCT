@@ -297,7 +297,10 @@
     // Sit beside the visible terminal's FREEZE toggle (terminal-focus.js puts it
     // in the pane's parent), in the same style. Floating at the screen corner it
     // landed stuck under the input row. Falls back to the corner if no terminal
-    // toggle is on screen (a room is open, or the DOM is mid-rebuild).
+    // toggle is on screen (a room is open, or the DOM is mid-rebuild). In the corner
+    // it sits on the phone's ATT key, so it looks again every second instead of
+    // waiting for the next poll (up to 15 s).
+    let redockTimer = null;
     function dockPill(p) {
         const toggle = Array.from(document.querySelectorAll('.tf-toggle'))
             .find(t => t.offsetParent !== null);
@@ -305,6 +308,10 @@
             p.classList.remove('sw-docked');
             p.style.right = '';
             if (p.parentElement !== document.body) document.body.appendChild(p);
+            if (!redockTimer) redockTimer = setTimeout(() => {
+                redockTimer = null;
+                if (p.classList.contains('visible')) dockPill(p);
+            }, 1000);
             return;
         }
         if (p.parentElement !== toggle.parentElement) toggle.parentElement.appendChild(p);
