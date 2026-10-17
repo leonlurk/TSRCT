@@ -282,7 +282,7 @@ to do SecretCo work while protecting nothing — the pane content only becomes a
 model or an external service, and every one of those paths is now guarded above.
 
 **When you add any route or engine that reads a path, a cwd, a session name, or dispatches a
-prompt, route it through the choke point above.** Fail closed. `npm run check` (`scripts/check-all.js`, **32 checks**, runs
+prompt, route it through the choke point above.** Fail closed. `npm run check` (`scripts/check-all.js`, **33 checks**, runs
 every one and fails at the end; a new check goes in its list; `npm run check:fast` skips check-brain and is
 what the pre-commit hook from `npm run hooks` runs) runs `scripts/check-syntax.js` (every .js parses), `scripts/check-routes.js` (route inventory + auth gate) and
 `scripts/check-restricted.js`, which fails if a new `/api/git/*` route skips `gitCwd`, if an sf alias is

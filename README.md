@@ -8,7 +8,7 @@ of them on one screen, hand a heavy session off to a fresh one, and talk to it a
 a voice assistant that can read the sessions, open new ones, and act on your PC.
 
 It is one person's daily tool, built in the open: vanilla JavaScript, zero npm dependencies, no build
-step, and 32 checks that run before every commit.
+step, and 33 checks that run before every commit.
 
 ![Six Claude Code sessions side by side, each with its own colour: three working, one asking to run a command, one asking a question](docs/screenshots/desktop-split.png)
 
@@ -46,7 +46,7 @@ step, and 32 checks that run before every commit.
 ```bash
 git clone <this repo> TSRCT && cd TSRCT
 cp .env.example .env          # set BRIDGE_TOKEN to a long random string, and PROJECTS_ROOT
-npm run check                 # 32 checks, about a minute
+npm run check                 # 33 checks, about a minute
 npm run hooks                 # optional: run the fast checks before every commit
 node server.js                # then open http://127.0.0.1:3847 and log in with BRIDGE_TOKEN
 ```
