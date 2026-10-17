@@ -29,6 +29,15 @@ const SKIP_DIR = new Set(['.git', 'node_modules']);
 const BINARY = /\.(png|jpe?g|gif|ico|ttf|woff2?|mp3|mp4|webm|pdf)$/i;
 const SELF = path.relative(ROOT, __filename);
 
+// Only what a push can carry: tracked files plus new ones git would add. Ignored runtime state
+// (data/, .tsrct/, logs/) is written by every local run and never leaves the machine; scanning it
+// made the gate red on any copy that had been started once.
+function published() {
+    const r = require('child_process').spawnSync('git', ['ls-files', '-co', '--exclude-standard'],
+        { cwd: ROOT, encoding: 'utf8' });
+    return r.status === 0 ? r.stdout.split('\n').filter(Boolean) : null;
+}
+
 function* files(dir) {
     for (const e of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {
         const rel = dir ? dir + '/' + e.name : e.name;
@@ -39,7 +48,8 @@ function* files(dir) {
 }
 
 const hits = [];
-for (const rel of files('')) {
+for (const rel of published() || files('')) {
+    if (!fs.existsSync(path.join(ROOT, rel))) continue;   // deleted but not yet committed
     if (rel === SELF || BINARY.test(rel) || /^src\/js\/vendor\//.test(rel)) continue;
     const text = fs.readFileSync(path.join(ROOT, rel), 'utf8');
     const lines = text.split('\n');
