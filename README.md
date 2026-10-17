@@ -10,6 +10,10 @@ a voice assistant that can read the sessions, open new ones, and act on your PC.
 It is one person's daily tool, built in the open: vanilla JavaScript, zero npm dependencies, no build
 step, and 32 checks that run before every commit.
 
+![Six Claude Code sessions side by side, each with its own colour: three working, one asking to run a command, one asking a question](docs/screenshots/desktop-split.png)
+
+<p align="center"><img src="docs/screenshots/mobile.png" width="300" alt="The phone view: a session asking for permission, with one-tap Yes / No buttons"></p>
+
 ## What it does
 
 - **Every session, one screen.** A sidebar of all your tmux + Claude Code sessions, grouped by
