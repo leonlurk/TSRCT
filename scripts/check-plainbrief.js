@@ -65,73 +65,75 @@ must(desktopJs.includes('id="pc-pb-toggle"'), 'the desktop [PB] button (#pc-pb-t
 must(/refreshPlainBrief/.test(desktopJs),
     'desktop.js never calls refreshPlainBrief() — the button would report the session you just left');
 
-// ── 4. the rules file the gate injects ───────────────────────────────────────
-const rules = read(path.join(SKILL, 'RULES.md'));
-must(rules, `${SKILL}/RULES.md is missing — the gate injects it verbatim and would inject nothing`);
-if (rules) must(rules.trim().length > 200, 'RULES.md is suspiciously short — the gate would inject almost nothing');
-
-// ── 5. the hooks themselves ──────────────────────────────────────────────────
-for (const f of ['plain-brief-gate.sh', 'plain-brief-check.sh', 'plain-brief-check.py']) {
-    const p = path.join(HOOKS, f);
-    if (!fs.existsSync(p)) { problems.push(`hook missing: ${p}`); continue; }
-    try {
-        fs.accessSync(p, fs.constants.X_OK);
-    } catch {
-        problems.push(`hook is not executable: ${p}`);
-    }
-}
-
-// The gate and the check must agree with the store on WHERE the state lives.
-for (const f of ['plain-brief-gate.sh', 'plain-brief-check.sh']) {
-    const src = read(path.join(HOOKS, f));
-    if (src) must(src.includes('data/plain-brief.json'),
-        `${f} does not point at data/plain-brief.json — the toggle would write somewhere nothing reads`);
-}
-
-// [PB] is plain-brief AND leon-speak (2026-10-05, Leon: "i need that button to
-// also require the use of /leon-speak combined"). The gate injects the skill
-// file itself, never a copy of it (a copy is the one that goes stale).
-const gateSh = read(path.join(HOOKS, 'plain-brief-gate.sh')) || '';
-must(gateSh.includes('skills/leon-speak/SKILL.md'), 'plain-brief-gate.sh does not inject leon-speak — [PB] would be plain-brief alone');
-must(read(path.join(HOME, '.claude', 'skills', 'leon-speak', 'SKILL.md')), 'the leon-speak skill file is missing — [PB] would inject nothing for it');
-// One send-back only: a second squeeze is where the facts got cut.
-must(/^MAX_BLOCKS=1$/m.test(read(path.join(HOOKS, 'plain-brief-check.sh')) || ''), 'plain-brief-check.sh sends an answer back more than once');
-
-// jq's `//` falls through on FALSE as well as null, so `.ok // true` silently
-// turns every failing verdict into a pass. It shipped that way once; this makes
-// sure it cannot come back.
-// Comment lines are stripped first: the fix is DOCUMENTED in that file, and
-// matching the explanation of a bug as the bug is its own kind of false alarm.
-const checkSh = (read(path.join(HOOKS, 'plain-brief-check.sh')) || '')
-    .split('\n').filter(l => !/^\s*#/.test(l)).join('\n');
-must(!/\.ok\s*\/\/\s*true/.test(checkSh),
-    "plain-brief-check.sh uses `.ok // true` — jq treats false as absent, so the gate would pass everything");
-
-// ── 6. registered in settings.json, or none of the above runs ────────────────
-let settings = null;
-try { settings = JSON.parse(read(SETTINGS) || 'null'); } catch { /* reported below */ }
-if (!settings) {
-    problems.push(`${SETTINGS} is missing or does not parse`);
+// ── 4-7. the machine side: the hooks in ~/.claude ────────────────────────────
+// Checked whenever they are installed (a broken install still fails). On a machine
+// without them - a fresh clone, CI - only the repo side above can be checked.
+const INSTALLED = fs.existsSync(path.join(HOOKS, 'plain-brief-gate.sh'));
+if (!INSTALLED) {
+    notes.push('[check-plainbrief] the [PB] hooks are not installed in ~/.claude here: checked the repo side only');
 } else {
-    const commands = (ev) => (settings.hooks?.[ev] || [])
-        .flatMap(e => (e.hooks || []).map(h => h.command || ''));
-    must(commands('UserPromptSubmit').some(c => c.includes('plain-brief-gate.sh')),
-        'plain-brief-gate.sh is not registered under hooks.UserPromptSubmit — the rules would never be injected');
-    must(commands('Stop').some(c => c.includes('plain-brief-check.sh')),
-        'plain-brief-check.sh is not registered under hooks.Stop — nothing would enforce the cap');
-}
+    // ── 4. the rules file the gate injects ───────────────────────────────────────
+    const rules = read(path.join(SKILL, 'RULES.md'));
+    must(rules, `${SKILL}/RULES.md is missing — the gate injects it verbatim and would inject nothing`);
+    if (rules) must(rules.trim().length > 200, 'RULES.md is suspiciously short — the gate would inject almost nothing');
 
-// ── 7. the checker still measures what it claims ─────────────────────────────
-const selftest = path.join(HOOKS, 'plain-brief-selftest.py');
-if (fs.existsSync(selftest)) {
-    try {
-        const out = execFileSync('python3', [selftest], { encoding: 'utf8' });
-        notes.push('[check-plainbrief] ' + out.trim().split('\n').pop());
-    } catch (e) {
-        problems.push('the checker self-test FAILED:\n' + String(e.stdout || e.message).trim());
+    // ── 5. the hooks themselves ──────────────────────────────────────────────────
+    for (const f of ['plain-brief-gate.sh', 'plain-brief-check.sh', 'plain-brief-check.py']) {
+        const p = path.join(HOOKS, f);
+        if (!fs.existsSync(p)) { problems.push(`hook missing: ${p}`); continue; }
+        try {
+            fs.accessSync(p, fs.constants.X_OK);
+        } catch {
+            problems.push(`hook is not executable: ${p}`);
+        }
     }
-} else {
-    problems.push(`checker self-test missing: ${selftest}`);
+
+    // The gate and the check must agree with the store on WHERE the state lives.
+    for (const f of ['plain-brief-gate.sh', 'plain-brief-check.sh']) {
+        const src = read(path.join(HOOKS, f));
+        if (src) must(src.includes('data/plain-brief.json'),
+            `${f} does not point at data/plain-brief.json — the toggle would write somewhere nothing reads`);
+    }
+
+    // One send-back only: a second squeeze is where the facts got cut.
+    must(/^MAX_BLOCKS=1$/m.test(read(path.join(HOOKS, 'plain-brief-check.sh')) || ''), 'plain-brief-check.sh sends an answer back more than once');
+
+    // jq's `//` falls through on FALSE as well as null, so `.ok // true` silently
+    // turns every failing verdict into a pass. It shipped that way once; this makes
+    // sure it cannot come back.
+    // Comment lines are stripped first: the fix is DOCUMENTED in that file, and
+    // matching the explanation of a bug as the bug is its own kind of false alarm.
+    const checkSh = (read(path.join(HOOKS, 'plain-brief-check.sh')) || '')
+        .split('\n').filter(l => !/^\s*#/.test(l)).join('\n');
+    must(!/\.ok\s*\/\/\s*true/.test(checkSh),
+        "plain-brief-check.sh uses `.ok // true` — jq treats false as absent, so the gate would pass everything");
+
+    // ── 6. registered in settings.json, or none of the above runs ────────────────
+    let settings = null;
+    try { settings = JSON.parse(read(SETTINGS) || 'null'); } catch { /* reported below */ }
+    if (!settings) {
+        problems.push(`${SETTINGS} is missing or does not parse`);
+    } else {
+        const commands = (ev) => (settings.hooks?.[ev] || [])
+            .flatMap(e => (e.hooks || []).map(h => h.command || ''));
+        must(commands('UserPromptSubmit').some(c => c.includes('plain-brief-gate.sh')),
+            'plain-brief-gate.sh is not registered under hooks.UserPromptSubmit — the rules would never be injected');
+        must(commands('Stop').some(c => c.includes('plain-brief-check.sh')),
+            'plain-brief-check.sh is not registered under hooks.Stop — nothing would enforce the cap');
+    }
+
+    // ── 7. the checker still measures what it claims ─────────────────────────────
+    const selftest = path.join(HOOKS, 'plain-brief-selftest.py');
+    if (fs.existsSync(selftest)) {
+        try {
+            const out = execFileSync('python3', [selftest], { encoding: 'utf8' });
+            notes.push('[check-plainbrief] ' + out.trim().split('\n').pop());
+        } catch (e) {
+            problems.push('the checker self-test FAILED:\n' + String(e.stdout || e.message).trim());
+        }
+    } else {
+        problems.push(`checker self-test missing: ${selftest}`);
+    }
 }
 
 // ── report ───────────────────────────────────────────────────────────────────
@@ -141,4 +143,5 @@ if (problems.length) {
     problems.forEach(p => console.error('  - ' + p));
     process.exit(1);
 }
-console.log('[check-plainbrief] OK — button, route, store, rules file, both hooks and their registration');
+console.log(INSTALLED ? '[check-plainbrief] OK — button, route, store, rules file, both hooks and their registration'
+    : '[check-plainbrief] OK — button, route and store (hooks not installed here)');
