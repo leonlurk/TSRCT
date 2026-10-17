@@ -34,6 +34,13 @@ const server = require('./serverSource')();
 if (!/^const restrictedGuard = require\('\.\/lib\/dispatcher\/restrictedGuard'\);/m.test(server)) {
     problems.push('server.js: restrictedGuard must be required at top level on its own — a security boundary must not depend on the dispatcher having loaded');
 }
+// ...and USED on its own. Nine route checks reached it as `S.dispatcher.restrictedGuard`:
+// with the dispatcher not loaded those throw, and /api/hf/start's
+// `S.dispatcher && S.dispatcher.restrictedGuard && ...` skipped its check entirely.
+server.split('\n').forEach((l, i) => {
+    if (/^\s*(\/\/|\*)/.test(l)) return;
+    if (/dispatcher\??\.restrictedGuard/.test(l)) problems.push(`server source line ${i + 1}: reaches restrictedGuard through the dispatcher — use S.restrictedGuard: ${l.trim().slice(0, 90)}`);
+});
 
 // ── 2. every /api/git/* route resolves its directory through gitCwd() ──
 const lines = server.split('\n');
