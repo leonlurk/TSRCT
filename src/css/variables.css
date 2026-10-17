@@ -1,0 +1,188 @@
+/* ==============================================
+   TSRCT - CSS Variables
+   Theme colors, spacing, typography
+   ============================================== */
+
+:root {
+    /* Primary colors */
+    --neon: #00ff41;
+    --neon-dim: #00cc33;
+    --neon-glow: rgba(0,255,65,0.4);
+
+    /* Accent colors */
+    --cyan: #00d4ff;
+    --cyan-dim: #00a0c0;
+    --cyan-glow: rgba(0,212,255,0.3);
+
+    /* Alert colors */
+    --red: #ff0040;
+    --red-bg: rgba(255,0,64,0.15);
+    --amber: #ffb000;
+    --amber-bg: rgba(255,176,0,0.15);
+
+    /* Purple (HF mode) */
+    --purple: #9b59b6;
+    --purple-dim: #7d3c98;
+    --purple-glow: rgba(155,89,182,0.4);
+
+    /* Backgrounds */
+    --bg: #0a0a0a;
+    --bg-card: rgba(0,15,0,0.85);
+    --bg-dark: rgba(0,5,0,0.92);
+    --bg-darker: rgba(0,0,0,0.95);
+    --surface: #0d1a0d;
+    --surface-light: #112211;
+
+    /* Text */
+    --text: #00ff41;
+    --text-dim: #00aa30;
+    --text-muted: #005520;
+
+    /* Borders */
+    --border: rgba(0,255,65,0.15);
+    --border-light: rgba(0,255,65,0.3);
+    --dim: rgba(0,255,65,0.25);
+
+    /* Functional aliases */
+    --yellow: #ffb000;
+
+    /* Border radius (sharp corners = hacker aesthetic) */
+    --radius: 0;
+    --radius-sm: 0;
+    --radius-xs: 0;
+
+    /* Animation */
+    --spring: cubic-bezier(0.34,1.56,0.64,1);
+
+    /* Typography */
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+    /* ── Design-system scales (Phase 2) ──────────────
+       Additive: new tokens mapping the values already used across the CSS.
+       Adopt incrementally; nothing is forced to consume them. */
+
+    /* Spacing scale (maps the existing 2/4/6/8/12/16/20/24px cluster) */
+    --space-1: 2px;
+    --space-2: 4px;
+    --space-3: 6px;
+    --space-4: 8px;
+    --space-5: 12px;
+    --space-6: 16px;
+    --space-7: 20px;
+    --space-8: 24px;
+
+    /* Type scale (maps the existing 0.4–1.5rem cluster) */
+    --text-2xs: 0.4rem;
+    --text-xs: 0.7rem;
+    --text-sm: 0.8rem;
+    --text-base: 0.85rem;
+    --text-md: 0.9rem;
+    --text-lg: 1.1rem;
+    --text-xl: 1.5rem;
+
+    /* Rounded-corner exceptions (the base --radius stays 0 = hacker aesthetic;
+       these formalize the few components that intentionally round) */
+    --radius-1: 4px;
+    --radius-2: 8px;
+    --radius-pill: 25px;
+
+    /* Elevation / shadows */
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
+    --shadow-md: 0 4px 15px rgba(0,0,0,0.5);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.6);
+    --shadow-glow: 0 0 20px var(--neon-glow);
+    --shadow-glow-cyan: 0 0 20px var(--cyan-glow);
+
+    /* Transition durations (--spring above is the easing curve) */
+    --transition-fast: 0.15s;
+    --transition-normal: 0.2s;
+    --transition-slow: 0.3s;
+}
+
+/* ── Eye Protection Mode ───────────────────────── */
+/* Warm amber palette, reduced contrast, no glows  */
+body.eye-protect {
+    --neon: #d4a040;
+    --neon-dim: #b08830;
+    --neon-glow: rgba(0,0,0,0);
+
+    --cyan: #c0a060;
+    --cyan-dim: #a08848;
+    --cyan-glow: rgba(0,0,0,0);
+
+    --red: #c06040;
+    --red-bg: rgba(192,96,64,0.12);
+    --amber: #c0a050;
+    --amber-bg: rgba(192,160,80,0.12);
+
+    --purple: #9080a0;
+    --purple-dim: #706080;
+    --purple-glow: rgba(0,0,0,0);
+
+    --bg: #1a1610;
+    --bg-card: rgba(20,18,12,0.9);
+    --bg-dark: rgba(14,12,8,0.95);
+    --bg-darker: rgba(10,8,5,0.97);
+    --surface: #1e1a12;
+    --surface-light: #262014;
+
+    --text: #d4a040;
+    --text-dim: #a07830;
+    --text-muted: #605028;
+
+    --border: rgba(212,160,64,0.15);
+    --border-light: rgba(212,160,64,0.25);
+    --dim: rgba(212,160,64,0.2);
+
+    --yellow: #c0a050;
+}
+
+body.eye-protect * {
+    text-shadow: none !important;
+}
+
+/* ── leonlurk Navy Theme ───────────────────────── */
+/* Brand palette: deep-navy anchor + electric-blue/cyan neon. Opt-in via
+   body.theme-navy (NAVY toggle button). Keeps the neon-on-black terminal
+   identity — just in navy instead of green. The default :root green is the
+   untouched default; this only overrides when the class is present.
+   The bare .theme-navy selector makes the palette SCOPED: a room (or a PC
+   panel) carrying the class is navy on its own, so NULL/Catalog no longer
+   have to repaint the whole body — which is what used to leak the theme
+   out of the room and made it look like the toggle "forgot" the choice. */
+body.theme-navy,
+.theme-navy {
+    --neon: #22a7ff;
+    --neon-dim: #1780cc;
+    --neon-glow: rgba(34,167,255,0.40);
+
+    --cyan: #46e0ff;
+    --cyan-dim: #2ba8c8;
+    --cyan-glow: rgba(70,224,255,0.30);
+
+    --red: #ff3860;
+    --red-bg: rgba(255,56,96,0.15);
+    --amber: #ffc24d;
+    --amber-bg: rgba(255,194,77,0.15);
+
+    --purple: #8f6cff;
+    --purple-dim: #6f4cd0;
+    --purple-glow: rgba(143,108,255,0.40);
+
+    --bg: #05070d;
+    --bg-card: rgba(8,16,30,0.85);
+    --bg-dark: rgba(4,9,18,0.92);
+    --bg-darker: rgba(2,4,10,0.95);
+    --surface: #0a1322;
+    --surface-light: #0f1b30;
+
+    --text: #bfe0ff;
+    --text-dim: #6f9bd0;
+    --text-muted: #3d5a82;
+
+    --border: rgba(34,167,255,0.16);
+    --border-light: rgba(34,167,255,0.32);
+    --dim: rgba(34,167,255,0.25);
+
+    --yellow: #ffc24d;
+}

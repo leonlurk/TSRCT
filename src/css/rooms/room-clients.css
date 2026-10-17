@@ -1,0 +1,179 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   room-clients.css — Clients tab (desktop). Lazy-loaded via loadRoomCSS('clients').
+   Same DNA as Codemap/Notifs: mono, 3px semantic left edge, 2-4% tinted fills,
+   red / amber / neon for the three health states.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.cl-root { font-family: var(--mono); color: var(--text, #00ff41); font-size: 0.8rem; }
+
+.cl-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 10px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border, #1a3a1a);
+    background: rgba(0, 212, 255, 0.03);
+}
+.cl-summary { color: var(--cyan, var(--cyan)); letter-spacing: 1px; }
+.cl-bar-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.cl-btn {
+    background: transparent;
+    border: 1px solid var(--cyan, var(--cyan));
+    color: var(--cyan, var(--cyan));
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    cursor: pointer;
+}
+.cl-btn:hover { background: rgba(0, 212, 255, 0.12); }
+
+.cl-warn {
+    border: 1px solid var(--red, var(--red));
+    color: var(--red, var(--red));
+    padding: 8px 10px;
+    margin-bottom: 12px;
+    font-size: 0.75rem;
+}
+.cl-empty {
+    color: var(--text-muted, #6aa06a);
+    border: 1px dashed var(--border, #1a3a1a);
+    padding: 18px;
+    text-align: center;
+}
+
+/* one card per client */
+.cl-list { display: flex; flex-direction: column; gap: 12px; }
+.cl-card {
+    border: 1px solid var(--border, #1a3a1a);
+    border-left: 3px solid var(--neon, #00ff41);
+    background: rgba(0, 255, 65, 0.02);
+    padding: 10px 12px;
+}
+.cl-card-yellow { border-left-color: var(--amber, #ffb000); background: rgba(255, 176, 0, 0.03); }
+.cl-card-red { border-left-color: var(--red, var(--red)); background: rgba(255, 0, 64, 0.03); }
+
+.cl-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.cl-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; cursor: help; }
+.cl-dot-green { background: var(--neon, #00ff41); box-shadow: 0 0 6px var(--neon, #00ff41); }
+.cl-dot-yellow { background: var(--amber, #ffb000); box-shadow: 0 0 6px var(--amber, #ffb000); }
+.cl-dot-red { background: var(--red, var(--red)); box-shadow: 0 0 6px var(--red, var(--red)); }
+.cl-code {
+    color: var(--cyan, var(--cyan));
+    font-size: 0.72rem;
+    padding: 1px 6px;
+    border: 1px solid var(--cyan, var(--cyan));
+}
+.cl-name { color: var(--text, #00ff41); font-weight: bold; letter-spacing: 0.5px; }
+.cl-stats { margin-left: auto; color: var(--text-muted, #8fc28f); font-size: 0.72rem; white-space: nowrap; }
+.cl-stats b { color: var(--cyan, var(--cyan)); font-weight: normal; }
+
+/* the verdict: the one line to read if he reads nothing else */
+.cl-verdict {
+    color: var(--text, #00ff41);
+    font-size: 0.9rem;
+    line-height: 1.45;
+    padding: 6px 0 8px 18px;
+}
+.cl-verdict-red { color: var(--red, var(--red)); }
+.cl-verdict-yellow { color: var(--amber, #ffb000); }
+
+.cl-sec {
+    color: var(--text-muted, #6aa06a);
+    font-size: 0.7rem;
+    letter-spacing: 1.4px;
+    margin: 10px 0 4px;
+}
+
+/* NEXT: numbered steps, each with the button that does it */
+.cl-next {
+    display: grid;
+    grid-template-columns: 1.6em minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border: 1px solid var(--border, #1a3a1a);
+    background: rgba(0, 212, 255, 0.03);
+    margin-bottom: 4px;
+}
+.cl-n { color: var(--cyan, var(--cyan)); font-weight: bold; text-align: center; }
+.cl-do { color: var(--text, #00ff41); }
+.cl-why { display: block; color: var(--text-muted, #6aa06a); font-size: 0.7rem; margin-top: 2px; }
+.cl-cta {
+    background: transparent;
+    border: 1px solid var(--neon, #00ff41);
+    color: var(--neon, #00ff41);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    padding: 4px 12px;
+    text-decoration: none;
+    cursor: pointer;
+}
+.cl-cta:hover { background: rgba(0, 255, 65, 0.12); }
+
+/* rows */
+.cl-row {
+    display: grid;
+    grid-template-columns: 7em 3.5em minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 8px;
+    padding: 4px 6px;
+    border-left: 2px solid transparent;
+}
+.cl-req { grid-template-columns: 3.5em 1.4em minmax(0, 1fr) 3.5em auto; }
+.cl-row:hover { background: rgba(0, 212, 255, 0.04); }
+.cl-row-red { border-left-color: var(--red, var(--red)); background: rgba(255, 0, 64, 0.04); }
+.cl-row-amber { border-left-color: var(--amber, #ffb000); background: rgba(255, 176, 0, 0.03); }
+.cl-row-dim { opacity: 0.6; }
+
+.cl-kind { color: var(--amber, #ffb000); font-size: 0.7rem; letter-spacing: 1px; }
+.cl-row-red .cl-kind { color: var(--red, var(--red)); }
+.cl-row-dim .cl-kind { color: var(--text-muted, #6aa06a); }
+.cl-age { color: var(--cyan, var(--cyan)); text-align: right; }
+.cl-prio { color: var(--text-muted, #6aa06a); text-align: center; }
+.cl-prio-high { color: var(--red, var(--red)); }
+.cl-who { color: var(--text-muted, #8fc28f); }
+.cl-title { color: var(--text, #00ff41); min-width: 0; }
+.cl-has-quote { cursor: pointer; }
+.cl-has-quote:hover { text-decoration: underline dotted; }
+.cl-quote {
+    display: block;
+    color: var(--text-muted, #6aa06a);
+    font-size: 0.72rem;
+    margin-top: 3px;
+}
+.cl-due { color: var(--text-muted, #6aa06a); white-space: nowrap; text-align: right; }
+.cl-ctas { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.cl-act { color: var(--cyan, var(--cyan)); text-decoration: none; }
+.cl-act:hover { text-decoration: underline; }
+.cl-flag { color: var(--amber, #ffb000); font-size: 0.7rem; margin-left: 6px; cursor: help; }
+.cl-x {
+    background: transparent;
+    border: none;
+    color: var(--text-muted, #6aa06a);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 0 2px;
+    cursor: pointer;
+}
+.cl-x:hover { color: var(--amber, #ffb000); }
+
+/* folds: backlog + expired, closed by default */
+.cl-folds { display: flex; gap: 16px; margin: 10px 0 2px; }
+.cl-fold {
+    background: transparent;
+    border: none;
+    color: var(--text-muted, #6aa06a);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 1.4px;
+    padding: 0;
+    cursor: pointer;
+}
+.cl-fold:hover { color: var(--cyan, var(--cyan)); }
+
+.cl-red { color: var(--red, var(--red)); }
+.cl-amber { color: var(--amber, #ffb000); }
+.cl-green { color: var(--neon, #00ff41); }

@@ -1,0 +1,337 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   room-handson.css — HANDS ON. Lazy via loadRoomCSS('handson').
+
+   TSRCT DNA, same as tower/codemap/dispatcher: monospace, 0.66-0.8rem,
+   1px borders, 3px semantic left edge, 2-4% tinted fills, glow only on
+   live points. No rounded corners, no emoji, no decorative anything.
+
+   The colour grammar here is the whole teaching signal, so it is fixed:
+     neon  = you typed it and it is right
+     dim   = ghost, the thing you have not typed yet
+     red   = the character you just typed is not the one expected
+     amber = REVEALED. You did not earn this line, and it stays amber so the
+             tally at the top is not the only place that admits it.
+     cyan  = the explanation. Cyan is "the system is telling you something".
+   ───────────────────────────────────────────────────────────────────────── */
+
+.pc-handson-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+.ho-body {
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 8px;
+    padding: 8px;
+    height: 100%;
+    min-height: 0;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text, #00ff41);
+}
+
+.ho-col {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid var(--border, #1a3a1a);
+    background: rgba(0, 255, 65, 0.015);
+}
+
+/* ── column headers: [x] LABEL, like every other TSRCT surface ── */
+.ho-col-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 9px;
+    border-bottom: 1px solid var(--border, #1a3a1a);
+    flex-shrink: 0;
+}
+.ho-col-title {
+    color: var(--cyan, var(--cyan));
+    letter-spacing: 1.5px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.ho-project,
+.ho-session,
+.ho-lesson {
+    color: var(--text-muted, #6aa06a);
+    font-size: 0.66rem;
+    letter-spacing: 0.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ho-progress {
+    margin-left: auto;
+    color: var(--text-muted, #6aa06a);
+    font-size: 0.63rem;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.ho-act {
+    background: transparent;
+    border: 1px solid var(--border, #1a3a1a);
+    color: var(--text-dim, var(--text-dim));
+    font-family: var(--mono);
+    font-size: 0.63rem;
+    padding: 2px 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.ho-act:hover { color: var(--cyan, var(--cyan)); border-color: var(--cyan, var(--cyan)); }
+.ho-act.off   { color: var(--amber, #ffb000); border-color: var(--amber, #ffb000); }
+.ho-act.big   { padding: 4px 12px; font-size: 0.7rem; color: var(--cyan, var(--cyan)); border-color: var(--cyan, var(--cyan)); }
+
+.ho-empty {
+    padding: 10px;
+    color: var(--text-muted, #6aa06a);
+    font-size: 0.66rem;
+    letter-spacing: 0.5px;
+}
+
+/* ── [F] FILES ───────────────────────────────────────────────────────────── */
+.ho-tree { flex: 1; min-height: 0; overflow: auto; padding: 6px 4px; }
+
+.ho-node {
+    padding: 2px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-muted, #6aa06a);
+    font-size: 0.66rem;
+    border-left: 3px solid transparent;
+}
+.ho-node.dir { color: var(--text-dim, var(--text-dim)); cursor: pointer; }
+.ho-node.dir:hover { color: var(--text, #00ff41); }
+.ho-node-mark { color: var(--text-muted, #6aa06a); margin-right: 5px; }
+
+.ho-node.in-plan {
+    color: var(--text, #00ff41);
+    cursor: pointer;
+    background: rgba(0, 255, 65, 0.03);
+}
+.ho-node.in-plan:hover { background: rgba(0, 212, 255, 0.06); }
+.ho-node.in-plan.new { color: var(--cyan, var(--cyan)); }
+.ho-node.current {
+    border-left-color: var(--cyan, var(--cyan));
+    background: rgba(0, 212, 255, 0.07);
+    color: var(--cyan, var(--cyan));
+}
+.ho-node-tag {
+    margin-left: 6px;
+    font-size: 0.58rem;
+    letter-spacing: 1px;
+    color: var(--cyan-dim, var(--cyan-dim));
+    border: 1px solid var(--border, #1a3a1a);
+    padding: 0 3px;
+}
+
+/* ── [H] the work column ─────────────────────────────────────────────────── */
+.ho-step { flex: 1; min-height: 0; overflow: auto; padding: 8px 10px; }
+
+.ho-step-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border, #1a3a1a);
+    flex-wrap: wrap;
+}
+.ho-step-action {
+    font-size: 0.6rem;
+    letter-spacing: 1.5px;
+    padding: 1px 5px;
+    border: 1px solid var(--border, #1a3a1a);
+    color: var(--text-dim, var(--text-dim));
+}
+.ho-step-action.create { color: var(--cyan, var(--cyan)); border-color: var(--cyan-dim, var(--cyan-dim)); }
+.ho-step-file   { color: var(--text, #00ff41); font-size: 0.72rem; }
+.ho-step-anchor { color: var(--text-muted, #6aa06a); font-size: 0.63rem; margin-left: auto; }
+.ho-step-note   { color: var(--cyan-dim, var(--cyan-dim)); font-size: 0.66rem; padding: 6px 0 10px; letter-spacing: 0.4px; }
+
+/* ── the rows: gutter | code cell | why ──────────────────────────────────── */
+.ho-rows { display: flex; flex-direction: column; }
+
+.ho-row {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr) minmax(0, 21em);
+    gap: 8px;
+    align-items: start;
+    border-left: 3px solid transparent;
+    padding: 1px 0;
+}
+.ho-row.active {
+    border-left-color: var(--cyan, var(--cyan));
+    background: rgba(0, 212, 255, 0.045);
+}
+.ho-row.done { border-left-color: var(--dim); }
+
+.ho-gut {
+    color: var(--text-muted, #6aa06a);
+    font-size: 0.6rem;
+    text-align: right;
+    padding-top: 3px;
+    user-select: none;
+}
+
+/* The cell stacks the ghost mirror and the real input in the SAME box. They
+   must share every metric that affects glyph position, or the ghost drifts
+   from the caret -- that is the whole trick, so the shared block below is not
+   a tidiness thing, it is the feature. */
+.ho-cell { position: relative; min-width: 0; }
+
+.ho-mirror,
+.ho-typed,
+.ho-static {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    line-height: 1.55;
+    letter-spacing: 0;
+    white-space: pre;
+    padding: 1px 4px;
+    border: 0;
+    margin: 0;
+    overflow-x: auto;
+}
+
+.ho-mirror {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+.ho-typed {
+    position: relative;
+    display: block;
+    width: 100%;
+    background: transparent;
+    color: transparent;               /* the mirror underneath draws the glyphs */
+    caret-color: var(--neon, #00ff41);
+    outline: none;
+}
+.ho-typed::selection { background: var(--cyan-glow); }
+
+.ho-ch-ok     { color: var(--neon, #00ff41); }
+.ho-ch-bad    { color: var(--red, var(--red)); background: rgba(255, 0, 64, 0.18); }
+.ho-ch-ghost  { color: rgba(0, 255, 65, 0.26); }
+.ho-ch-rev    { color: var(--amber, #ffb000); }
+.ho-ch-hidden { color: rgba(0, 255, 65, 0.13); }
+
+.ho-why {
+    color: var(--cyan-dim, var(--cyan-dim));
+    font-size: 0.63rem;
+    line-height: 1.55;
+    padding-top: 1px;
+    letter-spacing: 0.3px;
+    overflow-wrap: anywhere;
+}
+
+/* Wrong line: a short shake, no modal, no toast. The row itself is the error. */
+@keyframes ho-wrong {
+    0%, 100% { transform: translateX(0); }
+    20%      { transform: translateX(-3px); }
+    60%      { transform: translateX(3px); }
+}
+.ho-row.wrong { animation: ho-wrong 180ms ease-in-out; }
+.ho-row.wrong .ho-cell { background: rgba(255, 0, 64, 0.08); }
+
+.ho-hint,
+.ho-done {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border, #1a3a1a);
+    color: var(--text-muted, #6aa06a);
+    font-size: 0.63rem;
+}
+.ho-hint kbd {
+    border: 1px solid var(--border, #1a3a1a);
+    padding: 0 4px;
+    color: var(--text-dim, var(--text-dim));
+    font-family: var(--mono);
+    font-size: 0.6rem;
+}
+.ho-done-tag {
+    color: var(--neon, #00ff41);
+    letter-spacing: 2px;
+    font-weight: bold;
+    text-shadow: 0 0 6px var(--neon-glow, var(--neon-glow));
+}
+
+/* ── [=] PLAN — the step rail ────────────────────────────────────────────── */
+/* Lives under the step and fills what used to be dead space when a step is
+   short. It is the only place that answers "where am I in the whole lesson". */
+.ho-rail {
+    margin-top: 18px;
+    border: 1px solid var(--border, #1a3a1a);
+    background: rgba(0, 255, 65, 0.012);
+}
+.ho-rail-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 9px;
+    border-bottom: 1px solid var(--border, #1a3a1a);
+}
+.ho-rail-title {
+    color: var(--cyan, var(--cyan));
+    letter-spacing: 1.5px;
+    font-size: 0.66rem;
+    font-weight: bold;
+}
+.ho-rail-sub { color: var(--text-muted, #6aa06a); font-size: 0.62rem; letter-spacing: 0.5px; }
+
+.ho-rail-row {
+    display: grid;
+    grid-template-columns: 22px 26px minmax(0, 15em) minmax(0, 1fr);
+    gap: 8px;
+    align-items: baseline;
+    padding: 3px 9px;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    color: var(--text-muted, #6aa06a);
+    font-size: 0.66rem;
+}
+.ho-rail-row:hover { background: rgba(0, 212, 255, 0.05); }
+.ho-rail-row.done  { color: var(--text-dim, var(--text-dim)); }
+.ho-rail-row.done .ho-rail-mark { color: var(--neon, #00ff41); }
+.ho-rail-row.now {
+    border-left-color: var(--cyan, var(--cyan));
+    background: rgba(0, 212, 255, 0.06);
+    color: var(--cyan, var(--cyan));
+}
+.ho-rail-n    { color: var(--text-muted, #6aa06a); font-size: 0.6rem; text-align: right; }
+.ho-rail-mark { font-size: 0.62rem; }
+.ho-rail-file { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ho-rail-note { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.75; }
+
+/* ── [>] CLAUDE — the borrowed terminal ──────────────────────────────────── */
+/* .pc-terminal-wrap is the LIVE node, moved in by hoBorrowTerminal() and moved
+   back on teardown. It keeps its own styling; it only needs to be told to fill
+   this column instead of the main grid cell it normally sits in. */
+.ho-term { overflow: hidden; }
+.pc-terminal-wrap.ho-borrowed {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    margin: 0;
+    border: 0;
+}
+
+/* Narrow desktop: the terminal drops under the work column rather than
+   squeezing the code, because the code column is the one being typed into. */
+@media (max-width: 1500px) {
+    .ho-body { grid-template-columns: 180px minmax(0, 1fr) minmax(0, 0.75fr); font-size: 0.7rem; }
+    .ho-row  { grid-template-columns: 24px minmax(0, 1fr) minmax(0, 12em); }
+}

@@ -1,0 +1,1136 @@
+/* desktop-runners.css - runners (mini terminals) and their nano mode.
+   Cut out of desktop.css on 2026-10-17 (cleanup P2 #14) and loaded right after it,
+   in this order, so the cascade is exactly what it was: keep the <link> order. */
+
+/* ==============================================
+   RUNNERS (Mini Terminals)
+   ============================================== */
+
+body.pc-mode .pc-sidebar-title .pc-runner-add {
+    margin-left: auto;
+    background: none;
+    border: 1px solid var(--neon-dim);
+    color: var(--neon);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-sidebar-title .pc-runner-add:hover {
+    background: var(--neon);
+    color: #000;
+}
+
+body.pc-mode .pc-runners-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    width: 100%;
+}
+
+body.pc-mode .pc-runners-grid .pc-runner {
+    min-width: 0;
+    width: 100%;
+}
+
+body.pc-mode .pc-runners-empty {
+    grid-column: 1 / -1;
+    font-size: 0.5rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 12px;
+}
+
+body.pc-mode .pc-session-empty {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 14px 8px;
+    font-family: var(--mono);
+}
+
+body.pc-mode .pc-runner {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-height: 50px;
+    max-height: 70px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+body.pc-mode .pc-runner:hover {
+    border-color: var(--neon-dim);
+    background: rgba(0, 255, 65, 0.05);
+}
+
+body.pc-mode .pc-runner.running {
+    border-color: var(--neon-dim);
+}
+
+body.pc-mode .pc-runner.running .pc-runner-status {
+    color: var(--neon);
+}
+
+body.pc-mode .pc-runner.starting {
+    border-color: var(--amber);
+}
+
+body.pc-mode .pc-runner.starting .pc-runner-status {
+    color: var(--amber);
+    animation: pulse 1s infinite;
+}
+
+body.pc-mode .pc-runner.stopped,
+body.pc-mode .pc-runner.error {
+    border-color: var(--border);
+    opacity: 0.6;
+}
+
+body.pc-mode .pc-runner.error .pc-runner-status {
+    color: var(--red);
+}
+
+body.pc-mode .pc-runner.orphan {
+    border-color: var(--amber);
+    border-style: dashed;
+}
+
+body.pc-mode .pc-runner.orphan .pc-runner-name {
+    color: var(--amber);
+}
+
+body.pc-mode .pc-runner-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+body.pc-mode .pc-runner-name {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.pc-mode .pc-runner-status {
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-runner-output {
+    font-family: var(--mono);
+    font-size: 0.4rem;
+    color: var(--text-muted);
+    line-height: 1.3;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0.7;
+}
+
+body.pc-mode .pc-runner-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+body.pc-mode .pc-runner:hover .pc-runner-actions {
+    opacity: 1;
+}
+
+body.pc-mode .pc-runner-actions button {
+    flex: 1;
+    padding: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.45rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-runner-actions button:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+}
+
+/* Runner Modal */
+body.pc-mode .pc-runner-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+    animation: fadeIn 0.15s;
+}
+
+/* Floating runner window (no backdrop, draggable, resizable) */
+body.pc-mode .pc-runner-floating {
+    position: fixed;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+body.pc-mode .pc-runner-floating .pc-runner-view-content {
+    position: fixed;
+    pointer-events: auto;
+    resize: both;
+    overflow: auto;
+    min-width: 400px;
+    min-height: 300px;
+    max-width: 90vw;
+    max-height: 90vh;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px var(--neon-glow);
+}
+
+body.pc-mode .pc-runner-floating .pc-runner-modal-header {
+    cursor: move;
+    user-select: none;
+}
+
+body.pc-mode .pc-runner-floating .pc-runner-modal-header:active {
+    cursor: grabbing;
+}
+
+/* Resize handle in bottom-right corner */
+body.pc-mode .pc-runner-floating .pc-runner-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    cursor: nwse-resize;
+    background: linear-gradient(135deg, transparent 50%, var(--neon-dim) 50%);
+    opacity: 0.5;
+    transition: opacity 0.15s;
+}
+
+body.pc-mode .pc-runner-floating .pc-runner-resize-handle:hover {
+    opacity: 1;
+}
+
+/* Active/focused runner gets higher z-index */
+body.pc-mode .pc-runner-floating.focused .pc-runner-view-content {
+    z-index: 1002;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.7), 0 0 30px var(--neon-glow);
+    border-color: var(--neon);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+body.pc-mode .pc-runner-modal-content {
+    background: var(--surface);
+    border: 1px solid var(--neon-dim);
+    border-radius: 12px;
+    width: 320px;
+    max-width: 90vw;
+    overflow: visible;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px var(--neon-glow);
+}
+
+body.pc-mode .pc-runner-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+body.pc-mode .pc-runner-modal-header span {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+body.pc-mode .pc-runner-modal-header button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+body.pc-mode .pc-runner-modal-header button:hover {
+    color: var(--red);
+}
+
+body.pc-mode .pc-runner-modal-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow: visible;
+}
+
+body.pc-mode .pc-runner-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+body.pc-mode .pc-runner-field label {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+body.pc-mode .pc-runner-field input {
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+body.pc-mode .pc-runner-field input:focus {
+    border-color: var(--neon);
+}
+
+body.pc-mode .pc-runner-field input.error {
+    border-color: var(--red);
+    animation: shake 0.3s;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+
+
+
+
+body.pc-mode .pc-runner-modal-footer {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+}
+
+body.pc-mode .pc-runner-modal-footer button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-runner-modal-footer .cancel {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-runner-modal-footer .cancel:hover {
+    border-color: var(--text);
+    color: var(--text);
+}
+
+body.pc-mode .pc-runner-modal-footer .create {
+    background: var(--neon);
+    border: none;
+    color: #000;
+}
+
+body.pc-mode .pc-runner-modal-footer .create:hover {
+    box-shadow: 0 0 15px var(--neon-glow);
+}
+
+/* Runner View Modal */
+body.pc-mode .pc-runner-view-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 600px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+body.pc-mode .pc-runner-view-actions {
+    display: flex;
+    gap: 8px;
+}
+
+body.pc-mode .pc-runner-view-actions button {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+body.pc-mode .pc-runner-view-actions button:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+}
+
+body.pc-mode .pc-runner-view-output {
+    flex: 1;
+    padding: 16px;
+    background: #000;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    line-height: 1.5;
+    color: var(--neon);
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    min-height: 200px;
+    max-height: 400px;
+}
+
+/* Floating runner output - no max-height constraint */
+body.pc-mode .pc-runner-floating .pc-runner-view-output {
+    max-height: none;
+    min-height: 100px;
+    cursor: text;
+    outline: none;
+    transition: box-shadow 0.15s;
+}
+
+/* Focus state for Ctrl+key capture */
+body.pc-mode .pc-runner-floating .pc-runner-view-output:focus {
+    box-shadow: inset 0 0 0 2px var(--neon-dim);
+}
+
+/* PROJECTOR window (projector.js): a runner-style floating window showing a
+   session's own browser live. The picture keeps the page's proportions
+   (object-fit: contain), which projectorToPage() relies on to map clicks. */
+body.pc-mode .projector-header { gap: 10px; padding: 8px 12px; }
+body.pc-mode .projector-session {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 320px;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 3px 6px;
+    cursor: pointer;
+}
+body.pc-mode .projector-stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    position: relative;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+body.pc-mode .projector-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    outline: none;
+    cursor: default;
+    user-select: none;
+}
+body.pc-mode .projector-img:focus { box-shadow: inset 0 0 0 2px var(--neon-dim); }
+body.pc-mode .projector-msg {
+    padding: 24px;
+    max-width: 460px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+}
+body.pc-mode .projector-msg.warn { color: var(--amber, #f0b400); }
+body.pc-mode .projector-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 12px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--text-muted);
+}
+body.pc-mode .projector-status { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+body.pc-mode .projector-hint { flex: 0 0 auto; opacity: 0.6; }
+
+body.pc-mode .pc-runner-view-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+}
+
+body.pc-mode .pc-runner-view-cwd {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-runner-view-status {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 3px;
+}
+
+body.pc-mode .pc-runner-view-status.running {
+    background: rgba(0, 255, 65, 0.2);
+    color: var(--neon);
+}
+
+body.pc-mode .pc-runner-view-status.stopped {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-runner-view-status.error {
+    background: rgba(255, 0, 64, 0.2);
+    color: var(--red);
+}
+
+/* Directory Picker */
+body.pc-mode .pc-runner-dir-picker {
+    display: flex;
+    gap: 0;
+}
+
+body.pc-mode .pc-runner-dir-picker input {
+    flex: 1;
+    border-radius: 6px 0 0 6px;
+}
+
+body.pc-mode .pc-runner-dir-picker input:focus {
+    border-color: var(--neon);
+}
+
+body.pc-mode .pc-runner-dir-btn {
+    padding: 8px 12px;
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid var(--border);
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    color: var(--neon);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-runner-dir-btn:hover {
+    background: var(--neon);
+    color: #000;
+}
+
+body.pc-mode .pc-runner-dir-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--neon-dim);
+    border-radius: 6px;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 1010;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+body.pc-mode .pc-runner-dir-dropdown.hidden {
+    display: none;
+}
+
+body.pc-mode .pc-runner-dir-path {
+    padding: 8px 12px;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.pc-mode .pc-runner-dir-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+body.pc-mode .pc-runner-dir-list::-webkit-scrollbar { width: 4px; }
+body.pc-mode .pc-runner-dir-list::-webkit-scrollbar-track { background: transparent; }
+body.pc-mode .pc-runner-dir-list::-webkit-scrollbar-thumb { background: var(--neon-dim); border-radius: 2px; }
+
+body.pc-mode .pc-runner-dir-item {
+    padding: 6px 12px;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.1s;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+body.pc-mode .pc-runner-dir-item:last-child {
+    border-bottom: none;
+}
+
+body.pc-mode .pc-runner-dir-item:hover {
+    background: rgba(0, 255, 65, 0.05);
+}
+
+body.pc-mode .pc-runner-dir-name {
+    flex: 1;
+    padding: 4px 0;
+}
+
+body.pc-mode .pc-runner-dir-name:hover {
+    color: var(--cyan);
+}
+
+body.pc-mode .pc-runner-dir-pick {
+    background: none;
+    border: 1px solid var(--neon-dim);
+    color: var(--neon);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-runner-dir-item:hover .pc-runner-dir-pick {
+    opacity: 1;
+}
+
+body.pc-mode .pc-runner-dir-pick:hover {
+    background: var(--neon);
+    color: #000;
+}
+
+body.pc-mode .pc-runner-dir-up {
+    color: var(--cyan);
+}
+
+body.pc-mode .pc-runner-dir-select {
+    color: var(--neon);
+    font-weight: 600;
+}
+
+body.pc-mode .pc-runner-dir-empty,
+body.pc-mode .pc-runner-dir-loading,
+body.pc-mode .pc-runner-dir-error {
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+body.pc-mode .pc-runner-dir-error {
+    color: var(--red);
+}
+
+body.pc-mode .pc-runner-field {
+    position: relative;
+}
+
+/* Runner View Input */
+body.pc-mode .pc-runner-view-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.4);
+    border-top: 1px solid var(--border);
+}
+
+body.pc-mode .pc-runner-prompt {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--neon);
+    font-weight: 700;
+}
+
+body.pc-mode .pc-runner-view-input input {
+    flex: 1;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+body.pc-mode .pc-runner-view-input input:focus {
+    border-color: var(--neon);
+}
+
+body.pc-mode .pc-runner-view-input input::placeholder {
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-runner-view-input button {
+    padding: 10px 16px;
+    background: var(--neon);
+    border: none;
+    border-radius: 6px;
+    color: #000;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-runner-view-input button:hover {
+    box-shadow: 0 0 15px var(--neon-glow);
+}
+
+/* Quick Commands */
+body.pc-mode .pc-runner-quick-cmds {
+    display: flex;
+    gap: 4px;
+}
+
+body.pc-mode .pc-runner-quick-cmds button {
+    padding: 4px 8px;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--cyan);
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-runner-quick-cmds button:hover {
+    border-color: var(--cyan);
+    background: rgba(0, 212, 255, 0.2);
+}
+
+body.pc-mode .pc-runner-view-footer {
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Ctrl+key indicator */
+.pc-runner-ctrl-indicator {
+    background: rgba(0, 255, 65, 0.9);
+    color: #000;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 4px;
+    z-index: 100000;
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+    animation: ctrl-pulse 0.3s ease-out;
+}
+
+.pc-runner-ctrl-indicator.fade-out {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease-out;
+}
+
+@keyframes ctrl-pulse {
+    0% { transform: scale(1.2); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ==============================================
+   NANO MODE - Terminal Editor Support (Compact)
+   ============================================== */
+
+/* Nano toggle button in header */
+body.pc-mode .pc-runner-nano-toggle {
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-runner-nano-toggle.active {
+    background: var(--cyan);
+    color: #000;
+    border-color: var(--cyan);
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+}
+
+/* Compact nano panel */
+body.pc-mode .pc-runner-nano-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 12px;
+    background: rgba(0, 212, 255, 0.05);
+    border-top: 1px solid var(--cyan);
+}
+
+body.pc-mode .pc-runner-nano-panel.hidden {
+    display: none;
+}
+
+/* Command bar - single row */
+body.pc-mode .pc-runner-nano-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+body.pc-mode .pc-runner-nano-cmds,
+body.pc-mode .pc-runner-nano-arrows,
+body.pc-mode .pc-runner-nano-actions {
+    display: flex;
+    gap: 3px;
+}
+
+body.pc-mode .pc-runner-nano-bar button {
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    cursor: pointer;
+    transition: all 0.12s;
+    white-space: nowrap;
+}
+
+body.pc-mode .pc-runner-nano-bar button:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: rgba(0, 212, 255, 0.1);
+}
+
+body.pc-mode .pc-runner-nano-bar button:active {
+    transform: scale(0.95);
+    background: var(--cyan);
+    color: #000;
+}
+
+/* Arrow buttons - slightly different style */
+body.pc-mode .pc-runner-nano-arrows button {
+    padding: 4px 6px;
+    color: var(--neon-dim);
+}
+
+body.pc-mode .pc-runner-nano-arrows button:hover {
+    border-color: var(--neon);
+    color: var(--neon);
+    background: rgba(0, 255, 65, 0.1);
+}
+
+/* Bulk button highlight */
+body.pc-mode .pc-runner-nano-bulk-btn {
+    border-color: var(--neon-dim) !important;
+    color: var(--neon) !important;
+}
+
+body.pc-mode .pc-runner-nano-bulk-btn:hover {
+    background: var(--neon) !important;
+    color: #000 !important;
+}
+
+/* Keystroke input */
+body.pc-mode .pc-runner-nano-keys {
+    width: 100%;
+    padding: 6px 10px;
+    background: #000;
+    border: 1px solid var(--cyan);
+    border-radius: 4px;
+    color: var(--cyan);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    outline: none;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-runner-nano-keys:focus {
+    box-shadow: 0 0 8px var(--cyan-glow);
+}
+
+body.pc-mode .pc-runner-nano-keys::placeholder {
+    color: var(--text-dim);
+}
+
+/* Hide normal input when nano mode active */
+body.pc-mode .pc-runner-view-input.hidden {
+    display: none;
+}
+
+/* Custom scrollbar for runner output */
+body.pc-mode .pc-runner-view-output::-webkit-scrollbar {
+    width: 6px;
+}
+
+body.pc-mode .pc-runner-view-output::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+body.pc-mode .pc-runner-view-output::-webkit-scrollbar-thumb {
+    background: var(--neon-dim);
+    border-radius: 3px;
+}
+
+body.pc-mode .pc-runner-view-output::-webkit-scrollbar-thumb:hover {
+    background: var(--neon);
+}
+
+/* ==============================================
+   NANO BULK TEXT FLOATING WINDOW
+   ============================================== */
+
+.pc-nano-bulk-floating {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 90000;
+}
+
+.pc-nano-bulk-floating .pc-nano-bulk-content {
+    position: fixed;
+    width: 450px;
+    height: 300px;
+    background: var(--surface);
+    border: 1px solid var(--neon);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 255, 65, 0.1);
+    pointer-events: auto;
+    transition: box-shadow 0.15s;
+}
+
+.pc-nano-bulk-floating.focused .pc-nano-bulk-content {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 255, 65, 0.2);
+    border-color: var(--neon);
+}
+
+.pc-nano-bulk-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(0, 255, 65, 0.05);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--neon);
+    font-weight: bold;
+    cursor: move;
+    user-select: none;
+}
+
+.pc-nano-bulk-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.pc-nano-bulk-actions button {
+    padding: 4px 8px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.pc-nano-bulk-actions button:first-child:hover {
+    border-color: var(--neon);
+    color: var(--neon);
+    background: rgba(0, 255, 65, 0.1);
+}
+
+.pc-nano-bulk-actions button:last-child:hover {
+    border-color: var(--red);
+    color: var(--red);
+}
+
+.pc-nano-bulk-floating textarea {
+    flex: 1;
+    padding: 12px;
+    background: #000;
+    border: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    tab-size: 4;
+}
+
+.pc-nano-bulk-floating textarea::placeholder {
+    color: var(--text-dim);
+}
+
+/* Custom scrollbar */
+.pc-nano-bulk-floating textarea::-webkit-scrollbar {
+    width: 6px;
+}
+
+.pc-nano-bulk-floating textarea::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.pc-nano-bulk-floating textarea::-webkit-scrollbar-thumb {
+    background: var(--neon-dim);
+    border-radius: 3px;
+}
+
+.pc-nano-bulk-floating textarea::-webkit-scrollbar-thumb:hover {
+    background: var(--neon);
+}
+
+.pc-nano-bulk-footer {
+    padding: 6px 12px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--text-dim);
+}
+
+/* Toolbar with filepath, pull, mode toggle, send */
+.pc-nano-bulk-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid var(--border);
+}
+
+.pc-nano-bulk-toolbar button {
+    padding: 6px 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.pc-nano-bulk-toolbar button:hover {
+    border-color: var(--neon);
+    color: var(--neon);
+    background: rgba(0, 255, 65, 0.1);
+}
+
+/* Add/Replace mode toggle */
+.pc-nano-bulk-mode {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.pc-nano-bulk-mode button {
+    border: none;
+    border-radius: 0;
+    padding: 6px 12px;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 0.55rem;
+}
+
+.pc-nano-bulk-mode button:hover {
+    background: rgba(0, 255, 65, 0.05);
+    border: none;
+}
+
+.pc-nano-bulk-mode button.active {
+    background: var(--border);
+    color: var(--neon);
+}
+
+.pc-nano-bulk-mode button:first-child {
+    border-right: 1px solid var(--border);
+}
+
+/* Send button - highlighted */
+.pc-nano-bulk-send {
+    background: rgba(0, 255, 65, 0.1) !important;
+    border-color: var(--neon-dim) !important;
+    color: var(--neon) !important;
+}
+
+.pc-nano-bulk-send:hover {
+    background: rgba(0, 255, 65, 0.2) !important;
+    border-color: var(--neon) !important;
+}
+
+/* Resize handle */
+.pc-nano-bulk-resize {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    cursor: nwse-resize;
+    background: linear-gradient(135deg, transparent 50%, var(--neon-dim) 50%);
+    border-radius: 0 0 8px 0;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+}
+
+.pc-nano-bulk-resize:hover {
+    opacity: 1;
+}

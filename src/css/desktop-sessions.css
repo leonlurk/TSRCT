@@ -1,0 +1,1419 @@
+/* desktop-sessions.css - the split view (combined terminals), then the runner attach modal and the rail sidebar that follow it.
+   Cut out of desktop.css on 2026-10-17 (cleanup P2 #14) and loaded right after it,
+   in this order, so the cascade is exactly what it was: keep the <link> order. */
+
+/* ==============================================
+   COMBINED TERMINALS (Split View with Cables)
+   ============================================== */
+
+/* Checkbox in session items - hidden by default, shown in combine mode */
+body.pc-mode .pc-combine-check {
+    width: 12px;
+    height: 12px;
+    margin-right: 6px;
+    cursor: pointer;
+    accent-color: var(--cyan);
+    opacity: 0.3;
+    transition: opacity 0.2s;
+}
+
+body.pc-mode .pc-session-item:hover .pc-combine-check,
+body.pc-mode .pc-session-item.combined .pc-combine-check,
+body.pc-combine-mode .pc-combine-check {
+    opacity: 1;
+}
+
+/* Session item when combined */
+body.pc-mode .pc-session-item.combined {
+    border-left: 2px solid var(--cyan);
+    background: rgba(0, 255, 255, 0.05);
+}
+
+/* Combine controls below session list */
+body.pc-mode .pc-combine-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+    margin-top: 8px;
+    background: rgba(0, 255, 255, 0.05);
+    border-top: 1px solid rgba(0, 255, 255, 0.2);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+}
+
+body.pc-mode .pc-combine-controls.hidden {
+    display: none;
+}
+
+body.pc-mode .pc-combine-count {
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-combine-count strong {
+    color: var(--cyan);
+}
+
+body.pc-mode .pc-combine-btn {
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    padding: 4px 8px;
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+body.pc-mode .pc-combine-btn:hover {
+    background: var(--cyan);
+    color: var(--bg);
+}
+
+/* ── Split-group chips ─────────────────────────────────────────────────────
+   One chip per armed folder split, plus [single]. It sits in the main column and
+   NOT inside pc-combined-wrap, because that wrap is hidden in single view and the
+   whole point of the chips is getting back into a split from there. The bar
+   removes itself when nothing is armed — an empty strip is not a state. */
+body.pc-mode .pc-split-chips {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    flex-shrink: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: rgba(0, 212, 255, 0.02);
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+}
+body.pc-mode .pc-split-chips.hidden { display: none; }
+body.pc-mode .pc-split-chips::-webkit-scrollbar { display: none; }
+
+body.pc-mode .pc-split-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: transparent;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-left: 3px solid rgba(0, 212, 255, 0.2);
+    color: var(--cyan, var(--cyan));
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.3px;
+    padding: 3px 9px;
+    border-radius: 3px;
+    cursor: pointer;
+    white-space: nowrap;
+    opacity: 0.6;
+    transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+}
+body.pc-mode .pc-split-chip:hover { opacity: 0.9; background: rgba(0, 212, 255, 0.07); }
+body.pc-mode .pc-split-chip.active {
+    opacity: 1;
+    background: rgba(0, 212, 255, 0.12);
+    border-color: rgba(0, 212, 255, 0.45);
+    border-left-color: var(--cyan, var(--cyan));
+}
+body.pc-mode .pc-split-chip-n {
+    font-size: 0.58rem;
+    background: rgba(0, 212, 255, 0.15);
+    padding: 0 5px;
+    border-radius: 8px;
+}
+body.pc-mode .pc-split-chip-single {
+    color: var(--text-muted, var(--text-muted));
+    border-color: rgba(255, 255, 255, 0.1);
+    border-left-color: rgba(255, 255, 255, 0.1);
+}
+body.pc-mode .pc-split-chip-single.active {
+    color: var(--cyan, var(--cyan));
+    border-left-color: var(--cyan, var(--cyan));
+}
+
+/* [R] progress report (2026-10-06): the button sits at the end of the tab bar,
+   the window is an overlay like the morning brief, never a tab. */
+body.pc-mode .pc-progress-btn { margin-left: auto; opacity: 0.8; }
+body.pc-mode .pc-progress-btn.running {
+    opacity: 1;
+    color: var(--amber, #ffb000);
+    border-color: var(--amber, #ffb000);
+    border-left-color: var(--amber, #ffb000);
+}
+.pc-progress-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.pc-progress-overlay.hidden { display: none; }
+.pc-progress-box {
+    width: min(760px, 92vw);
+    max-height: 86vh;
+    display: flex;
+    flex-direction: column;
+    /* Solid: --card-bg does not exist and --bg-card is 85% opaque, and either
+       lets the terminals show through the text (2026-10-06). */
+    background: var(--bg, var(--bg));
+    border: 1px solid var(--cyan, var(--cyan));
+    border-radius: 4px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    font-family: var(--mono);
+    color: var(--text, #c8ffd8);
+}
+.pc-progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--cyan, var(--cyan));
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+.pc-progress-body { padding: 10px 12px; overflow-y: auto; font-size: 0.8rem; }
+.pc-progress-sec { margin-bottom: 14px; }
+.pc-progress-h { color: var(--cyan, var(--cyan)); font-size: 0.7rem; letter-spacing: 0.5px; margin-bottom: 5px; }
+.pc-progress-sub { color: var(--text-muted, #5a8a6a); font-size: 0.7rem; }
+.pc-progress-sec ul { margin: 0; padding-left: 18px; }
+.pc-progress-sec li { margin-bottom: 3px; line-height: 1.4; }
+.pc-progress-slack {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    background: rgba(0, 0, 0, 0.35);
+    color: inherit;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 8px;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+.pc-progress-note { color: var(--text-muted, #5a8a6a); line-height: 1.5; margin-bottom: 8px; }
+.pc-progress-note.err { color: var(--red, var(--red)); }
+.pc-progress-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 6px; }
+.pc-progress-act {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--cyan, var(--cyan));
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 3px 9px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.pc-progress-act:hover { background: rgba(0, 212, 255, 0.08); }
+.pc-progress-act.primary { border-color: var(--cyan, var(--cyan)); }
+
+/* Combined terminals wrapper */
+body.pc-mode .pc-combined-wrap {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+body.pc-mode .pc-combined-wrap.hidden {
+    display: none;
+}
+
+/* SVG cables overlay */
+body.pc-mode .pc-cables {
+    position: absolute;
+    top: 0;
+    left: -220px;  /* Extend into sidebar */
+    width: calc(100% + 220px);
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+    overflow: visible;
+}
+
+/* Cable paths */
+body.pc-mode .pc-cable {
+    fill: none;
+    stroke: var(--neon);
+    stroke-width: 2;
+    opacity: 0.3;
+    transition: all 0.3s;
+}
+
+body.pc-mode .pc-cable.active {
+    stroke: var(--cyan);
+    stroke-width: 3;
+    opacity: 0.8;
+    filter: drop-shadow(0 0 4px var(--cyan));
+}
+
+body.pc-mode .pc-cable.idle {
+    stroke: var(--neon);
+}
+
+body.pc-mode .pc-cable.working {
+    stroke: var(--amber);
+    animation: cable-pulse 1s infinite;
+}
+
+body.pc-mode .pc-cable.perm {
+    stroke: var(--red);
+    animation: cable-pulse 0.5s infinite;
+}
+
+@keyframes cable-pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+}
+
+/* Combined grid container */
+body.pc-mode .pc-combined-grid {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Edge resize handles on each panel.
+   2026-10-05 ("se me complica un poco"): they were 4px, invisible until the
+   pointer was exactly on them. Now a 12px grab zone straddling the gap, a thin
+   line that shows while the pointer is anywhere on the panel, and a bright one
+   on the handle itself. The line is drawn by ::after so the grab zone can stay
+   wide without looking wide. */
+body.pc-mode .pc-edge {
+    position: absolute;
+    z-index: 15;
+}
+
+body.pc-mode .pc-edge::after {
+    content: '';
+    position: absolute;
+    border-radius: 2px;
+    background: var(--cyan);
+    opacity: 0;
+    transition: opacity 0.12s;
+}
+
+body.pc-mode .pc-combined-panel:hover > .pc-edge::after { opacity: 0.25; }
+body.pc-mode .pc-edge:hover::after,
+body.pc-mode .pc-combined-grid.resizing .pc-edge:hover::after { opacity: 1; }
+
+body.pc-mode .pc-edge-top,
+body.pc-mode .pc-edge-bottom {
+    left: 10px;
+    right: 10px;
+    height: 12px;
+    cursor: ns-resize;
+}
+body.pc-mode .pc-edge-top { top: -7px; }
+body.pc-mode .pc-edge-bottom { bottom: -7px; }
+body.pc-mode .pc-edge-top::after,
+body.pc-mode .pc-edge-bottom::after { left: 0; right: 0; top: 5px; height: 2px; }
+
+body.pc-mode .pc-edge-left,
+body.pc-mode .pc-edge-right {
+    top: 10px;
+    bottom: 10px;
+    width: 12px;
+    cursor: ew-resize;
+}
+body.pc-mode .pc-edge-left { left: -7px; }
+body.pc-mode .pc-edge-right { right: -7px; }
+body.pc-mode .pc-edge-left::after,
+body.pc-mode .pc-edge-right::after { top: 0; bottom: 0; left: 5px; width: 2px; }
+
+/* While a line is being dragged, the terminals must not steal the pointer. */
+body.pc-mode .pc-combined-grid.resizing .pc-combined-panel { pointer-events: none; }
+body.pc-mode .pc-combined-grid.resizing .pc-edge { pointer-events: auto; }
+
+/* Swap ghost */
+.pc-swap-ghost {
+    position: fixed;
+    z-index: 9999;
+    background: var(--border);
+    border: 1px solid var(--neon);
+    color: var(--neon);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 4px;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* Panel swap target highlight */
+body.pc-mode .pc-combined-panel.swap-target {
+    border-color: var(--neon) !important;
+    box-shadow: inset 0 0 30px var(--border);
+}
+
+/* Per-panel font controls */
+body.pc-mode .pc-panel-font {
+    display: flex;
+    gap: 1px;
+    margin-right: 4px;
+}
+
+body.pc-mode .pc-panel-font button {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.45rem;
+    padding: 1px 4px;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+body.pc-mode .pc-panel-font button:hover {
+    color: var(--cyan);
+}
+
+body.pc-mode .pc-panel-font button.active {
+    color: var(--neon);
+    border-color: var(--neon);
+}
+
+/* Individual panel */
+body.pc-mode .pc-combined-panel {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    /* clip, not hidden: the resize grab zones sit 7px outside the border (2026-10-05) */
+    overflow: clip;
+    overflow-clip-margin: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    min-height: 0;
+    --panel-color: var(--border);
+}
+
+body.pc-mode .pc-combined-panel:hover {
+    border-color: var(--text-muted);
+}
+
+body.pc-mode .pc-combined-panel.active {
+    border-color: var(--panel-color, var(--cyan));
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.2),
+                inset 0 0 20px rgba(0, 255, 255, 0.05);
+}
+
+/* Needs-attention pulse: a finished / waiting session glows in its assigned panel
+   color while TSRCT is focused (the focused-window counterpart to voice alerts).
+   Cleared when you focus that panel or it resumes working. */
+/* 60 fps: animating box-shadow repaints the blur every frame and stutters. Here
+   nothing but OPACITY animates, which the GPU compositor does on its own:
+   ::before is the small resting glow (always on), ::after the big glow, and fading
+   ::after in and out reads as the glow growing and shrinking. Both shadows are
+   painted once.
+   - The panel is overflow:hidden, which would clip a pseudo-element's outer glow, so
+     an attention panel switches to overflow:clip + overflow-clip-margin (room for
+     the halo; the panel's children scroll themselves, so nothing else spills).
+   - The glow lives on pseudo-elements, not the panel's own box-shadow, because
+     desktop.js writes an inline box-shadow (focus tint) that beats any class rule. */
+body.pc-mode .pc-combined-panel.needs-attention {
+    border-color: var(--panel-color, var(--cyan));
+    overflow: clip;
+    overflow-clip-margin: 70px;
+    z-index: 5;
+}
+
+body.pc-mode .pc-combined-panel.needs-attention::before,
+body.pc-mode .pc-combined-panel.needs-attention::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 10;
+}
+
+body.pc-mode .pc-combined-panel.needs-attention::before {
+    box-shadow: 0 0 12px 2px color-mix(in srgb, var(--panel-color, var(--cyan)) 75%, transparent),
+                inset 0 0 12px color-mix(in srgb, var(--panel-color, var(--cyan)) 40%, transparent);
+}
+
+body.pc-mode .pc-combined-panel.needs-attention::after {
+    box-shadow: 0 0 44px 10px color-mix(in srgb, var(--panel-color, var(--cyan)) 90%, transparent),
+                inset 0 0 24px color-mix(in srgb, var(--panel-color, var(--cyan)) 60%, transparent);
+    opacity: 0;
+    will-change: opacity;
+    animation: pcAttentionPulse 2.6s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+}
+
+body.pc-mode .pc-combined-panel.needs-attention .pc-combined-topband {
+    will-change: opacity;
+    animation: pcAttentionBand 2.6s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+}
+
+@keyframes pcAttentionPulse {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes pcAttentionBand {
+    from { opacity: 0.6; }
+    to   { opacity: 1; }
+}
+
+/* Colored top band for quick ID */
+body.pc-mode .pc-combined-topband {
+    height: 3px;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+
+/* Panel header (drag to swap) */
+body.pc-mode .pc-combined-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    flex-wrap: wrap;
+    cursor: grab;
+}
+
+body.pc-mode .pc-combined-header:active {
+    cursor: grabbing;
+}
+
+body.pc-mode .pc-combined-name {
+    color: var(--text);
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+}
+
+body.pc-mode .pc-combined-panel.active .pc-combined-name {
+    color: var(--panel-color, var(--cyan));
+}
+
+/* Small original session name when panel has an alias */
+body.pc-mode .pc-combined-session-tag {
+    color: var(--text-dim);
+    font-size: 0.45rem;
+    opacity: 0.6;
+    white-space: nowrap;
+}
+
+/* Inline rename input */
+body.pc-mode .pc-rename-input {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 1px 4px;
+    outline: none;
+    border-radius: 2px;
+    max-width: 160px;
+}
+
+body.pc-mode .pc-combined-status {
+    color: var(--neon);
+    font-size: 0.5rem;
+}
+
+body.pc-mode .pc-combined-status.working {
+    color: var(--amber);
+    animation: blink 0.5s infinite;
+}
+
+body.pc-mode .pc-combined-status.perm {
+    color: var(--red);
+    animation: blink 0.3s infinite;
+}
+
+/* Color picker dots */
+body.pc-mode .pc-color-picker {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    margin-left: auto;
+}
+
+body.pc-mode .pc-color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: transform 0.15s, border-color 0.15s;
+    opacity: 0.6;
+}
+
+body.pc-mode .pc-color-dot:hover {
+    transform: scale(1.4);
+    opacity: 1;
+}
+
+body.pc-mode .pc-color-dot.active {
+    border-color: #fff;
+    opacity: 1;
+    transform: scale(1.3);
+}
+/* "no color" option in the picker: hollow ring */
+body.pc-mode .pc-color-dot.empty {
+    background: transparent !important;
+    border: 1px dashed var(--text-muted);
+    opacity: 0.7;
+}
+
+/* ── Sidebar identity-color chip (propagated from the split view) ──
+   Scoped under .pc-session-item so it beats the `.pc-session-item span { flex:1 }`
+   rule (which would otherwise stretch this <span> into a wide bar). No hover. */
+body.pc-mode .pc-session-item .pc-session-color {
+    flex: 0 0 auto;
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+}
+body.pc-mode .pc-session-item .pc-session-color.empty {
+    background: repeating-linear-gradient(45deg, transparent, transparent 2px, var(--text-muted) 2px, var(--text-muted) 3px);
+    opacity: 0.45;
+}
+
+/* Floating palette popover (opened from the sidebar chip) */
+body.pc-mode .pc-color-popover {
+    position: fixed;
+    z-index: 9999;
+    display: flex;
+    gap: 6px;
+    padding: 7px 9px;
+    background: var(--bg, #0a0e0a);
+    border: 1px solid var(--neon-dim, #1a5);
+    border-radius: 6px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.6);
+}
+body.pc-mode .pc-color-popover .pc-color-dot { width: 12px; height: 12px; opacity: 0.85; }
+
+/* ── Color legend (define what each color codes for) ── */
+body.pc-mode .pc-color-legend {
+    margin-top: 8px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: rgba(0,255,65,0.02);
+}
+body.pc-mode .pc-color-legend.hidden { display: none; }
+body.pc-mode .pc-legend-title {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 2px;
+    color: var(--cyan, var(--cyan));
+    margin-bottom: 6px;
+}
+body.pc-mode .pc-legend-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 4px;
+}
+body.pc-mode .pc-legend-swatch {
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    box-shadow: 0 0 4px currentColor;
+}
+body.pc-mode .pc-legend-input {
+    flex: 1;
+    min-width: 0;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    padding: 3px 5px;
+    border-radius: 3px;
+}
+body.pc-mode .pc-legend-input:focus { outline: none; border-color: var(--cyan, var(--cyan)); }
+body.pc-mode .pc-legend-count {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--amber, #ffb000);
+    min-width: 10px;
+    text-align: right;
+}
+
+body.pc-mode .pc-combined-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    cursor: pointer;
+    padding: 2px 4px;
+    opacity: 0.5;
+    transition: all 0.2s;
+}
+
+/* Panel body: relative container for watermark + content */
+body.pc-mode .pc-combined-body {
+    flex: 1;
+    position: relative;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Large initial watermark for quick session ID */
+body.pc-mode .pc-combined-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--mono);
+    font-size: 6rem;
+    font-weight: 900;
+    color: var(--panel-color, var(--border));
+    opacity: 0.06;
+    pointer-events: none;
+    user-select: none;
+    line-height: 1;
+    z-index: 0;
+}
+
+body.pc-mode .pc-combined-close:hover {
+    color: var(--red);
+    opacity: 1;
+}
+
+/* Auto-accept button in combined panel */
+body.pc-mode .pc-combined-auto {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    cursor: pointer;
+    padding: 1px 4px;
+    border-radius: 2px;
+    opacity: 0.6;
+    transition: all 0.2s;
+}
+
+body.pc-mode .pc-combined-auto:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    opacity: 1;
+}
+
+body.pc-mode .pc-combined-auto.active {
+    background: var(--border);
+    border-color: var(--neon);
+    color: var(--neon);
+    opacity: 1;
+}
+
+/* Panel content (terminal output) */
+body.pc-mode .pc-combined-content {
+    flex: 1;
+    padding: 8px 10px;
+    overflow-y: auto;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    line-height: 1.4;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 0;
+    position: relative;
+    z-index: 1;
+}
+
+body.pc-mode .pc-combined-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+body.pc-mode .pc-combined-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+body.pc-mode .pc-combined-content::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+}
+
+/* Highlight active panel content area */
+body.pc-mode .pc-combined-panel.active .pc-combined-content {
+    background: rgba(0, 255, 255, 0.02);
+}
+
+/* Combine mode indicator on body */
+body.pc-combine-mode .pc-sidebar-section:first-of-type {
+    border-color: var(--cyan);
+}
+
+/* ==============================================
+   RUNNER ATTACH MODAL
+   ============================================== */
+
+body.pc-mode .pc-runner-attach-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg);
+    border: 1px solid var(--cyan);
+    border-radius: 8px;
+    width: 420px;
+    max-height: 60vh;
+    z-index: 10000;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.15), 0 10px 40px rgba(0,0,0,0.7);
+    display: flex;
+    flex-direction: column;
+}
+
+body.pc-mode .pc-runner-attach-modal.hidden {
+    display: none;
+}
+
+body.pc-mode .pc-runner-attach-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--cyan);
+    background: rgba(0, 255, 255, 0.05);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+body.pc-mode .pc-runner-attach-info {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+body.pc-mode .pc-runner-attach-header button {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    transition: color 0.2s;
+}
+
+body.pc-mode .pc-runner-attach-header button:hover {
+    color: var(--neon);
+}
+
+body.pc-mode .pc-runner-attach-list {
+    flex: 1;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+body.pc-mode .pc-runner-attach-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+body.pc-mode .pc-runner-attach-list::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+}
+
+body.pc-mode .pc-runner-attach-empty {
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    text-align: center;
+    padding: 32px 24px;
+    border: 1px dashed var(--border);
+    margin: 12px;
+    border-radius: 4px;
+}
+
+body.pc-mode .pc-runner-attach-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+body.pc-mode .pc-runner-attach-item:hover {
+    border-color: var(--cyan);
+    background: rgba(0, 255, 255, 0.05);
+}
+
+body.pc-mode .pc-runner-attach-item.selected {
+    border-color: var(--neon);
+    background: rgba(0, 255, 65, 0.1);
+}
+
+body.pc-mode .pc-runner-attach-check {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--neon);
+    cursor: pointer;
+}
+
+body.pc-mode .pc-runner-attach-name {
+    flex: 1;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.pc-mode .pc-runner-attach-status {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-dim);
+}
+
+body.pc-mode .pc-runner-attach-status.running {
+    color: var(--neon);
+}
+
+body.pc-mode .pc-runner-attach-preview {
+    flex: 0 0 auto;
+    max-width: 150px;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.pc-mode .pc-runner-attach-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 16px;
+    border-top: 1px solid var(--cyan);
+    background: rgba(0, 255, 255, 0.03);
+}
+
+body.pc-mode .pc-runner-attach-actions button {
+    padding: 8px 16px;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+body.pc-mode .pc-runner-attach-actions button.cancel {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+}
+
+body.pc-mode .pc-runner-attach-actions button.cancel:hover {
+    border-color: var(--text);
+    color: var(--text);
+}
+
+body.pc-mode .pc-runner-attach-actions button.attach {
+    background: var(--cyan);
+    border: 1px solid var(--cyan);
+    color: var(--bg);
+}
+
+body.pc-mode .pc-runner-attach-actions button.attach:hover {
+    background: var(--neon);
+    border-color: var(--neon);
+}
+
+body.pc-mode .pc-runner-attach-actions button.attach:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Runner attach item in indicator */
+body.pc-mode .pc-attach-item.runner {
+    background: rgba(0, 255, 255, 0.1);
+    border-color: var(--cyan);
+    color: var(--cyan);
+}
+
+body.pc-mode .pc-tasks-panel,
+body.pc-mode .pc-codemap-panel,
+body.pc-mode .pc-clients-panel,
+body.pc-mode .pc-automations-panel,
+body.pc-mode .pc-notifs-panel {
+    display: none;
+    grid-template-rows: auto minmax(0, 1fr);
+    flex: 1;
+    min-height: 0;
+    background: var(--bg, var(--bg));
+    font-family: var(--mono);
+}
+body.pc-mode .pc-tasks-panel:not(.hidden) { display: grid; }
+body.pc-mode .pc-codemap-panel:not(.hidden) { display: grid; }
+body.pc-mode .pc-clients-panel:not(.hidden) { display: grid; }
+body.pc-mode .pc-automations-panel:not(.hidden) { display: grid; }
+body.pc-mode .pc-notifs-panel:not(.hidden) { display: grid; }
+body.pc-mode .pc-lurk-panel { display: none; flex: 1; min-height: 0; background: var(--bg, #05070d); }
+body.pc-mode .pc-lurk-panel:not(.hidden) { display: flex; }
+body.pc-mode #pc-lurk-body { flex: 1; min-height: 0; display: flex; }
+body.pc-mode .pc-studio-panel { display: none; flex: 1; min-height: 0; background: var(--bg, var(--bg)); }
+body.pc-mode .pc-studio-panel:not(.hidden) { display: flex; }
+body.pc-mode #pc-studio-body { flex: 1; min-height: 0; display: flex; }
+body.pc-mode .pc-playlist-panel { display: none; flex: 1; min-height: 0; background: var(--bg, #05070d); }
+body.pc-mode .pc-playlist-panel:not(.hidden) { display: flex; }
+body.pc-mode #pc-playlist-body { flex: 1; min-height: 0; display: flex; }
+body.pc-mode .pc-dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(0,212,255,0.04);
+    border-bottom: 1px solid var(--cyan, var(--cyan));
+}
+body.pc-mode .pc-dash-title {
+    color: var(--cyan, var(--cyan));
+    letter-spacing: 2px;
+    font-size: 0.85rem;
+    text-shadow: 0 0 10px rgba(0,212,255,0.4);
+}
+body.pc-mode .pc-dash-header-actions button {
+    background: transparent;
+    border: 1px solid var(--cyan, var(--cyan));
+    color: var(--cyan, var(--cyan));
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    cursor: pointer;
+}
+body.pc-mode .pc-dash-header-actions button:hover { background: rgba(0,212,255,0.1); }
+body.pc-mode .pc-dash-body {
+    overflow-y: auto;
+    min-height: 0;
+    padding: 16px;
+}
+
+/* ==============================================
+   SIDEBAR: RAIL + PANEL
+   The sidebar is now a row: a permanent icon rail plus ONE open panel. It used
+   to be a single scrolling column holding all five sections at once, which is
+   why a long session list buried Git/SF/Notes.
+   ============================================== */
+
+body.pc-mode .pc-sidebar {
+    flex-direction: row;
+    padding: 0;
+    gap: 0;
+    overflow: hidden;          /* the panel scrolls, not the sidebar */
+    position: relative;
+}
+
+body.pc-mode .pc-rail {
+    flex: 0 0 44px;
+    width: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 0;
+    border-right: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.25);
+}
+
+body.pc-mode .pc-rail-logo img { width: 26px; height: 26px; border-radius: 6px; display: block; }
+body.pc-mode .pc-rail-logo { margin-bottom: 6px; }
+
+body.pc-mode .pc-rail-item {
+    position: relative;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+body.pc-mode .pc-rail-item svg { width: 16px; height: 16px; }
+body.pc-mode .pc-rail-item:hover { color: var(--text); background: rgba(255, 255, 255, 0.04); }
+body.pc-mode .pc-rail-item.active {
+    color: var(--neon);
+    border-color: var(--border-light);
+    background: rgba(0, 255, 65, 0.06);
+}
+/* The active marker is a bar on the rail edge -- readable at a glance even when
+   the panel is closed, which is the state the rail exists for. */
+body.pc-mode .pc-rail-item.active::before {
+    content: '';
+    position: absolute;
+    left: -6px; top: 4px; bottom: 4px;
+    width: 2px;
+    background: var(--neon);
+    box-shadow: 0 0 6px var(--neon-glow);
+}
+
+body.pc-mode .pc-rail-spacer { flex: 1 1 auto; }
+
+body.pc-mode .pc-rail-badge {
+    position: absolute;
+    top: -2px; right: -2px;
+    min-width: 14px; height: 14px;
+    padding: 0 3px;
+    border-radius: 7px;
+    background: var(--amber);
+    color: #000;
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    font-weight: 700;
+    line-height: 14px;
+    text-align: center;
+}
+
+body.pc-mode .pc-panel {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Only the selected section is mounted-visible; the rest keep their DOM (and
+   therefore their handlers and scroll positions) but are hidden. */
+body.pc-mode .pc-panel .pc-sidebar-section.hidden { display: none; }
+
+/* Collapsed = rail only. The panel is removed from layout so nothing inside it
+   can claim width, and the resize handle is disabled. */
+body.pc-mode .pc-sidebar.rail-only .pc-panel { display: none; }
+body.pc-mode .pc-sidebar.rail-only .pc-sidebar-resize { display: none; }
+body.pc-mode .pc-sidebar.rail-only .pc-rail { border-right: none; }
+body.pc-mode .pc-sidebar.rail-only .pc-rail-collapse svg { transform: rotate(180deg); }
+
+/* Resize handle: 5px hit area sitting on the sidebar's right edge. */
+body.pc-mode .pc-sidebar-resize {
+    position: absolute;
+    top: 0; right: -2px; bottom: 0;
+    width: 5px;
+    cursor: col-resize;
+    z-index: 5;
+}
+body.pc-mode .pc-sidebar-resize:hover { background: var(--neon-glow); }
+body.pc-resizing { cursor: col-resize; user-select: none; }
+body.pc-resizing iframe, body.pc-resizing canvas { pointer-events: none; }
+
+/* Section headers carry up to five action buttons ([+][C][A][V][#]). In the old
+   220px column they just fit; inside the panel (sidebar width minus the 44px
+   rail) they overflowed and the last one was clipped. Wrapping keeps every
+   action reachable at ANY sidebar width instead of at one specific width. */
+body.pc-mode .pc-panel .pc-sidebar-title {
+    flex-wrap: wrap;
+    row-gap: 4px;
+    min-width: 0;
+}
+body.pc-mode .pc-panel .pc-sidebar-title > svg { flex: 0 0 auto; }
+/* Every .pc-sidebar-action carries margin-left:auto, which in a single-line
+   header pushed the group right. Once the header wraps, that auto lands on
+   whichever button starts a new line and scatters them. Inside the panel the
+   label takes the first line and the actions sit together on the next. */
+body.pc-mode .pc-panel .pc-sidebar-title > span:first-of-type { flex: 1 0 100%; }
+body.pc-mode .pc-panel .pc-sidebar-title .pc-sidebar-action,
+body.pc-mode .pc-panel .pc-sidebar-title .pc-runner-add { margin-left: 0; }
+
+/* Session filter + attention ordering (sidebar) */
+body.pc-mode .pc-session-filter {
+    width: 100%;
+    padding: 5px 8px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+}
+body.pc-mode .pc-session-filter:focus { outline: none; border-color: var(--neon); }
+body.pc-mode .pc-session-filter::placeholder { color: var(--text-muted); }
+
+/* A session that is waiting on YOU is marked, not just sorted first -- sorting
+   alone is invisible once you know the list. */
+/* NOT border-left: the item carries an INLINE border-left with the user's own
+   colour identity, which no stylesheet can override. Attention uses the
+   background instead, so both signals stay readable at once. */
+body.pc-mode .pc-session-item[data-attention="waiting_input"] { background: rgba(255, 176, 0, 0.12); }
+body.pc-mode .pc-session-item[data-attention="failed"] { background: rgba(255, 0, 64, 0.12); }
+body.pc-mode .pc-session-item[data-attention="waiting_input"] > span { color: var(--amber); }
+body.pc-mode .pc-session-item[data-attention="failed"] > span { color: var(--red); }
+
+/* Window role controls (PC header) */
+body.pc-mode .pc-role-group { display: flex; align-items: center; gap: 3px; margin-right: 6px; }
+body.pc-mode .pc-role-chip,
+body.pc-mode .pc-role-btn {
+    padding: 3px 7px;
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+body.pc-mode .pc-role-chip { font-weight: 600; min-width: 44px; }
+body.pc-mode .pc-role-chip:hover,
+body.pc-mode .pc-role-btn:hover { background: rgba(0, 212, 255, 0.12); }
+
+/* focus/wall hide the tab bar: those roles exist to give the terminal the whole
+   window. `full` and `deck` keep it. */
+body.pc-mode[data-role="focus"] .pc-tab-bar,
+body.pc-mode[data-role="wall"] .pc-tab-bar { display: none; }
+
+/* ── TOWER panel ────────────────────────────────────────────────────────────
+   `.pc-main` is a flex COLUMN with height:100vh, so a panel only fills the
+   screen if it says `flex:1; min-height:0`. Shipping without this is why TOWER
+   rendered squeezed into the top third with THE PULSE clipped behind the
+   composer and a black void underneath. Mirrors .pc-cockpit-panel. */
+
+
+/* TOWER is a COMMAND view: nothing is typed into it, so the composer hands its
+   height back. Set by twInit(), removed by twTeardown(). */
+
+body.pc-mode .pc-tw-title {
+    color: var(--amber);
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    font-weight: 500;
+}
+
+/* ── FACTORY panel ─────────────────────────────────────────────────────────
+   Same chrome as TOWER (flex:1 + min-height:0, or it squeezes into the top
+   third), same head, and the same rule that a command view hides the composer:
+   nothing is typed into it. Set by fxInit(), removed by fxTeardown(). */
+body.pc-mode .pc-factory-panel {
+    display: none;
+    grid-template-rows: auto minmax(0, 1fr);
+    flex: 1;
+    min-height: 0;
+    background: var(--bg, var(--bg));
+    font-family: var(--mono);
+}
+body.pc-mode .pc-factory-panel:not(.hidden) { display: grid; }
+body.pc-mode .pc-factory-panel .pc-panel-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+}
+body.pc-mode .pc-factory-panel .fx-root { min-height: 0; overflow: hidden; }
+body.pc-mode.fx-active .pc-input-wrap { display: none; }
+
+/* ── [$] USAGE — the sidebar's cost readout (2026-08-24) ──────────────────────
+   Sized for the 220px rail panel first: every row is label / bar / number on one
+   line, and the bar is what makes eight rows readable at a glance instead of a
+   column of digits. Bars scale against the BIGGEST row, never the total, or the
+   small rows all collapse to nothing. No colour means "spend"; amber is reserved
+   for the one thing that is a problem (a turn over 300k of context). */
+body.pc-mode .pc-usage-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    padding-bottom: 8px;
+    font-family: var(--mono);
+}
+
+body.pc-mode .usg-hero { padding: 6px 0 2px; }
+
+body.pc-mode .usg-cost {
+    font-family: var(--mono);
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--neon);
+    line-height: 1.1;
+    letter-spacing: -1px;
+}
+
+body.pc-mode .usg-sub {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+body.pc-mode .usg-dim  { color: var(--text-muted); }
+body.pc-mode .usg-warn { color: var(--amber); }
+body.pc-mode .usg-good { color: var(--cyan); }
+body.pc-mode .usg-bad  { color: var(--red); }
+
+body.pc-mode .usg-block {
+    border-left: 3px solid var(--border);
+    padding-left: 8px;
+}
+
+body.pc-mode .usg-h {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 0.55rem;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+body.pc-mode .usg-h-note { text-transform: none; letter-spacing: 0; opacity: 0.7; }
+
+body.pc-mode .usg-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 42px auto;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    padding: 1px 0;
+}
+
+body.pc-mode .usg-row-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.pc-mode .usg-row-bar {
+    height: 6px;
+    background: var(--border);
+    display: block;
+}
+body.pc-mode .usg-row-bar i {
+    display: block;
+    height: 100%;
+    background: var(--neon-dim);
+}
+body.pc-mode .usg-row.usg-heavy .usg-row-bar i { background: var(--amber); }
+body.pc-mode .usg-row.usg-heavy .usg-row-label { color: var(--amber); }
+
+body.pc-mode .usg-row-val {
+    color: var(--text);
+    white-space: nowrap;
+    font-size: 0.6rem;
+}
+
+body.pc-mode .usg-verdict {
+    font-size: 0.6rem;
+    line-height: 1.4;
+    margin-top: 4px;
+    padding: 4px 6px;
+    background: rgba(255, 176, 0, 0.04);
+}
+body.pc-mode .usg-verdict.usg-good { background: rgba(0, 212, 255, 0.05); }
+
+body.pc-mode .usg-note {
+    font-size: 0.58rem;
+    line-height: 1.35;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+/* The colour modifiers are declared ABOVE this rule, so on a `.usg-note usg-good`
+   the plain note colour wins on source order and the cyan is silently lost. Spell
+   the pair out rather than moving rules around — the next note class added above
+   would lose it again. */
+body.pc-mode .usg-note.usg-good { color: var(--cyan); }
+body.pc-mode .usg-note.usg-bad  { color: var(--red); }
+body.pc-mode .usg-note.usg-warn { color: var(--amber); }
+
+/* 24 bars, one per hour. Fixed height so an empty day still occupies the same
+   space as a heavy one -- a block that resizes on refresh reads as a layout bug. */
+body.pc-mode .usg-hours {
+    display: flex;
+    align-items: flex-end;
+    gap: 1px;
+    height: 32px;
+}
+body.pc-mode .usg-hours i {
+    flex: 1;
+    background: var(--neon-dim);
+    min-height: 1px;
+    opacity: 0.8;
+}
+body.pc-mode .usg-hours-axis {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.5rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+body.pc-mode #pc-usage-refresh.working { color: var(--amber); border-color: var(--amber); }
+
+/* The quota bars sit above everything and read differently from the cost rows:
+   they are a percentage of a fixed 100, not a share of a total, so they get a
+   full-width track and a colour that changes with the level. Amber at 70%, red
+   at 90% -- the point of the block is to be readable from across the desk. */
+body.pc-mode .usg-block-quota { border-left-color: var(--cyan); }
+
+body.pc-mode .usg-quota { margin-bottom: 8px; }
+
+body.pc-mode .usg-quota-head,
+body.pc-mode .usg-quota-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.58rem;
+    color: var(--text-muted);
+}
+body.pc-mode .usg-quota-head { color: var(--text-dim); margin-bottom: 3px; }
+body.pc-mode .usg-quota-foot { margin-top: 2px; }
+body.pc-mode .usg-quota-name { letter-spacing: 0.5px; }
+body.pc-mode .usg-quota-left b { font-size: 0.85rem; color: var(--neon); }
+
+body.pc-mode .usg-quota-track {
+    display: block;
+    height: 10px;
+    background: var(--border);
+}
+body.pc-mode .usg-quota-track i {
+    display: block;
+    height: 100%;
+    background: var(--neon-dim);
+}
+body.pc-mode .usg-quota.usg-q-warn .usg-quota-track i { background: var(--amber); }
+body.pc-mode .usg-quota.usg-q-warn .usg-quota-left b  { color: var(--amber); }
+body.pc-mode .usg-quota.usg-q-bad  .usg-quota-track i { background: var(--red); }
+body.pc-mode .usg-quota.usg-q-bad  .usg-quota-left b  { color: var(--red); }
+
+/* Tokens are the headline now; the dollars moved to the sub-line. */
+body.pc-mode .usg-cost-unit {
+    font-size: 0.55rem;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-left: 6px;
+    text-transform: uppercase;
+}

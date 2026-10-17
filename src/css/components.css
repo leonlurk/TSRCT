@@ -1,0 +1,47 @@
+/* ==============================================
+   TSRCT - Shared UI Components (Phase 2 design system)
+   Loaded AFTER main.css and BEFORE the lazy room CSS, so a rule here beats
+   main.css and loses to a room.
+
+   PRUNED 2026-08-15. This file was 74% dead: eight .btn-* variants and six
+   .modal-* variants with zero uses each, plus a full duplicate of main.css's
+   .modal / .modal-header / .modal-body. The duplicate was the dangerous part --
+   it re-declared .modal WITHOUT the height cap from DOCUMENTATION.md gotcha 16,
+   so "consolidating onto the design system" would have silently reintroduced
+   the modal-taller-than-the-viewport bug. (It did not cause it: the cap lives on
+   properties the duplicate never re-declared, so main.css still won those.)
+
+   Removing it changed exactly one measured value: .modal-header gap goes back to
+   main.css's 10px (this file had 12px). Every other duplicated declaration
+   resolved to the identical value, because the tokens were chosen to match the
+   literals -- --space-5 = 12px, --space-6 = 16px, --text-sm = 0.8rem.
+
+   IF YOU CONSOLIDATE BUTTONS LATER: the variants were deleted as dead, not as
+   wrong. The reason they existed is real -- `border-color + color: var(--cyan)`
+   is pasted 14 times across the tree and the cancel-button body 7 times. Re-add
+   a variant at the moment you convert those call sites, not before.
+   ============================================== */
+
+/* ── Buttons ─────────────────────────────────────
+   Base = the dominant "compact ghost": transparent + 1px border, mono,
+   brightens on hover, scale on active. Used by cockpit.js, dashboard.js
+   and dispatcher.js (~56 call sites). */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--neon);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+.btn:hover { background: rgba(0,255,65,0.1); border-color: var(--neon); }
+.btn:active { transform: scale(0.96); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }

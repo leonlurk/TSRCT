@@ -1,0 +1,653 @@
+/* desktop-git.css - the git panel.
+   Cut out of desktop.css on 2026-10-17 (cleanup P2 #14) and loaded right after it,
+   in this order, so the cascade is exactly what it was: keep the <link> order. */
+
+/* ==============================================
+   GIT PANEL
+   ============================================== */
+
+/* Collapse functionality */
+body.pc-mode .pc-git-section.collapsed .pc-git-panel {
+    display: none;
+}
+
+body.pc-mode .pc-git-section .pc-git-collapse {
+    margin-left: auto;
+}
+
+body.pc-mode .pc-git-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+body.pc-mode .pc-git-project {
+    position: relative;
+}
+
+body.pc-mode .pc-git-project-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-git-project-btn:hover {
+    border-color: var(--neon-dim);
+    background: rgba(0, 255, 65, 0.05);
+}
+
+body.pc-mode .pc-git-project-btn span {
+    flex: 1;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.pc-mode .pc-git-project-btn svg {
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+body.pc-mode .pc-git-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 0;
+}
+
+body.pc-mode .pc-git-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+}
+
+body.pc-mode .pc-git-label {
+    color: var(--text-muted);
+    min-width: 50px;
+}
+
+body.pc-mode .pc-git-value {
+    color: var(--text);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.pc-mode .pc-git-branch {
+    color: var(--cyan);
+    cursor: pointer;
+}
+
+body.pc-mode .pc-git-branch:hover {
+    text-decoration: underline;
+}
+
+body.pc-mode .pc-git-changed {
+    color: var(--amber);
+    font-weight: 600;
+}
+
+body.pc-mode .pc-git-remote {
+    color: var(--text-muted);
+    font-size: 0.5rem;
+}
+
+body.pc-mode .pc-git-no-remote {
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+body.pc-mode .pc-git-no-remote:hover {
+    color: var(--neon);
+    text-decoration: underline;
+}
+
+body.pc-mode .pc-git-edit {
+    color: var(--text-muted);
+    font-size: 0.5rem;
+    margin-left: 6px;
+    cursor: pointer;
+}
+
+body.pc-mode .pc-git-edit:hover {
+    color: var(--neon);
+    text-decoration: underline;
+}
+
+body.pc-mode .pc-git-placeholder {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 8px;
+}
+
+body.pc-mode .pc-git-actions {
+    display: flex;
+    gap: 6px;
+    padding-top: 8px;
+}
+
+body.pc-mode .pc-git-btn {
+    flex: 1;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-git-btn:hover:not(:disabled) {
+    border-color: var(--neon-dim);
+    color: var(--neon);
+    background: rgba(0, 255, 65, 0.1);
+}
+
+body.pc-mode .pc-git-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+body.pc-mode .pc-git-commit-btn {
+    border-color: var(--neon-dim);
+    color: var(--neon);
+}
+
+body.pc-mode .pc-git-push-btn {
+    border-color: var(--cyan);
+    color: var(--cyan);
+}
+
+body.pc-mode .pc-git-token-btn {
+    border-color: var(--amber, #f5a623);
+    color: var(--amber, #f5a623);
+}
+
+body.pc-mode .pc-git-token-btn:hover:not(:disabled) {
+    border-color: var(--amber, #f5a623);
+    color: var(--amber, #f5a623);
+    background: rgba(245, 166, 35, 0.12);
+}
+
+body.pc-mode .pc-git-refresh-btn {
+    flex: 0;
+    padding: 6px 8px;
+}
+
+/* Git Modals */
+body.pc-mode .pc-git-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    animation: fadeIn 0.15s;
+}
+
+body.pc-mode .pc-git-modal * {
+    pointer-events: auto;
+}
+
+body.pc-mode .pc-git-modal-content {
+    background: var(--surface);
+    border: 1px solid var(--neon-dim);
+    border-radius: 12px;
+    width: 400px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px var(--neon-glow);
+}
+
+body.pc-mode .pc-git-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+body.pc-mode .pc-git-modal-header span {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+body.pc-mode .pc-git-modal-header button {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-git-modal-header button:hover {
+    color: var(--red);
+    border-color: var(--red);
+}
+
+body.pc-mode .pc-git-modal-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 60vh;
+}
+
+body.pc-mode .pc-git-modal-body::-webkit-scrollbar { width: 4px; }
+body.pc-mode .pc-git-modal-body::-webkit-scrollbar-track { background: transparent; }
+body.pc-mode .pc-git-modal-body::-webkit-scrollbar-thumb { background: var(--neon-dim); border-radius: 2px; }
+
+body.pc-mode .pc-git-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+body.pc-mode .pc-git-field label {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+body.pc-mode .pc-git-field input,
+body.pc-mode .pc-git-field textarea,
+body.pc-mode .pc-git-field select {
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+body.pc-mode .pc-git-field select {
+    width: 100%;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 32px;
+}
+
+body.pc-mode .pc-git-field select option {
+    background: var(--bg);
+    color: var(--text);
+    padding: 8px;
+}
+
+body.pc-mode .pc-git-field textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+body.pc-mode .pc-git-field input:focus,
+body.pc-mode .pc-git-field textarea:focus,
+body.pc-mode .pc-git-field select:focus {
+    border-color: var(--neon);
+}
+
+body.pc-mode .pc-git-field small {
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+
+
+
+
+body.pc-mode .pc-git-file-status {
+    width: 16px;
+    font-weight: 700;
+    text-align: center;
+}
+
+body.pc-mode .pc-git-file-status.M { color: var(--amber); }
+body.pc-mode .pc-git-file-status.A { color: var(--neon); }
+body.pc-mode .pc-git-file-status.D { color: var(--red); }
+body.pc-mode .pc-git-file-status.R { color: var(--cyan); }
+body.pc-mode .pc-git-file-status.\? { color: var(--text-muted); }
+
+body.pc-mode .pc-git-file-name {
+    flex: 1;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.pc-mode .pc-git-modal-footer {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+}
+
+body.pc-mode .pc-git-modal-footer button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-git-modal-footer .cancel {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-git-modal-footer .cancel:hover {
+    border-color: var(--text);
+    color: var(--text);
+}
+
+body.pc-mode .pc-git-modal-footer .primary {
+    background: var(--neon);
+    border: none;
+    color: #000;
+}
+
+body.pc-mode .pc-git-modal-footer .primary:hover {
+    box-shadow: 0 0 15px var(--neon-glow);
+}
+
+body.pc-mode .pc-git-modal-footer .primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Footer buttons - style ALL buttons */
+body.pc-mode .pc-git-modal-footer button:first-child {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-git-modal-footer button:first-child:hover {
+    border-color: var(--text);
+    color: var(--text);
+}
+
+body.pc-mode .pc-git-modal-footer button:last-child {
+    background: var(--neon);
+    border: none;
+    color: #000;
+}
+
+body.pc-mode .pc-git-modal-footer button:last-child:hover {
+    box-shadow: 0 0 15px var(--neon-glow);
+}
+
+/* Commit modal specific - add dir input group */
+
+
+
+
+/* File list in commit modal */
+body.pc-mode .pc-git-files {
+    max-height: 150px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+body.pc-mode .pc-git-files::-webkit-scrollbar { width: 4px; }
+body.pc-mode .pc-git-files::-webkit-scrollbar-track { background: transparent; }
+body.pc-mode .pc-git-files::-webkit-scrollbar-thumb { background: var(--neon-dim); border-radius: 2px; }
+
+body.pc-mode .pc-git-file {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    border-bottom: 1px solid var(--border);
+}
+
+body.pc-mode .pc-git-file:last-child {
+    border-bottom: none;
+}
+
+body.pc-mode .pc-git-file-status {
+    width: 20px;
+    font-weight: 700;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+body.pc-mode .pc-git-file-name {
+    flex: 1;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+body.pc-mode .pc-git-file-remove {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+body.pc-mode .pc-git-file-remove:hover {
+    opacity: 1;
+    border-color: var(--red);
+    color: var(--red);
+    background: rgba(255, 0, 64, 0.1);
+}
+
+body.pc-mode .pc-git-no-files {
+    padding: 16px;
+    text-align: center;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+}
+
+/* Git directory picker - reuse runner picker styles */
+
+
+
+
+
+
+body.pc-mode .pc-git-dir-path {
+    padding: 8px 12px;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid var(--border);
+}
+
+body.pc-mode .pc-git-dir-list {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+body.pc-mode .pc-git-dir-list::-webkit-scrollbar { width: 4px; }
+body.pc-mode .pc-git-dir-list::-webkit-scrollbar-track { background: transparent; }
+body.pc-mode .pc-git-dir-list::-webkit-scrollbar-thumb { background: var(--neon-dim); border-radius: 2px; }
+
+body.pc-mode .pc-git-dir-item {
+    padding: 6px 12px;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text);
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+body.pc-mode .pc-git-dir-item:last-child {
+    border-bottom: none;
+}
+
+body.pc-mode .pc-git-dir-item:hover {
+    background: rgba(0, 255, 65, 0.05);
+}
+
+
+
+
+body.pc-mode .pc-git-dir-up {
+    color: var(--cyan);
+}
+
+body.pc-mode .pc-git-dir-select {
+    color: var(--neon);
+    font-weight: 600;
+    background: rgba(0, 255, 65, 0.05);
+}
+
+body.pc-mode .pc-git-dir-select:hover {
+    background: var(--border);
+}
+
+body.pc-mode .pc-git-dir-empty {
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+body.pc-mode .pc-git-dir-item span {
+    flex: 1;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+body.pc-mode .pc-git-dir-item span:hover {
+    color: var(--cyan);
+}
+
+body.pc-mode .pc-git-dir-item button {
+    background: none;
+    border: 1px solid var(--neon-dim);
+    color: var(--neon);
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-git-dir-item:hover button {
+    opacity: 1;
+}
+
+body.pc-mode .pc-git-dir-item button:hover {
+    background: var(--neon);
+    color: #000;
+}
+
+
+body.pc-mode .pc-git-branch-item {
+    padding: 8px 12px;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text);
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.pc-mode .pc-git-branch-item:last-child {
+    border-bottom: none;
+}
+
+body.pc-mode .pc-git-branch-item:hover {
+    background: rgba(0, 255, 65, 0.05);
+}
+
+body.pc-mode .pc-git-branch-item.current {
+    color: var(--neon);
+    font-weight: 600;
+}
+
+body.pc-mode .pc-git-branch-item .indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--neon);
+}
+
+body.pc-mode .pc-git-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-git-error {
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--red);
+    text-align: center;
+}

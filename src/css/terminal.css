@@ -1,0 +1,298 @@
+/* ==============================================
+   TSRCT - Terminal Styles
+   Terminal display, chat, session selector
+   ============================================== */
+
+/* Terminal Display */
+.terminal {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    line-height: 1.6;
+    padding: 12px;
+    height: 100%;
+    overflow-y: auto;
+    color: var(--neon);
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: normal;
+    background: #000;
+    text-shadow: 0 0 5px var(--neon-glow);
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
+}
+
+/* Terminal panel fills available space */
+#terminal-panel {
+    flex: 1 1 0;
+    min-height: 0;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.terminal::-webkit-scrollbar {
+    width: 3px;
+}
+
+.terminal::-webkit-scrollbar-thumb {
+    background: var(--neon-dim);
+}
+
+/* Terminal Header */
+
+
+
+
+
+
+/* Home Session Selector */
+
+
+
+
+/* Auto-Accept Toggle */
+
+
+
+
+
+/* Session Picker Modal */
+.session-picker-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+}
+
+.session-picker-content {
+    background: var(--surface);
+    border: 1px solid var(--neon);
+    border-radius: var(--radius);
+    max-width: 280px;
+    width: 100%;
+    max-height: 60vh;
+    max-height: min(60dvh, calc(100dvh - 40px));
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 30px var(--neon-glow);
+}
+
+.session-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.session-picker-header span {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--neon);
+    text-transform: uppercase;
+}
+
+.session-picker-header button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.session-picker-header button:hover {
+    color: var(--neon);
+}
+
+/* Scroll region of the picker (same shape as .modal-body in main.css). */
+.session-picker-list {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.session-picker-list::-webkit-scrollbar { width: 6px; }
+.session-picker-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); border-left: none; }
+.session-picker-list::-webkit-scrollbar-thumb { background: var(--neon-dim); border: none; border-radius: 2px; }
+.session-picker-list::-webkit-scrollbar-thumb:hover { background: var(--neon); }
+
+.session-picker-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0, 255, 136, 0.05);
+    border: 1px solid var(--border);
+    color: var(--text);
+    cursor: pointer;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    font-size: 0.65rem;
+    font-family: var(--mono);
+    transition: all 0.2s;
+}
+
+.session-picker-item:hover {
+    border-color: var(--neon);
+    background: rgba(0, 255, 136, 0.15);
+}
+
+.session-picker-item.active {
+    border-color: var(--neon);
+    background: rgba(0, 255, 136, 0.2);
+    color: var(--neon);
+}
+
+.current-badge {
+    font-size: 0.5rem;
+    background: var(--neon);
+    color: var(--bg);
+    padding: 2px 6px;
+    border-radius: 10px;
+    text-transform: uppercase;
+}
+
+/* Fullscreen Font Size Control */
+.fs-font-control {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    background: var(--bg-dark);
+    padding: 2px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+}
+
+.fs-font-step {
+    padding: 2px 5px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 2px;
+}
+
+.fs-font-step:hover {
+    color: var(--neon);
+    background: rgba(0, 255, 65, 0.1);
+}
+
+.fs-font-step.active {
+    background: var(--neon);
+    color: #000;
+    box-shadow: 0 0 6px var(--neon-glow);
+}
+
+/* ==============================================
+   Inline terminal images (terminal-images.js)
+   Render an image path found in the pane as an actual picture, chat-style.
+   Blocks/carousels sit inside a white-space:pre(-wrap/-line) flow, so they are
+   forced to display:block to break cleanly out of the monospace text run.
+   ============================================== */
+.term-img-block,
+.term-img-carousel {
+    display: block;
+    margin: 6px 0;
+    white-space: normal;
+    max-width: 100%;
+}
+.term-img-path {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.9em;
+    color: var(--cyan, var(--cyan));
+    opacity: 0.75;
+    word-break: break-all;
+}
+
+/* The image itself: adapts to whatever container it lands in. max-width keeps it
+   inside a narrow (split) pane horizontally; the vh cap keeps a tall/portrait
+   image from swallowing the view. Both axes scale with the pane. */
+.term-img {
+    display: block;
+    max-width: 100%;
+    max-height: min(55vh, 460px);
+    width: auto;
+    height: auto;
+    margin: 4px 0 2px;
+    border: 1px solid var(--border, #1a3a1a);
+    border-radius: 4px;
+    background: var(--bg);
+    object-fit: contain;
+    cursor: zoom-in;
+}
+.term-img-block.term-img-missing .term-img-path { opacity: 0.6; }
+
+/* Carousel: only the .active slide is shown; a bar gives arrows + a counter. */
+.tic-viewport { display: block; position: relative; }
+.term-img.tic-slide { display: none; }
+.term-img.tic-slide.active { display: block; }
+.tic-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 2px;
+    font-family: var(--mono);
+    font-size: 0.85em;
+    color: var(--cyan, var(--cyan));
+}
+.tic-nav {
+    font-family: var(--mono);
+    font-size: 1.1em;
+    line-height: 1;
+    padding: 1px 9px;
+    background: rgba(0, 212, 255, 0.08);
+    color: var(--cyan, var(--cyan));
+    border: 1px solid var(--border, #1a3a1a);
+    border-radius: 4px;
+    cursor: pointer;
+}
+.tic-nav:hover { background: rgba(0, 212, 255, 0.2); }
+.tic-count { opacity: 0.8; min-width: 3ch; text-align: center; }
+
+/* Fullscreen lightbox (created once, appended to <body>). */
+.term-img-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    background: rgba(0, 0, 0, 0.92);
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+    padding: 16px;
+}
+.term-img-lightbox.open { display: flex; }
+.term-img-lightbox-img {
+    max-width: 96vw;
+    max-height: 96vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border: 1px solid var(--border, #1a3a1a);
+    border-radius: 4px;
+}
+
+/* Desktop main pane can go a little bigger. */
+body.pc-mode #pc-terminal .term-img,
+body.pc-mode #terminal .term-img { max-height: min(60vh, 560px); }
+
+/* Split view: panels are short, so cap images smaller so they don't dominate a
+   half-height pane. Width still fills the (narrower) panel via max-width:100%. */
+body.pc-mode .pc-combined-content .term-img { max-height: 30vh; }

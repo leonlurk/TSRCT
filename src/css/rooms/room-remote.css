@@ -1,0 +1,2011 @@
+/* ═══════════════════════════════════════════════════════════════════
+   REMOTE DESKTOP - Gateway Theme
+   Dark portal with electric blue/cyan glow - VNC Remote Control
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Background ──────────────────────────────────────────────────── */
+
+.rd-bg {
+    background:
+        radial-gradient(ellipse at 50% 30%, rgba(0, 168, 255, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 100%, rgba(0, 229, 255, 0.05) 0%, transparent 40%),
+        linear-gradient(180deg, #050a14 0%, #000408 100%);
+}
+
+/* ── Ambient Effects ─────────────────────────────────────────────── */
+
+.rd-scanline {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--rd-cyan), transparent);
+    opacity: 0.4;
+    animation: rdScanMove 4s linear infinite;
+}
+
+@keyframes rdScanMove {
+    0% { top: 0; }
+    100% { top: 100%; }
+}
+
+.rd-grid-bg {
+    position: absolute;
+    inset: 0;
+    background:
+        repeating-linear-gradient(0deg, transparent, transparent 49px, rgba(0, 168, 255, 0.03) 50px),
+        repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(0, 168, 255, 0.03) 50px);
+    pointer-events: none;
+}
+
+.rd-portal-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300px;
+    height: 300px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 168, 255, 0.12) 0%, transparent 70%);
+    animation: rdPulse 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes rdPulse {
+    0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.15); }
+}
+
+/* ── Header ──────────────────────────────────────────────────────── */
+
+.rd-header {
+    background: linear-gradient(180deg, rgba(0, 168, 255, 0.12) 0%, transparent 100%);
+    border-bottom: 1px solid rgba(0, 168, 255, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: padding 0.3s ease, background 0.3s ease;
+}
+
+.rd-header.rd-compact {
+    padding: 4px 12px;
+    background: rgba(5, 10, 20, 0.9);
+    border-bottom: 1px solid rgba(0, 168, 255, 0.15);
+}
+
+.rd-header.rd-compact .rd-title {
+    font-size: 0.65rem;
+}
+
+.rd-header.rd-compact .rd-title svg {
+    width: 14px;
+    height: 14px;
+}
+
+.rd-title {
+    color: var(--rd-cyan);
+    text-shadow: 0 0 10px var(--rd-glow);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.rd-title svg {
+    stroke: var(--rd-cyan);
+    filter: drop-shadow(0 0 4px var(--rd-glow));
+}
+
+
+
+/* ── Status Indicator ────────────────────────────────────────────── */
+
+.rd-status {
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: rgba(255, 60, 60, 0.15);
+    color: #ff4444;
+    border: 1px solid rgba(255, 60, 60, 0.3);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    white-space: nowrap;
+    margin-left: auto;
+}
+
+.rd-status.connecting {
+    background: rgba(255, 170, 0, 0.15);
+    color: #ffaa00;
+    border-color: rgba(255, 170, 0, 0.3);
+    animation: rdStatusBlink 1s ease-in-out infinite;
+}
+
+.rd-status.connected {
+    background: var(--border);
+    color: #00ff41;
+    border-color: var(--border-light);
+}
+
+@keyframes rdStatusBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ── Room Body ───────────────────────────────────────────────────── */
+
+.rd-body {
+    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    max-width: none !important;
+    height: 100%;
+    position: relative;
+}
+
+/* ── Connection Panel ────────────────────────────────────────────── */
+
+.rd-connect-panel {
+    max-width: 400px;
+    margin: auto;
+    padding: 20px;
+    background: var(--rd-panel);
+    border: 1px solid rgba(0, 168, 255, 0.15);
+    border-radius: 16px;
+    /* backdrop-filter removed for perf */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(0, 168, 255, 0.1);
+}
+
+.rd-connect-panel .room-section-title {
+    color: var(--rd-cyan);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    letter-spacing: 2px;
+    font-size: 0.65rem;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+}
+
+.rd-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.rd-input {
+    background: rgba(0, 168, 255, 0.05);
+    border: 1px solid rgba(0, 168, 255, 0.2);
+    color: #e0f0ff;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.8rem;
+    padding: 12px 14px;
+    border-radius: 10px;
+    outline: none;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.rd-input:focus {
+    border-color: var(--rd-blue);
+    box-shadow: 0 0 12px rgba(0, 168, 255, 0.2);
+    background: rgba(0, 168, 255, 0.08);
+}
+
+.rd-input::placeholder {
+    color: rgba(0, 168, 255, 0.3);
+}
+
+.rd-connect-btn {
+    background: linear-gradient(135deg, rgba(0, 168, 255, 0.3), rgba(0, 229, 255, 0.2));
+    border: 1px solid rgba(0, 168, 255, 0.4);
+    color: var(--rd-cyan);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    margin-top: 4px;
+}
+
+.rd-connect-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.rd-connect-btn:hover {
+    background: linear-gradient(135deg, rgba(0, 168, 255, 0.45), rgba(0, 229, 255, 0.35));
+    box-shadow: 0 0 20px rgba(0, 168, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.rd-connect-btn:active {
+    transform: translateY(0);
+}
+
+/* ── Canvas Container ────────────────────────────────────────────── */
+
+.rd-canvas-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    background: #000;
+    touch-action: none;
+    min-height: 0;
+}
+
+.rd-canvas-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-origin: center center;
+    transition: transform 0.05s linear;
+    will-change: transform;
+}
+
+.rd-canvas-container canvas {
+    display: block;
+    touch-action: none;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* ── Magnifier ──────────────────────────────────────────────────── */
+/* Zoomed lens showing area around the remote cursor during touch */
+
+.rd-magnifier {
+    position: absolute;
+    z-index: 40;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 168, 255, 0.8);
+    overflow: hidden;
+    pointer-events: none;
+    display: none;
+    transform: translate(-50%, 0);
+}
+
+.rd-magnifier.visible {
+    display: block;
+}
+
+.rd-magnifier canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: auto;
+}
+
+.rd-magnifier-crosshair {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.rd-magnifier-crosshair::before,
+.rd-magnifier-crosshair::after {
+    content: '';
+    position: absolute;
+    background: rgba(0, 229, 255, 0.5);
+}
+
+.rd-magnifier-crosshair::before {
+    top: 50%;
+    left: 20%;
+    right: 20%;
+    height: 1px;
+    transform: translateY(-0.5px);
+}
+
+.rd-magnifier-crosshair::after {
+    left: 50%;
+    top: 20%;
+    bottom: 20%;
+    width: 1px;
+    transform: translateX(-0.5px);
+}
+
+/* ── Cursor Dot ──────────────────────────────────────────────────── */
+/* Small indicator showing cursor position on the main canvas */
+
+.rd-cursor-dot {
+    position: absolute;
+    pointer-events: none;
+    z-index: 30;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 229, 255, 0.9);
+    background: rgba(0, 229, 255, 0.2);
+    transform: translate(-50%, -50%);
+    display: none;
+}
+
+.rd-cursor-dot.visible {
+    display: block;
+}
+
+/* ── Zoom Level Indicator ────────────────────────────────────────── */
+
+.rd-zoom-indicator {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 25;
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--rd-cyan);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 168, 255, 0.3);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.rd-zoom-indicator.visible {
+    opacity: 1;
+}
+
+/* ── Hidden Native Keyboard Input ────────────────────────────────── */
+
+.rd-native-keyboard {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: transparent;
+    caret-color: transparent;
+    font-size: 16px; /* prevents iOS zoom on focus */
+}
+
+/* ── Click Strip (right side, sibling of canvas-wrap) ─────────────── */
+/* Vertical strip of action buttons. Positioned absolutely within
+   rd-body. Completely outside the touch gesture engine scope. */
+
+.rd-click-strip {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 30;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.rd-click-center {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-weight: 800;
+    background: rgba(0, 20, 40, 0.85);
+    border: 2px solid rgba(0, 168, 255, 0.5);
+    color: rgba(0, 168, 255, 0.9);
+}
+
+.rd-click-center:active {
+    background: rgba(0, 168, 255, 0.35);
+}
+
+.rd-click-kb {
+    font-size: 0.5rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+}
+
+.rd-click-strip.visible {
+    display: flex;
+}
+
+.rd-click-strip.left {
+    right: auto;
+    left: 6px;
+}
+
+.rd-click-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.75);
+    border: 1.5px solid rgba(0, 168, 255, 0.35);
+    color: rgba(0, 168, 255, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+    padding: 0;
+}
+
+.rd-click-btn:active {
+    background: rgba(0, 168, 255, 0.3);
+    border-color: var(--rd-cyan);
+}
+
+.rd-click-btn.active {
+    background: rgba(0, 168, 255, 0.25);
+    border-color: var(--rd-cyan);
+    color: #fff;
+}
+
+.rd-click-sep {
+    width: 28px;
+    height: 1px;
+    background: rgba(0, 168, 255, 0.25);
+    margin: 2px auto;
+}
+
+.rd-clip-btn {
+    font-size: 11px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+}
+
+.rd-click-btn svg {
+    pointer-events: none;
+}
+
+.rd-click-btn span {
+    font-size: 0.5rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+}
+
+
+/* ── Scroll Bar (separate from click strip) ─────────────────────── */
+
+.rd-scroll-bar {
+    position: absolute;
+    right: 6px;
+    left: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    display: none;
+    z-index: 30;
+    width: 42px;
+    height: 160px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.75);
+    border: 1.5px solid rgba(0, 168, 255, 0.35);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    touch-action: none;
+    color: rgba(0, 168, 255, 0.6);
+}
+
+.rd-scroll-bar svg {
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
+.rd-scroll-track {
+    width: 4px;
+    flex: 1;
+    background: rgba(0, 168, 255, 0.2);
+    border-radius: 2px;
+    margin: 2px 0;
+    pointer-events: none;
+}
+
+.rd-scroll-bar.left {
+    right: auto;
+    left: 6px;
+}
+
+/* ── Touch Toolbar ───────────────────────────────────────────────── */
+
+.rd-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 8px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    background: rgba(5, 10, 20, 0.95);
+    /* backdrop-filter removed for perf */
+    border-top: 1px solid rgba(0, 168, 255, 0.15);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.rd-toolbar.rd-toolbar-hidden {
+    opacity: 0;
+    transform: translateY(100%);
+    pointer-events: none;
+}
+
+.rd-toolbar::-webkit-scrollbar {
+    display: none;
+}
+
+.rd-toolbar-toggle {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    z-index: 21;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0, 168, 255, 0.2);
+    border: 1px solid rgba(0, 168, 255, 0.3);
+    color: var(--rd-cyan);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    /* backdrop-filter removed for perf */
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    padding: 0;
+}
+
+.rd-toolbar-toggle svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+
+.rd-toolbar-toggle.visible {
+    display: flex;
+}
+
+.rd-tool-btn {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    border-radius: 8px;
+    background: rgba(0, 168, 255, 0.1);
+    border: 1px solid rgba(0, 168, 255, 0.25);
+    color: var(--rd-cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.rd-tool-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+
+.rd-tool-btn:active {
+    transform: scale(0.92);
+}
+
+.rd-tool-btn.active {
+    background: rgba(0, 168, 255, 0.3);
+    border-color: var(--rd-blue);
+    box-shadow: 0 0 12px var(--rd-glow);
+    color: #fff;
+}
+
+/* Monitor select: icon plus a badge showing the active screen (* = all) */
+.rd-monitor-btn {
+    position: relative;
+}
+
+.rd-mon-badge {
+    position: absolute;
+    right: 2px;
+    bottom: 1px;
+    font-size: 9px;
+    line-height: 1;
+    font-weight: 700;
+    font-family: var(--font-mono, monospace);
+    color: currentColor;
+    background: var(--rd-dark, #050a14);
+    border-radius: 3px;
+    padding: 1px 2px;
+    pointer-events: none;
+}
+
+/* A display switch takes several seconds and the screen goes black partway
+   through it — without this the button looks like it did nothing. */
+.rd-tool-btn.working {
+    opacity: 0.55;
+    pointer-events: none;
+    animation: rd-btn-working 1s ease-in-out infinite;
+}
+
+@keyframes rd-btn-working {
+    0%, 100% { opacity: 0.35; }
+    50%      { opacity: 0.8; }
+}
+
+.rd-tool-btn.rd-disconnect {
+    color: #ff4444;
+    border-color: rgba(255, 60, 60, 0.3);
+    background: rgba(255, 60, 60, 0.1);
+    margin-left: auto;
+}
+
+.rd-tool-btn.rd-disconnect:active {
+    background: rgba(255, 60, 60, 0.3);
+}
+
+/* ── Quick Actions Panel ─────────────────────────────────────────── */
+
+.rd-quick-actions-panel {
+    display: grid;
+    grid-template-columns: 1fr;
+    position: absolute;
+    bottom: 48px;
+    left: 0;
+    right: 0;
+    z-index: 19;
+    background: rgba(5, 10, 20, 0.94);
+    /* backdrop-filter removed for perf */
+    border-top: 1px solid rgba(0, 168, 255, 0.15);
+    padding: 8px;
+}
+
+.rd-quick-actions-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+
+.rd-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 4px;
+    border-radius: 10px;
+    background: rgba(0, 168, 255, 0.06);
+    border: 1px solid rgba(0, 168, 255, 0.15);
+    color: var(--rd-cyan);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.rd-action-btn:active {
+    background: rgba(0, 168, 255, 0.25);
+    border-color: var(--rd-blue);
+    transform: scale(0.95);
+}
+
+.rd-action-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rd-action-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+
+.rd-action-name {
+    font-size: 0.55rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    letter-spacing: 0.5px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* ── Virtual Keyboard Panel ──────────────────────────────────────── */
+
+.rd-keyboard-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 8px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: rgba(5, 10, 20, 0.98);
+    border-top: 1px solid rgba(0, 168, 255, 0.15);
+    transition: bottom 0.1s ease;
+}
+
+.rd-key-row {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.rd-key-row-scroll {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.rd-key-row-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.rd-key-sep {
+    width: 1px;
+    height: 20px;
+    background: rgba(0, 168, 255, 0.2);
+    flex-shrink: 0;
+    margin: 0 2px;
+}
+
+/* ── Floating Text Preview (overlays desktop) ──────────────────── */
+
+.rd-type-floating {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    max-width: 70vw;
+    padding: 3px 12px;
+    background: rgba(5, 10, 20, 0.95);
+    border: 1px solid rgba(0, 168, 255, 0.3);
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.7rem;
+    color: #e0f0ff;
+    pointer-events: none;
+}
+
+.rd-type-floating.visible {
+    display: flex;
+}
+
+.rd-type-text {
+    white-space: pre;
+    overflow: hidden;
+    direction: rtl;
+    text-align: left;
+}
+
+.rd-type-cursor {
+    color: var(--rd-cyan);
+    animation: rdBlink 1s step-end infinite;
+    flex-shrink: 0;
+    font-weight: 300;
+}
+
+@keyframes rdBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* ── Expandable extra keys ─────────────────────────────────────── */
+
+.rd-keys-extra {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.rd-keys-extra.visible {
+    display: flex;
+}
+
+.rd-keys-expand {
+    min-width: 32px !important;
+    font-size: 0.75rem !important;
+    font-weight: 700;
+    color: rgba(0, 168, 255, 0.6);
+    transition: transform 0.2s;
+}
+
+.rd-keys-expand.expanded {
+    transform: rotate(45deg);
+    color: var(--rd-cyan);
+    background: rgba(0, 168, 255, 0.15);
+}
+
+/* ── Toolbar row inside keyboard panel ──────────────────────────── */
+
+.rd-key-toolbar {
+    border-top: 1px solid rgba(0, 168, 255, 0.12);
+    padding-top: 4px;
+    margin-top: 2px;
+}
+
+.rd-key-toolbar .rd-key {
+    flex: 1;
+    font-size: 0.5rem;
+    min-width: 0;
+    gap: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rd-key-toolbar .rd-kb-close {
+    background: rgba(0, 229, 255, 0.15);
+    border-color: rgba(0, 229, 255, 0.3);
+}
+
+.rd-key-toolbar .rd-key-dc {
+    color: #ff4444;
+    border-color: rgba(255, 60, 60, 0.3);
+    background: rgba(255, 60, 60, 0.1);
+}
+
+.rd-key {
+    height: 34px;
+    min-width: 42px;
+    padding: 0 8px;
+    border-radius: 7px;
+    background: rgba(0, 168, 255, 0.06);
+    border: 1px solid rgba(0, 168, 255, 0.18);
+    color: var(--rd-cyan);
+    font-size: 0.6rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.rd-key:active {
+    background: rgba(0, 168, 255, 0.3);
+    border-color: var(--rd-blue);
+    transform: scale(0.93);
+}
+
+.rd-key.wide {
+    min-width: 64px;
+    flex-grow: 1;
+}
+
+.rd-key.combo {
+    min-width: 56px;
+    font-size: 0.5rem;
+    letter-spacing: 0;
+    background: rgba(0, 168, 255, 0.1);
+}
+
+.rd-key.modifier {
+    background: rgba(0, 229, 255, 0.1);
+    border-color: rgba(0, 229, 255, 0.25);
+}
+
+.rd-key.modifier.held {
+    background: rgba(0, 229, 255, 0.3);
+    border-color: var(--rd-cyan);
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+    color: #fff;
+}
+
+/* ── VNC Dictation Mic ───────────────────────────────────────────── */
+
+#rd-vnc-mic.recording {
+    background: rgba(255, 0, 64, 0.35);
+    border-color: var(--red);
+    box-shadow: 0 0 12px rgba(255, 0, 64, 0.5);
+    color: var(--red);
+    animation: rdMicPulse 1.5s ease-in-out infinite;
+}
+
+#rd-vnc-mic.recording svg {
+    stroke: var(--red);
+}
+
+@keyframes rdMicPulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(255, 0, 64, 0.4); }
+    50% { box-shadow: 0 0 20px rgba(255, 0, 64, 0.7); }
+}
+
+/* ── Audio Panel ─────────────────────────────────────────────────── */
+
+.rd-audio-panel {
+    position: absolute;
+    bottom: 48px;
+    left: 0;
+    right: 0;
+    z-index: 19;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+    background: rgba(0, 0, 0, 0.92);
+    border-top: 1px solid rgba(0, 168, 255, 0.2);
+    /* Two lists now (quality presets + capture devices), so it needs room to
+       breathe on a phone; it still scrolls rather than covering the desktop. */
+    max-height: min(46vh, 320px);
+    overflow-y: auto;
+}
+
+.rd-audio-device {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.rd-audio-device:active {
+    transform: scale(0.98);
+}
+
+.rd-audio-device.selected {
+    background: rgba(0, 168, 255, 0.2);
+    border-color: var(--rd-blue);
+    color: #fff;
+}
+
+/* Live data readout under the quality sliders. white-space:pre-line because
+   the meter writes two lines (totals, then the screen/audio split). */
+.rd-qp-data {
+    padding: 6px 4px 2px;
+    border-top: 1px solid rgba(0, 168, 255, 0.15);
+    color: var(--amber, #ffb000);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    line-height: 1.5;
+    white-space: pre-line;
+    opacity: 0.9;
+}
+
+/* ── Audio quality picker (data cost shown per row) ──────────────────
+   The panel now carries two lists, so each gets a heading. The hourly
+   figure sits right-aligned on its own row: this stream is uncompressed
+   PCM and the presets differ by 12x, which nothing in the UI used to say. */
+.rd-audio-quality-hdr {
+    padding: 6px 10px 3px;
+    color: var(--rd-blue);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    opacity: 0.75;
+}
+
+.rd-audio-quality {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.rd-audio-cost {
+    color: var(--amber, #ffb000);
+    font-size: 10px;
+    opacity: 0.85;
+    white-space: nowrap;
+}
+
+.rd-audio-quality.selected .rd-audio-cost { opacity: 1; }
+
+.rd-audio-quality-note {
+    padding: 4px 10px 2px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    line-height: 1.4;
+}
+
+#rd-audio-btn.active {
+    background: rgba(0, 200, 80, 0.3);
+    border-color: #00c850;
+    box-shadow: 0 0 12px rgba(0, 200, 80, 0.4);
+    color: #00c850;
+}
+
+/* ── VR Cardboard Mode ───────────────────────────────────────────── */
+
+#rd-vr-btn.active {
+    background: rgba(168, 0, 255, 0.3);
+    border-color: #a800ff;
+    box-shadow: 0 0 12px rgba(168, 0, 255, 0.4);
+    color: #a800ff;
+}
+
+.rd-vr-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rd-vr-overlay canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.rd-vr-divider {
+    display: none;
+}
+
+.rd-vr-controls {
+    position: fixed;
+    top: 50%;
+    right: calc(50% + 6px);
+    transform: translateY(-50%);
+    z-index: 10001;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+}
+
+.rd-vr-controls:active,
+.rd-vr-controls:hover {
+    opacity: 1.0;
+}
+
+.rd-vr-ctrl-btn {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    min-width: 30px;
+    text-align: center;
+}
+
+.rd-vr-ctrl-btn:active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.rd-vr-exit-btn {
+    color: #ff4444;
+    border-color: rgba(255, 0, 64, 0.5);
+}
+
+.rd-vr-settings {
+    position: fixed;
+    top: 50%;
+    left: 15%;
+    transform: translateY(-50%);
+    z-index: 10001;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.92);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 8px;
+}
+
+.rd-vr-param-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 5px 8px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.rd-vr-param-btn.active {
+    background: rgba(168, 0, 255, 0.4);
+    border-color: #a800ff;
+    color: #fff;
+}
+
+.rd-vr-param-ok {
+    grid-column: 1 / -1;
+    background: rgba(0, 180, 0, 0.3);
+    border-color: rgba(0, 200, 0, 0.5);
+    color: #0f0;
+}
+
+
+.rd-vr-crosshair {
+    position: fixed;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transform: translate(-50%, -50%);
+    z-index: 10000;
+    pointer-events: none;
+}
+
+.rd-vr-crosshair-l {
+    left: 25%;
+}
+
+.rd-vr-crosshair-r {
+    left: 75%;
+}
+
+/* ── Quality Panel ───────────────────────────────────────────────── */
+
+.rd-quality-panel {
+    padding: 10px 16px;
+    position: absolute;
+    bottom: 48px;
+    left: 0;
+    right: 0;
+    z-index: 19;
+    background: rgba(5, 10, 20, 0.92);
+    /* backdrop-filter removed for perf */
+    border-top: 1px solid rgba(0, 168, 255, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    /* Two controls now (Quality, Speed). Side by side when there is room,
+       stacked on a narrow phone — each row keeps its own label/slider/value
+       together, which is what wrapping the rows (not the panel) buys. */
+    flex-wrap: wrap;
+    row-gap: 8px;
+}
+
+.rd-qp-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1 1 240px;
+    min-width: 0;
+}
+
+.rd-quality-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: rgba(0, 229, 255, 0.7);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.rd-quality-panel input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: rgba(0, 168, 255, 0.2);
+    border-radius: 2px;
+    outline: none;
+}
+
+.rd-quality-panel input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--rd-blue);
+    border: 2px solid var(--rd-cyan);
+    cursor: pointer;
+    box-shadow: 0 0 8px var(--rd-glow);
+}
+
+.rd-quality-value {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--rd-cyan);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    min-width: 16px;
+    text-align: center;
+}
+
+/* ── Clipboard Panel ─────────────────────────────────────────────── */
+
+.rd-clipboard-panel {
+    padding: 10px;
+    position: absolute;
+    bottom: 48px;
+    left: 0;
+    right: 0;
+    z-index: 19;
+    background: rgba(5, 10, 20, 0.92);
+    /* backdrop-filter removed for perf */
+    border-top: 1px solid rgba(0, 168, 255, 0.15);
+    display: flex;
+    gap: 8px;
+}
+
+.rd-clipboard-text {
+    flex: 1;
+    background: rgba(0, 168, 255, 0.05);
+    border: 1px solid rgba(0, 168, 255, 0.2);
+    color: #e0f0ff;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.75rem;
+    padding: 10px;
+    border-radius: 8px;
+    resize: none;
+    outline: none;
+    min-height: 60px;
+}
+
+.rd-clipboard-text:focus {
+    border-color: var(--rd-blue);
+    box-shadow: 0 0 8px rgba(0, 168, 255, 0.2);
+}
+
+.rd-clipboard-panel .room-btn {
+    background: rgba(0, 168, 255, 0.2);
+    border: 1px solid rgba(0, 168, 255, 0.3);
+    color: var(--rd-cyan);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-weight: 700;
+    font-size: 0.7rem;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    align-self: flex-end;
+}
+
+/* ── Landscape Mode ──────────────────────────────────────────────── */
+
+@media (orientation: landscape) and (max-height: 500px) {
+    .rd-header.rd-compact {
+        display: none;
+    }
+
+    .rd-toolbar {
+        padding: 2px 6px;
+        gap: 2px;
+        opacity: 0.7;
+    }
+
+    .rd-toolbar:active,
+    .rd-toolbar:hover {
+        opacity: 1;
+    }
+
+    .rd-tool-btn {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        border-radius: 6px;
+    }
+
+    .rd-tool-btn svg {
+        width: 13px;
+        height: 13px;
+    }
+
+    .rd-keyboard-panel {
+        bottom: 34px;
+        padding: 3px 6px;
+        gap: 2px;
+    }
+
+    .rd-key {
+        height: 24px;
+        min-width: 32px;
+        font-size: 0.45rem;
+        padding: 0 4px;
+    }
+
+    .rd-key-sep {
+        height: 14px;
+    }
+
+    .rd-quality-panel {
+        bottom: 34px;
+        padding: 4px 12px;
+    }
+
+    .rd-clipboard-panel {
+        bottom: 34px;
+        padding: 4px;
+    }
+
+    .rd-clipboard-text {
+        min-height: 30px;
+        font-size: 0.6rem;
+    }
+
+    .rd-quick-actions-panel {
+        bottom: 34px;
+        padding: 4px;
+    }
+
+    .rd-quick-actions-list {
+        grid-template-columns: repeat(8, 1fr);
+        gap: 3px;
+    }
+
+    .rd-action-btn {
+        padding: 6px 2px;
+        gap: 2px;
+    }
+
+    .rd-action-icon svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .rd-action-name {
+        font-size: 0.4rem;
+    }
+
+    .rd-toolbar-toggle {
+        width: 28px;
+        height: 28px;
+        bottom: 4px;
+        left: 4px;
+    }
+
+    .rd-toolbar-toggle svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .rd-magnifier {
+        width: 100px;
+        height: 100px;
+    }
+
+    .rd-zoom-indicator {
+        top: 6px;
+        font-size: 0.6rem;
+        padding: 2px 8px;
+    }
+
+    .rd-click-strip {
+        right: 3px;
+        gap: 3px;
+    }
+
+    .rd-click-strip.left {
+        right: auto;
+        left: 3px;
+    }
+
+    .rd-scroll-bar {
+        width: 32px;
+        height: 120px;
+        border-radius: 8px;
+    }
+
+    .rd-click-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+    }
+
+    .rd-click-center {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+    }
+
+    .rd-click-kb {
+        width: 28px;
+        height: 28px;
+        font-size: 0.4rem;
+    }
+
+
+    .rd-scroll-bar svg {
+        width: 11px;
+        height: 11px;
+    }
+}
+
+/* ── Desktop/PC Mode ─────────────────────────────────────────────── */
+
+body.pc-mode .rd-connect-panel {
+    max-width: 480px;
+}
+
+body.pc-mode .rd-tool-btn {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+}
+
+body.pc-mode .rd-keyboard-panel {
+    max-height: 200px;
+}
+
+body.pc-mode .rd-quick-actions-list {
+    grid-template-columns: repeat(8, 1fr);
+}
+
+/* ── Terminal Overlay ───────────────────────────────────────────── */
+
+/* ── Overlay Toggle Button (always visible top-left) ──────────── */
+
+.rd-overlay-toggle {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 35;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 168, 255, 0.3);
+    color: rgba(0, 168, 255, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    /* backdrop-filter removed for perf */
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.rd-overlay-toggle.visible {
+    display: flex;
+}
+
+.rd-overlay-toggle:active,
+.rd-overlay-toggle.active {
+    background: rgba(0, 168, 255, 0.25);
+    border-color: var(--rd-cyan, #00a8ff);
+    color: #fff;
+}
+
+/* ── Terminal Overlay ───────────────────────────────────────────── */
+
+.rd-terminal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9998;
+    background: rgba(2, 6, 14, 0.97);
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.rd-terminal-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.rd-terminal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(0, 168, 255, 0.2);
+}
+
+.rd-terminal-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--rd-cyan, #00a8ff);
+}
+
+.rd-terminal-session-picker {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    flex: 1;
+    margin: 0 10px;
+    padding: 2px 0;
+}
+
+.rd-session-tab {
+    background: rgba(0, 168, 255, 0.08);
+    border: 1px solid rgba(0, 168, 255, 0.2);
+    color: rgba(0, 168, 255, 0.6);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.12s, border-color 0.12s;
+}
+
+.rd-session-tab.active {
+    background: rgba(0, 168, 255, 0.2);
+    border-color: var(--rd-cyan, #00a8ff);
+    color: #fff;
+}
+
+.rd-session-tab:active {
+    transform: scale(0.95);
+}
+
+.rd-terminal-close {
+    background: none;
+    border: 1px solid rgba(255, 80, 80, 0.4);
+    color: #ff5050;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.rd-terminal-close:active {
+    background: rgba(255, 80, 80, 0.2);
+}
+
+.rd-terminal-output {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #d0d8e0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.rd-terminal-input-row {
+    display: flex;
+    gap: 8px;
+    padding: 10px 14px;
+    border-top: 1px solid rgba(0, 168, 255, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.rd-terminal-input {
+    flex: 1;
+    background: rgba(0, 20, 40, 0.6);
+    border: 1px solid rgba(0, 168, 255, 0.3);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #fff;
+    outline: none;
+}
+
+.rd-terminal-input:focus {
+    border-color: var(--rd-cyan, #00a8ff);
+    box-shadow: 0 0 8px rgba(0, 168, 255, 0.2);
+}
+
+.rd-terminal-send {
+    background: rgba(0, 168, 255, 0.15);
+    border: 1px solid rgba(0, 168, 255, 0.4);
+    color: var(--rd-cyan, #00a8ff);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.rd-terminal-send:active {
+    background: rgba(0, 168, 255, 0.3);
+}
+
+.rd-overlay-btn {
+    background: rgba(0, 168, 255, 0.08);
+    border: 1px solid rgba(0, 168, 255, 0.25);
+    color: rgba(0, 168, 255, 0.7);
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.12s, border-color 0.12s;
+}
+
+.rd-overlay-btn:active {
+    background: rgba(0, 168, 255, 0.2);
+    color: #fff;
+}
+
+.rd-overlay-btn.recording {
+    background: rgba(255, 50, 50, 0.2);
+    border-color: rgba(255, 50, 50, 0.5);
+    color: #ff5050;
+    animation: rdPulseRec 1.2s infinite;
+}
+
+@keyframes rdPulseRec {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* CLIPBOARD ACTIONS ROW                                              */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+.rd-clipboard-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.rd-clip-action {
+    flex: 1;
+    padding: 6px 10px;
+    background: rgba(0, 168, 255, 0.1);
+    border: 1px solid rgba(0, 168, 255, 0.3);
+    border-radius: 6px;
+    color: var(--rd-cyan);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.rd-clip-action:active {
+    background: rgba(0, 168, 255, 0.25);
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* OCR REGION SELECTION OVERLAY                                       */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+.rd-ocr-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: crosshair;
+}
+
+.rd-ocr-hint {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(5, 10, 20, 0.9);
+    border: 1px solid rgba(0, 168, 255, 0.4);
+    border-radius: 8px;
+    padding: 6px 16px;
+    color: var(--rd-cyan);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    pointer-events: none;
+}
+
+.rd-ocr-rect {
+    position: fixed;
+    display: none;
+    border: 2px dashed var(--rd-cyan);
+    background: rgba(0, 168, 255, 0.08);
+    box-shadow: 0 0 12px rgba(0, 168, 255, 0.3);
+    pointer-events: none;
+    z-index: 10002;
+}
+
+.rd-ocr-cancel {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 0, 64, 0.2);
+    border: 1px solid rgba(255, 0, 64, 0.5);
+    border-radius: 8px;
+    color: var(--red);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    z-index: 10003;
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* NEXUS PICTURE-IN-PICTURE                                           */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+.rd-nexus-pip {
+    position: fixed;
+    right: 8px;
+    top: 50px;
+    width: 200px;
+    height: 160px;
+    z-index: 9997;
+    background: rgba(2, 6, 14, 0.95);
+    border: 1px solid var(--dim);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 8px rgba(0, 255, 65, 0.1);
+    transition: width 0.2s, height 0.2s;
+}
+
+.rd-nexus-pip.expanded {
+    width: 320px;
+    height: 280px;
+}
+
+.rd-pip-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 6px;
+    background: rgba(0, 255, 65, 0.08);
+    border-bottom: 1px solid var(--border);
+    cursor: grab;
+    flex-shrink: 0;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.rd-pip-header:active {
+    cursor: grabbing;
+}
+
+.rd-pip-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.rd-pip-status.idle { color: rgba(255, 255, 255, 0.4); }
+.rd-pip-status.working { color: #00ff41; }
+.rd-pip-status.permission { color: #ffb000; animation: rdPipPulse 1s infinite; }
+
+@keyframes rdPipPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.rd-pip-session {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    color: #00ff41;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    padding: 1px 2px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.rd-pip-session option {
+    background: var(--bg);
+    color: #00ff41;
+}
+
+.rd-pip-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    cursor: pointer;
+    padding: 2px 4px;
+    flex-shrink: 0;
+}
+
+.rd-pip-btn:active {
+    color: #fff;
+}
+
+.rd-pip-output {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    line-height: 1.4;
+    color: rgba(208, 216, 224, 0.8);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.rd-pip-output::-webkit-scrollbar { width: 3px; }
+.rd-pip-output::-webkit-scrollbar-track { background: transparent; }
+.rd-pip-output::-webkit-scrollbar-thumb { background: rgba(0, 255, 65, 0.2); border-radius: 2px; }
+
+.rd-pip-perm {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 6px;
+    background: rgba(255, 176, 0, 0.1);
+    border-top: 1px solid rgba(255, 176, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.rd-pip-perm-text {
+    flex: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.5rem;
+    color: #ffb000;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rd-pip-approve {
+    padding: 2px 8px;
+    background: var(--border);
+    border: 1px solid var(--neon-glow);
+    border-radius: 4px;
+    color: #00ff41;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.rd-pip-deny {
+    padding: 2px 8px;
+    background: var(--red-bg);
+    border: 1px solid rgba(255, 0, 64, 0.4);
+    border-radius: 4px;
+    color: var(--red);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.rd-pip-approve:active { background: var(--border-light); }
+.rd-pip-deny:active { background: rgba(255, 0, 64, 0.3); }
+
+/* ── Mouse Mode ────────────────────────────────────────────────── */
+/* When a real mouse is detected, hide touch-specific controls */
+
+.rd-mouse-mode .rd-click-strip,
+.rd-mouse-mode .rd-scroll-bar,
+.rd-mouse-mode .rd-cursor-dot,
+.rd-mouse-mode .rd-magnifier {
+    display: none !important;
+}
+
+.rd-mouse-mode .rd-canvas-container canvas {
+    cursor: crosshair !important;
+}
+
+/* ── Gallery Modal: RD Blue Theme ───────────────────────────────── */
+
+.modal-overlay.rd-themed {
+    z-index: 10000;
+    position: fixed;
+    inset: 0;
+}
+
+.rd-themed .modal {
+    border-color: rgba(0, 168, 255, 0.5);
+    background: #060e1a;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 168, 255, 0.1);
+}
+
+.rd-themed .modal-header {
+    color: var(--rd-cyan, #00e5ff);
+    border-bottom-color: rgba(0, 168, 255, 0.25);
+}
+
+.rd-themed .gallery-source-btn {
+    border-color: rgba(0, 168, 255, 0.2);
+    color: rgba(0, 168, 255, 0.6);
+}
+
+.rd-themed .gallery-source-btn:hover {
+    border-color: rgba(0, 168, 255, 0.5);
+    color: var(--rd-cyan, #00e5ff);
+}
+
+.rd-themed .gallery-source-btn.active {
+    border-color: rgba(0, 168, 255, 0.6);
+    color: var(--rd-cyan, #00e5ff);
+    background: rgba(0, 168, 255, 0.12);
+}
+
+.rd-themed .gallery-count {
+    color: rgba(0, 168, 255, 0.5);
+}
+
+.rd-themed .gallery-item:hover {
+    border-color: rgba(0, 168, 255, 0.6);
+}
+
+.rd-themed .gallery-item.selected {
+    border-color: var(--rd-cyan, #00e5ff);
+    box-shadow: 0 0 12px rgba(0, 168, 255, 0.4);
+}
+
+.rd-themed .gallery-item .gallery-check {
+    background: var(--rd-cyan, #00e5ff);
+}
+
+.rd-themed .gallery-actions {
+    border-top-color: rgba(0, 168, 255, 0.2);
+}
+
+.rd-themed .gallery-btn-cancel {
+    border-color: rgba(0, 168, 255, 0.25);
+    color: rgba(0, 168, 255, 0.6);
+}
+
+.rd-themed .gallery-btn-cancel:hover {
+    border-color: rgba(0, 168, 255, 0.5);
+    color: var(--rd-cyan, #00e5ff);
+}
+
+.rd-themed .gallery-btn-attach {
+    background: linear-gradient(135deg, rgba(0, 168, 255, 0.4), rgba(0, 229, 255, 0.3));
+    color: #fff;
+    border: 1px solid rgba(0, 168, 255, 0.5);
+}
+
+.rd-themed .gallery-btn-attach:hover {
+    background: linear-gradient(135deg, rgba(0, 168, 255, 0.55), rgba(0, 229, 255, 0.45));
+    box-shadow: 0 0 12px rgba(0, 168, 255, 0.3);
+}
+
+.rd-themed .gallery-btn-attach:disabled {
+    opacity: 0.4;
+    box-shadow: none;
+}
+
+.rd-themed .gallery-empty {
+    color: rgba(0, 168, 255, 0.4);
+}

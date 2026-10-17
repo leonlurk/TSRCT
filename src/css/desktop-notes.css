@@ -1,0 +1,300 @@
+/* desktop-notes.css - Nexus notes, then the notification prompt and the mic button that follow them.
+   Cut out of desktop.css on 2026-10-17 (cleanup P2 #14) and loaded right after it,
+   in this order, so the cascade is exactly what it was: keep the <link> order. */
+
+/* ==============================================
+   NEXUS NOTES - Living Notepad
+   ============================================== */
+
+body.pc-mode .pc-notes-section {
+    flex-shrink: 0;
+}
+
+body.pc-mode .pc-notes-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+body.pc-mode .pc-notes-header span {
+    flex: 1;
+}
+
+body.pc-mode .pc-notes-status {
+    font-size: 0.5rem;
+    color: var(--neon);
+    opacity: 0.7;
+    min-width: 24px;
+    text-align: center;
+}
+
+body.pc-mode .pc-notes-actions {
+    display: flex;
+    gap: 2px;
+    margin-left: auto;
+}
+
+body.pc-mode .pc-notes-actions button {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    padding: 2px 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 2px;
+}
+
+body.pc-mode .pc-notes-actions button:hover {
+    color: var(--neon);
+    border-color: var(--neon-dim);
+}
+
+body.pc-mode .pc-notes-container {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+body.pc-mode .pc-notes-container.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+}
+
+body.pc-mode .pc-notes-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 4px 0;
+    overflow-x: auto;
+    flex-shrink: 0;
+}
+
+body.pc-mode .pc-notes-tabs.hidden {
+    display: none;
+}
+
+body.pc-mode .pc-notes-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+
+body.pc-mode .pc-notes-tabs::-webkit-scrollbar-track {
+    background: rgba(0, 255, 100, 0.05);
+    border-radius: 2px;
+}
+
+body.pc-mode .pc-notes-tabs::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, rgba(0, 255, 100, 0.3) 0%, rgba(0, 200, 80, 0.5) 100%);
+    border-radius: 2px;
+}
+
+body.pc-mode .pc-notes-tabs::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(90deg, rgba(0, 255, 100, 0.5) 0%, rgba(0, 200, 80, 0.7) 100%);
+}
+
+body.pc-mode .pc-note-tab {
+    padding: 3px 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.pc-mode .pc-note-tab:hover {
+    border-color: var(--text-muted);
+}
+
+body.pc-mode .pc-note-tab.active {
+    background: rgba(0, 255, 65, 0.1);
+    border-color: var(--neon-dim);
+    color: var(--neon);
+}
+
+/* Note color variants */
+body.pc-mode .pc-note-tab.pc-note-neon.active {
+    border-color: var(--neon-dim);
+    color: var(--neon);
+    box-shadow: 0 0 8px rgba(0, 255, 65, 0.2);
+}
+
+body.pc-mode .pc-note-tab.pc-note-cyan.active {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: rgba(0, 212, 255, 0.1);
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.2);
+}
+
+body.pc-mode .pc-note-tab.pc-note-amber.active {
+    border-color: var(--amber);
+    color: var(--amber);
+    background: rgba(255, 170, 0, 0.1);
+    box-shadow: 0 0 8px rgba(255, 170, 0, 0.2);
+}
+
+body.pc-mode .pc-note-tab.pc-note-purple.active {
+    border-color: #a855f7;
+    color: #a855f7;
+    background: rgba(168, 85, 247, 0.1);
+    box-shadow: 0 0 8px rgba(168, 85, 247, 0.2);
+}
+
+body.pc-mode .pc-note-tab.pc-note-pink.active {
+    border-color: #ec4899;
+    color: #ec4899;
+    background: rgba(236, 72, 153, 0.1);
+    box-shadow: 0 0 8px rgba(236, 72, 153, 0.2);
+}
+
+body.pc-mode .pc-notes-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+body.pc-mode #pc-notes-textarea {
+    width: 100%;
+    min-height: 100px;
+    max-height: 200px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+body.pc-mode #pc-notes-textarea:focus {
+    border-color: var(--neon-dim);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
+}
+
+body.pc-mode #pc-notes-textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 0.5;
+}
+
+body.pc-mode #pc-notes-textarea::-webkit-scrollbar {
+    width: 5px;
+}
+
+body.pc-mode #pc-notes-textarea::-webkit-scrollbar-track {
+    background: rgba(0, 255, 100, 0.05);
+    border-radius: 3px;
+}
+
+body.pc-mode #pc-notes-textarea::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(0, 255, 100, 0.3) 0%, rgba(0, 200, 80, 0.5) 100%);
+    border-radius: 3px;
+}
+
+body.pc-mode #pc-notes-textarea::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(0, 255, 100, 0.5) 0%, rgba(0, 200, 80, 0.7) 100%);
+}
+
+body.pc-mode .pc-notes-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 0;
+}
+
+body.pc-mode .pc-notes-info {
+    font-family: var(--mono);
+    font-size: 0.45rem;
+    color: var(--text-muted);
+    flex: 1;
+    opacity: 0.7;
+}
+
+body.pc-mode .pc-notes-toolbar button {
+    padding: 3px 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 0.45rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-notes-toolbar button:hover {
+    border-color: var(--neon-dim);
+    color: var(--neon);
+    background: rgba(0, 255, 65, 0.1);
+}
+
+body.pc-mode .pc-notes-toolbar button:last-child:hover {
+    border-color: var(--red);
+    color: var(--red);
+    background: rgba(255, 0, 64, 0.1);
+}
+
+/* ==============================================
+   NOTIFICATION PROMPT
+   ============================================== */
+
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+
+
+
+
+
+/* ==============================================
+   VOICE INPUT (Mic Button)
+   ============================================== */
+
+body.pc-mode .pc-mic-btn {
+    transition: all 0.2s ease;
+}
+
+body.pc-mode .pc-mic-btn:hover {
+    color: var(--cyan);
+}
+
+body.pc-mode .pc-mic-btn.recording {
+    color: var(--red) !important;
+    animation: pulse-mic 1s ease-in-out infinite;
+}
+
+body.pc-mode .pc-mic-btn.recording svg {
+    filter: drop-shadow(0 0 4px var(--red));
+}
+
+@keyframes pulse-mic {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}

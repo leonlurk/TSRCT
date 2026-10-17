@@ -1,0 +1,414 @@
+/* assistant.css — the assistant's dock. NOT a modal, and that is the whole
+   point: no backdrop, nothing that swallows a click meant for the terminal, and
+   it sits in the corner of every room and every layout, phone included.
+
+   Palette from variables.css. The one deliberate colour decision here: ARMED
+   relay is amber, the same amber the rest of the app uses for "this is doing
+   something", because it is the only control in this dock with a side effect on
+   his machine. */
+
+.asst {
+    position: fixed;
+    right: 14px;
+    bottom: 14px;
+    z-index: 9400;              /* under the morning overlay (9500), over rooms */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    /* The container must never eat a click: only its children are interactive. */
+    pointer-events: none;
+    font-family: var(--mono);
+}
+.asst > * { pointer-events: auto; }
+
+/* Dropped somewhere else: the dock is pinned to the nearest corner (assistant.js
+   sets the offsets inline), and the panel and caption unfold toward the middle
+   of the screen — so the orb itself never moves when they open. */
+.asst.asst-left { align-items: flex-start; }
+.asst.asst-top  { flex-direction: column-reverse; }
+.asst.asst-dragging .asst-orb { cursor: grabbing; transition: none; }
+
+/* ── the orb ─────────────────────────────────────────────────────────────── */
+/* It used to sit at 72% opacity, which on a dark theme reads as "disabled" —
+   the whole dock looked switched off even while it was listening. Full opacity,
+   and the STATE carries the colour instead of the transparency. */
+.asst-orb {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg-darker);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    line-height: 1;
+    cursor: pointer;
+    touch-action: none;         /* a finger on the orb drags it, not the page */
+    user-select: none;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    transition: border-color .15s, color .15s, box-shadow .2s;
+}
+.asst-orb:hover  { border-color: var(--neon); color: var(--neon); }
+.asst-orb.ready  { border-color: var(--neon); color: var(--neon); }
+.asst-orb.listen { border-color: var(--cyan); color: var(--cyan); animation: asst-breathe 2s ease-in-out infinite; }
+.asst-orb.think  { border-color: var(--amber); color: var(--amber); }
+.asst-orb.speak  { border-color: var(--neon); color: var(--neon); box-shadow: 0 6px 18px rgba(0,0,0,.45), 0 0 0 4px rgba(0, 255, 65, 0.13); }
+
+/* Listening is the only state that moves, because it is the only one where the
+   machine is waiting on HIM. */
+@keyframes asst-breathe {
+    0%, 100% { box-shadow: 0 6px 18px rgba(0,0,0,.45), 0 0 0 2px rgba(0, 229, 255, 0.16); }
+    50%      { box-shadow: 0 6px 18px rgba(0,0,0,.45), 0 0 0 8px rgba(0, 229, 255, 0.04); }
+}
+
+/* ── the caption ─────────────────────────────────────────────────────────── */
+/* What replaced the permanent strip. A subtitle: it appears when the machine
+   says something, in FULL contrast, for as long as it takes to read — and then
+   it is gone. Nothing of it stays on screen doing nothing. */
+.asst-cap {
+    /* A fixed width: the box must not resize every time the line changes. */
+    width: min(380px, calc(100vw - 32px));
+    box-sizing: border-box;
+    padding: 9px 11px;
+    border: 1px solid var(--neon);
+    border-left-width: 3px;
+    border-radius: var(--radius);
+    background: var(--bg-darker);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    color: var(--text);
+    font-size: 0.66rem;
+    line-height: 1.55;
+    cursor: pointer;
+    animation: asst-cap-in .18s ease-out;
+}
+.asst-cap.hidden { display: none; }
+.asst-cap.think { border-color: var(--amber); }
+.asst-cap.listen { border-color: var(--cyan); }
+.asst-cap-who {
+    margin-bottom: 3px;
+    color: var(--neon);
+    font-size: 0.5rem;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+}
+.asst-cap.think .asst-cap-who { color: var(--amber); }
+.asst-cap.listen .asst-cap-who { color: var(--cyan); }
+/* THE SPOKEN LINE IS WHITE, and it is the only white text in TSRCT. The whole
+   interface is neon green on black; a subtitle in the same green would read as
+   one more label. White says "this is being said out loud, right now" without a
+   single word of explanation. Written out at the speed of the voice — see
+   typeCaption() — which is why it is set a size up and given real line height:
+   it is read while it moves, not scanned afterwards. */
+.asst-cap-text {
+    /* One line, always: assistant.js feeds it a line at a time. */
+    white-space: nowrap;
+    overflow: hidden;
+    color: #eef4ee;
+    font-size: 0.74rem;
+    line-height: 1.6;
+    min-height: 1.6em;          /* no jump on the first character */
+}
+/* The cursor that makes it look typed rather than pasted. */
+.asst-cap.typing .asst-cap-text::after {
+    content: '▌';
+    color: var(--neon);
+    animation: asst-caret .7s steps(1) infinite;
+}
+@keyframes asst-caret { 50% { opacity: 0; } }
+@keyframes asst-cap-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ── the panel ───────────────────────────────────────────────────────────── */
+.asst-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    width: min(380px, calc(100vw - 28px));
+    max-height: min(60vh, 520px, var(--asst-room, 100vh));
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid var(--neon);
+    border-radius: var(--radius);
+    background: var(--bg-darker);
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.5);
+    font-size: 0.62rem;
+    color: var(--text);
+}
+.asst-head { display: flex; align-items: baseline; gap: 7px; }
+.asst-name { font-weight: 700; letter-spacing: 2px; color: var(--neon); }
+.asst-sub { color: var(--text-muted); font-size: 0.55rem; letter-spacing: .5px; }
+.asst-gap { flex: 1 1 auto; }
+.asst-why { color: var(--amber); line-height: 1.5; overflow-wrap: anywhere; }
+.asst-dim { color: var(--text-muted); }
+.asst-foot { color: var(--text-muted); font-size: 0.54rem; letter-spacing: .3px; }
+
+.asst-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+/* ── the target row and its list ──────────────────────────────────────────── */
+/* This replaced a native <select>: on a phone that is the OS's own sheet in the
+   OS's own blue, and it was the one control in TSRCT that did not look like
+   TSRCT. Everything here is drawn from the palette. */
+.asst-target {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: rgba(0, 0, 0, 0.35);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    text-align: left;
+    cursor: pointer;
+}
+.asst-target:hover { border-color: var(--neon); }
+.asst-target-k {
+    color: var(--text-muted);
+    font-size: 0.52rem;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+.asst-target-v { flex: 1 1 auto; color: var(--neon); font-size: 0.74rem; overflow-wrap: anywhere; }
+.asst-target-v.none { color: var(--text-muted); }
+.asst-target-c { color: var(--text-muted); font-size: 0.6rem; }
+
+.asst-pick {
+    border: 1px solid var(--neon);
+    border-radius: var(--radius);
+    background: var(--bg-darker);
+    overflow: hidden;
+    /* Never shrink: with overflow hidden a flex child's minimum height is 0, so
+       the panel's height cap squeezed THIS box to two rows and the rest of the
+       sessions were cut off with no scrollbar. The log gives way instead. */
+    flex: 0 0 auto;
+}
+.asst-pick-h {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 9px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.52rem;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+}
+.asst-pick-l { max-height: min(40vh, 300px); overflow-y: auto; }
+.asst-opt {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 10px;
+    border: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    background: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    text-align: left;
+    cursor: pointer;
+}
+.asst-opt:last-child { border-bottom: 0; }
+.asst-opt:hover { background: rgba(0, 255, 65, 0.06); }
+.asst-opt.sel { background: rgba(0, 255, 65, 0.09); color: var(--neon); }
+.asst-opt-m { width: 0.7em; color: var(--neon); }
+.asst-opt-n { flex: 1 1 auto; overflow-wrap: anywhere; }
+.asst-opt-t { color: var(--cyan); font-size: 0.5rem; letter-spacing: 1px; text-transform: uppercase; }
+
+/* ── the switches ─────────────────────────────────────────────────────────── */
+/* Three identical buttons in a row said nothing about which were on, or what
+   any of them would do. Each one now carries its own sentence. */
+.asst-sws { display: flex; flex-direction: column; gap: 5px; }
+.asst-sw {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 9px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: rgba(0, 0, 0, 0.25);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    text-align: left;
+    cursor: pointer;
+}
+.asst-sw:hover { border-color: var(--text-muted); }
+.asst-sw.on { border-color: var(--neon); color: var(--text); background: rgba(0, 255, 65, 0.06); }
+.asst-sw-d { color: var(--text-muted); font-size: 0.62rem; line-height: 1.5; }
+.asst-sw.on .asst-sw-d { color: var(--neon); }
+.asst-sw-b { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.asst-sw-n { font-size: 0.64rem; letter-spacing: 1px; text-transform: uppercase; }
+.asst-sw-w { color: var(--text-muted); font-size: 0.58rem; line-height: 1.4; }
+/* ARMED relay is amber, the same amber the rest of the app uses for "this is
+   doing something": it is the only control here with a side effect. */
+.asst-sw.relay.on { border-color: var(--amber); color: var(--amber); background: rgba(255, 176, 0, 0.07); }
+.asst-sw.relay.on .asst-sw-d { color: var(--amber); }
+.asst-sw.relay.on .asst-sw-w { color: rgba(255, 176, 0, 0.75); }
+
+.asst-in {
+    flex: 1 1 120px;
+    min-width: 0;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.64rem;
+}
+.asst-in:focus { outline: none; border-color: var(--cyan); }
+.asst-btn.tiny { padding: 2px 6px; font-size: 0.5rem; }
+
+.asst-btn {
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.56rem;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .15s;
+}
+.asst-btn:hover { border-color: var(--neon); color: var(--neon); }
+.asst-btn.on { border-color: var(--neon); color: var(--neon); background: rgba(0, 255, 65, 0.08); }
+.asst-btn:disabled { opacity: .35; cursor: default; }
+/* Armed relay is not a neutral toggle: it types into a live session. */
+.asst-btn.relay.armed {
+    border-color: var(--amber);
+    color: var(--amber);
+    background: rgba(245, 166, 35, 0.10);
+}
+
+/* ── background work (2026-09-24) ────────────────────────────────────────
+   One row per job: the model it chose, what it is for, the clock, and its
+   last step or where the result went. On the orb: the model and the clock. */
+.asst-orb.bg { position: relative; border-color: var(--amber); }
+.asst-orb.bg::after {
+    content: attr(data-bg);
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translate(-50%, 4px);
+    padding: 1px 5px;
+    border: 1px solid var(--amber);
+    border-radius: 3px;
+    background: var(--bg-darker);
+    color: var(--amber);
+    font-size: 0.62rem;
+    white-space: nowrap;
+    pointer-events: none;
+}
+.asst-jobs {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+}
+.asst-jobs-h { font-size: 0.66rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .08em; }
+.asst-job {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    column-gap: 8px;
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    color: var(--text-dim);
+}
+.asst-job-m { color: var(--amber); }
+.asst-job-w { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.asst-job-d { grid-column: 2 / 4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .8; }
+.asst-job.run .asst-job-w, .asst-job.run .asst-job-c { color: var(--amber); }
+.asst-job.drafted .asst-job-m, .asst-job.sent .asst-job-m { color: var(--neon); }
+.asst-job.failed .asst-job-m, .asst-job.failed .asst-job-d { color: var(--red, #ff4444); }
+.asst-job.waiting .asst-job-m, .asst-job.waiting .asst-job-d { color: var(--cyan); }
+.asst-job-d.why { white-space: normal; opacity: .65; }
+.asst-job-b { grid-column: 1 / 4; display: flex; gap: 6px; justify-content: flex-end; }
+/* what he attached, waiting to go with the next sentence */
+.asst-files { display: flex; flex-wrap: wrap; gap: 4px; }
+.asst-file {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    padding: 1px 2px 1px 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+}
+.asst-file > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; }
+
+/* ── the log ─────────────────────────────────────────────────────────────── */
+.asst-log {
+    flex: 1 1 auto;
+    min-height: 60px;
+    max-height: 220px;
+    overflow-y: auto;
+    overflow-x: hidden;          /* one axis set means the other computes to auto */
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+}
+.asst-line { display: flex; gap: 7px; align-items: baseline; line-height: 1.5; min-width: 0; }
+.asst-who {
+    flex: 0 0 auto;
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-muted);
+    font-size: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.asst-text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.asst-line.you .asst-text { color: var(--text-dim); }
+.asst-line.watch .asst-who { color: var(--cyan); }
+/* A line that was TYPED INTO a session. The one thing in here that changed
+   something on his machine, so it does not look like conversation. */
+.asst-line.sent .asst-who, .asst-line.sent .asst-text { color: var(--amber); }
+
+/* ── phone ───────────────────────────────────────────────────────────────── */
+/* The orb has to clear the quick bar and the home indicator, and the panel is
+   the width of the screen minus a gutter. */
+@media (max-width: 700px) {
+    .asst {
+        right: 12px;
+        bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    }
+    .asst-orb { width: 52px; height: 52px; font-size: 0.86rem; }
+    .asst-panel { width: calc(100vw - 24px); max-height: min(62vh, var(--asst-room, 100vh)); font-size: 0.7rem; }
+    .asst-in { font-size: 0.78rem; padding: 8px; }
+    .asst-opt { padding: 11px 12px; font-size: 0.76rem; }
+    .asst-target { padding: 10px 11px; }
+    .asst-target-v { font-size: 0.8rem; }
+    .asst-sw { padding: 9px 10px; }
+    .asst-sw-n { font-size: 0.7rem; }
+    .asst-sw-w { font-size: 0.62rem; }
+    .asst-btn { font-size: 0.62rem; padding: 5px 9px; }
+    .asst-cap { width: calc(100vw - 24px); padding: 11px 13px; }
+    .asst-cap-text { font-size: 0.86rem; }
+    .asst-log { max-height: 34vh; }
+}
+
+/* A room open in fullscreen still shows the orb: the assistant is not part of
+   any one view. It only gets out of the way of the morning overlay, which is
+   modal by design and reads the same brief out loud. */
+.mrn-overlay:not(.hidden) ~ .asst,
+body.mrn-open .asst { display: none; }

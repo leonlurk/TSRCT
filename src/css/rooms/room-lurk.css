@@ -1,0 +1,283 @@
+/* ============================================================================
+   room-lurk.css — LURK mode / NULL's audio-reactive face
+   Lazy-loaded by WorldManager.loadRoomCSS('lurk'). Scoped under .lurk-root.
+   Uses theme vars (theme-navy is auto-applied by lurk.js on mount) w/ fallbacks.
+   ============================================================================ */
+
+.lurk-root {
+    /* Hardcoded leonlurk navy — LURK is always navy, independent of the global
+       theme (so the room never inherits the default green palette). */
+    --lk-cyan: #46e0ff;
+    --lk-accent: #22a7ff;
+    --lk-bg: #05070d;
+    --lk-text: #bfe0ff;
+    --lk-border: rgba(34, 167, 255, 0.18);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    background:
+        radial-gradient(120% 90% at 50% 30%, rgba(34, 167, 255, 0.08), transparent 60%),
+        var(--lk-bg);
+    color: var(--lk-text);
+    font-family: var(--mono, 'JetBrains Mono', monospace);
+    overflow: hidden;
+}
+
+/* ── stage: the wireframe face ─────────────────────────────────────────── */
+.lurk-stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 220px;
+    /* Cinematic grade ported from the LURK Catalog "THE FEED" tab (2026-07-18):
+       a centred navy glow gives the attractor real depth vs a flat black stage.
+       Atmosphere only — the attractor geometry (lurk.js) is untouched/LOCKED. */
+    background:
+        radial-gradient(55% 55% at 50% 48%, rgba(20, 60, 110, 0.20), transparent 70%),
+        radial-gradient(120% 90% at 50% 28%, rgba(34, 167, 255, 0.06), transparent 60%),
+        var(--lk-bg);
+    overflow: hidden;
+}
+.lurk-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+.lurk-hud {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--lk-cyan);
+    opacity: 0.8;
+    pointer-events: none;
+}
+.lurk-hud .lurk-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--lk-cyan);
+    margin-right: 7px;
+    box-shadow: 0 0 8px var(--lk-cyan);
+    animation: lurkPulse 1.8s ease-in-out infinite;
+}
+@keyframes lurkPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+.lurk-say {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 66px;
+    text-align: center;
+    padding: 0 24px;
+    font-size: clamp(0.85rem, 2.4vw, 1.15rem);
+    line-height: 1.45;
+    color: var(--lk-text);
+    text-shadow: 0 0 14px rgba(34, 167, 255, 0.5);
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+.lurk-say.on { opacity: 1; }
+.lurk-root[data-state="thinking"] .lurk-hud .lurk-dot { animation-duration: 0.5s; }
+
+/* ── controls ──────────────────────────────────────────────────────────── */
+.lurk-controls {
+    flex: 0 0 auto;
+    padding: 12px;
+    border-top: 1px solid var(--lk-border);
+    background: rgba(5, 8, 15, 0.75);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.lurk-input {
+    width: 100%;
+    resize: vertical;
+    background: rgba(10, 18, 32, 0.85);
+    border: 1px solid var(--lk-border);
+    color: var(--lk-text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: 9px 11px;
+    border-radius: 4px;
+    outline: none;
+}
+.lurk-input:focus { border-color: var(--lk-cyan); box-shadow: 0 0 0 2px rgba(70, 224, 255, 0.15); }
+.lurk-input::placeholder { color: rgba(191, 224, 255, 0.4); }
+
+.lurk-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.lurk-btn {
+    background: transparent;
+    border: 1px solid var(--lk-accent);
+    color: var(--lk-accent);
+    font-family: inherit;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    padding: 7px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.lurk-btn:hover { background: rgba(34, 167, 255, 0.12); }
+.lurk-btn:disabled { opacity: 0.5; cursor: default; }
+.lurk-speak { flex: 1 1 auto; min-width: 110px; font-weight: 600; }
+.lurk-live.on { background: var(--lk-cyan); color: var(--lk-bg); border-color: var(--lk-cyan); box-shadow: 0 0 14px rgba(70, 224, 255, 0.5); }
+.lurk-root.engine-on .lurk-power { color: var(--lk-cyan); border-color: var(--lk-cyan); }
+
+/* ── expression deck: drive NULL's mood live (overlaid on the stage so it
+      works in interactive fullscreen too). Replaces the old pre-made lines. ── */
+.lurk-moods {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 12px;
+    z-index: 3;
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 0 10px;
+    pointer-events: none;   /* let drags between chips reach the canvas */
+}
+.lurk-mood {
+    pointer-events: auto;
+    background: rgba(10, 18, 32, 0.66);
+    border: 1px solid var(--lk-border);
+    color: rgba(191, 224, 255, 0.72);
+    font-family: inherit;
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 6px 11px;
+    border-radius: 3px;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    transition: color 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.lurk-mood:hover { color: var(--lk-text); border-color: rgba(70, 224, 255, 0.42); }
+.lurk-mood.on {
+    color: #eaf7ff;
+    border-color: var(--lk-cyan);
+    background: rgba(70, 224, 255, 0.12);
+    box-shadow: inset 0 0 16px rgba(70, 224, 255, 0.25);
+}
+
+/* ── interactive fullscreen button + drag hint ── */
+.lurk-full {
+    position: absolute;
+    top: 9px;
+    right: 10px;
+    z-index: 3;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 18, 32, 0.6);
+    border: 1px solid var(--lk-border);
+    color: var(--lk-cyan);
+    font-size: 0.9rem;
+    line-height: 1;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.lurk-full:hover { background: rgba(70, 224, 255, 0.14); border-color: var(--lk-cyan); }
+.lurk-hint {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 46px;
+    z-index: 2;
+    text-align: center;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    color: rgba(191, 224, 255, 0.45);
+    pointer-events: none;
+    animation: lurkHintFade 1s ease 6s forwards;
+}
+.lurk-hint.gone { opacity: 0; }
+@keyframes lurkHintFade { to { opacity: 0; } }
+
+.lurk-canvas { cursor: grab; }
+.lurk-canvas:active { cursor: grabbing; }
+
+/* ── record + delay controls ── */
+.lurk-rec { font-weight: 600; }
+.lurk-rec:hover { background: rgba(70, 224, 255, 0.14); }
+.lurk-delay { min-width: 58px; }
+
+/* ── pre-roll countdown (shown in the clean stage before NULL speaks) ── */
+.lurk-count {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(64px, 18vw, 170px);
+    font-weight: 200;
+    letter-spacing: 0.04em;
+    color: var(--lk-cyan);
+    text-shadow: 0 0 42px rgba(70, 224, 255, 0.55);
+    pointer-events: none;
+    z-index: 5;
+}
+.lurk-count.on { display: flex; }
+
+/* ── record mode: clean full-screen organism for screen capture ─────────── */
+.lurk-stage:fullscreen { width: 100vw; height: 100vh; background: var(--lk-bg); }
+body.lurk-record .lurk-controls,
+body.lurk-record .lurk-hud,
+body.lurk-record .lurk-moods,
+body.lurk-record .lurk-full,
+body.lurk-record .lurk-hint { display: none; }
+body.lurk-record .lurk-stage { min-height: 0; }
+/* subtitle becomes a clean lower-third caption for the recording */
+body.lurk-record .lurk-say,
+.lurk-stage:fullscreen .lurk-say {
+    bottom: 9%;
+    font-size: clamp(1.1rem, 3.1vw, 2rem);
+    line-height: 1.4;
+    max-width: 82%;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+}
+
+/* ── MUTE (2026-09-17): the on-camera gesture. Big and legible on a phone
+      recording of the monitor; stays visible in record mode on purpose. ── */
+.lurk-mute {
+    position: absolute;
+    right: 18px;
+    bottom: 56px;
+    z-index: 6;
+    min-width: 168px;
+    padding: 16px 26px;
+    font-family: inherit;
+    font-size: clamp(1.3rem, 2.6vw, 2.1rem);
+    font-weight: 800;
+    letter-spacing: 0.28em;
+    color: #ff4d6d;
+    background: rgba(20, 4, 10, 0.55);
+    border: 2px solid rgba(255, 77, 109, 0.75);
+    border-radius: 4px;
+    cursor: pointer;
+    text-shadow: 0 0 14px rgba(255, 77, 109, 0.45);
+    backdrop-filter: blur(6px);
+    transition: background 0.12s, color 0.12s, box-shadow 0.12s, transform 0.08s;
+}
+.lurk-mute:hover { box-shadow: 0 0 22px rgba(255, 77, 109, 0.35); }
+.lurk-mute:active { transform: scale(0.97); }
+.lurk-root.muted .lurk-mute {
+    background: #ff4d6d;
+    color: #1a0208;
+    text-shadow: none;
+    box-shadow: 0 0 34px rgba(255, 77, 109, 0.7);
+}
+.lurk-root.muted .lurk-canvas { opacity: 0.35; transition: opacity 0.25s; }
+.lurk-root.muted .lurk-hud { color: #ff4d6d; }
+body.lurk-record .lurk-mute { bottom: 4%; right: 3%; }
+.lurk-react.on { background: #46e0ff; color: #05070d; border-color: #46e0ff; box-shadow: 0 0 14px rgba(70, 224, 255, 0.5); }

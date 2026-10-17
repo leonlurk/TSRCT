@@ -1,0 +1,105 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   room-codemap.css — Codemap tab (desktop). Lazy-loaded via loadRoomCSS('codemap').
+   Cockpit DNA: monospace, neon/cyan accents, amber=stale, red=secretco lock.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.cm-root { font-family: var(--mono); color: var(--text, #00ff41); font-size: 0.8rem; }
+
+/* top bar: summary + auto-toggle + regen-all */
+.cm-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 8px 10px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border, #1a3a1a);
+    background: rgba(0, 212, 255, 0.03);
+}
+.cm-summary { color: var(--cyan, var(--cyan)); letter-spacing: 1px; }
+.cm-bar-actions { display: flex; align-items: center; gap: 12px; }
+.cm-auto {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted, #6aa06a);
+    cursor: pointer;
+    user-select: none;
+}
+.cm-auto input { accent-color: var(--cyan, var(--cyan)); cursor: pointer; }
+
+.cm-btn {
+    background: transparent;
+    border: 1px solid var(--cyan, var(--cyan));
+    color: var(--cyan, var(--cyan));
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: background 0.12s;
+}
+.cm-btn:hover { background: rgba(0, 212, 255, 0.12); }
+.cm-btn:disabled { opacity: 0.45; cursor: default; }
+
+/* session cards */
+.cm-list { display: flex; flex-direction: column; gap: 10px; }
+.cm-card {
+    border: 1px solid var(--border, #1a3a1a);
+    border-left: 3px solid var(--neon, #00ff41);
+    background: rgba(0, 255, 65, 0.02);
+    padding: 10px 12px;
+}
+.cm-card-stale { border-left-color: var(--amber, #ffb000); background: rgba(255, 176, 0, 0.03); }
+.cm-card-nomap { border-left-color: var(--text-muted, #6aa06a); }
+.cm-card-secretco { border-left-color: var(--red, var(--red)); background: rgba(255, 0, 64, 0.04); opacity: 0.85; }
+
+.cm-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.cm-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--text-muted, #6aa06a); flex: 0 0 auto;
+}
+.cm-dot-on { background: var(--neon, #00ff41); box-shadow: 0 0 6px var(--neon, #00ff41); }
+.cm-name { color: var(--text, #00ff41); font-weight: bold; letter-spacing: 0.5px; }
+.cm-proj {
+    color: var(--text-muted, #6aa06a);
+    font-size: 0.72rem;
+    padding: 1px 6px;
+    border: 1px solid var(--border, #1a3a1a);
+}
+
+.cm-status { color: var(--text-muted, #8fc28f); margin-bottom: 8px; }
+.cm-status b { color: var(--cyan, var(--cyan)); }
+.cm-drift { color: var(--amber, #ffb000); }
+.cm-drift-stale { color: var(--amber, #ffb000); font-weight: bold; }
+.cm-nomap { color: var(--text-muted, #6aa06a); font-style: italic; }
+.cm-lock { color: var(--red, var(--red)); letter-spacing: 1px; }
+
+.cm-actions { display: flex; gap: 8px; }
+.cm-btn-prime { border-color: var(--neon, #00ff41); color: var(--neon, #00ff41); }
+.cm-btn-prime:hover { background: rgba(0, 255, 65, 0.12); }
+
+/* states + chrome */
+.cm-warn {
+    border: 1px solid var(--red, var(--red));
+    color: var(--red, var(--red));
+    padding: 8px 10px;
+    margin-bottom: 12px;
+    font-size: 0.75rem;
+}
+.cm-empty {
+    color: var(--text-muted, #6aa06a);
+    border: 1px dashed var(--border, #1a3a1a);
+    padding: 18px;
+    text-align: center;
+    line-height: 1.5;
+}
+.cm-foot {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border, #1a3a1a);
+    color: var(--text-muted, #5a8a5a);
+    font-size: 0.7rem;
+    line-height: 1.4;
+}
+.cm-foot i { color: var(--cyan, var(--cyan)); font-style: normal; }

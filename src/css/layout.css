@@ -1,0 +1,398 @@
+/* ==============================================
+   TSRCT - Layout Styles
+   App container, header, stats, tabs
+   ============================================== */
+
+/* App Container - NO SCROLL */
+.app {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    overflow: hidden;
+    padding: 8px;
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-bottom: 115px; /* Space for quick-bar */
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    animation: flicker 4s infinite;
+}
+
+/* Header card - never shrink */
+.app > .card:first-child {
+    flex-shrink: 0;
+}
+
+/* Input card - never shrink, add bottom spacing */
+.app > .card:last-of-type {
+    flex-shrink: 0;
+    margin-bottom: 14px;
+}
+
+/* Hacker Card */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--neon), transparent);
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--neon);
+    box-shadow: 0 0 15px var(--neon-glow), inset 0 0 10px rgba(0,255,65,0.1);
+}
+
+.logo-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: drop-shadow(0 0 3px var(--neon));
+}
+
+.logo-icon svg {
+    width: 18px;
+    height: 18px;
+    color: var(--neon);
+    filter: drop-shadow(0 0 4px var(--neon));
+}
+
+.logo-text h1 {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--neon);
+    text-shadow: 0 0 10px var(--neon-glow);
+    letter-spacing: 2px;
+}
+
+.logo-text span {
+    font-size: 0.5rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+/* Status Indicator */
+.status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid var(--neon);
+    border-radius: var(--radius);
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: var(--neon);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--neon);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--neon);
+    animation: blink 1s infinite;
+}
+
+.status.offline {
+    border-color: var(--red);
+    color: var(--red);
+}
+
+.status.offline .status-dot {
+    background: var(--red);
+    box-shadow: 0 0 10px var(--red);
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+}
+
+/* Sound Toggle */
+.sound-toggle {
+    background: transparent;
+    border: 1px solid var(--dim);
+    border-radius: var(--radius);
+    padding: 6px;
+    cursor: pointer;
+    color: var(--neon);
+    transition: all 0.2s;
+}
+
+.sound-toggle svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+
+.sound-toggle:hover {
+    border-color: var(--neon);
+}
+
+.sound-toggle.muted {
+    color: var(--dim);
+    border-color: var(--dim);
+}
+
+.sound-toggle.muted svg path:last-child,
+.sound-toggle.muted svg path:nth-last-child(2) {
+    opacity: 0.3;
+}
+
+/* Status Bar (CTX, Session, Auto, Expand) */
+/* NOWRAP, and the session name is the one item allowed to give way.
+   It used to be `flex-wrap: wrap`, which sounds like a safety net and is the
+   opposite: flex places an item on a NEW LINE before it will shrink it, so one
+   long tmux name silently turned this bar into two rows and took 26px off the
+   terminal on a phone. The width here is written by something else (a tmux name
+   is 2 characters or 22), so the layout has to be incapable of breaking rather
+   than tuned to a name length that fits today. Everything except the name is
+   fixed-size; the name shrinks and ellipsizes. */
+.status-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 4px 6px;
+    padding: 5px 10px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+}
+
+/* Font Size Control */
+.font-size-control {
+    display: flex;
+    align-items: center;
+}
+
+.font-steps {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-dark);
+    padding: 2px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+}
+
+.font-step {
+    padding: 2px 5px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.45rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 2px;
+    letter-spacing: 0.5px;
+}
+
+.font-step:hover {
+    color: var(--neon);
+    background: rgba(0, 255, 65, 0.1);
+}
+
+.font-step.active {
+    background: var(--neon);
+    color: #000;
+    box-shadow: 0 0 8px var(--neon-glow);
+}
+
+/* Session Button */
+/* Project Badge (vault-linked) */
+
+
+/* Everything in the bar holds its size; only this one absorbs the shortfall.
+   `min-width: 0` is what actually lets it shrink -- without it a flex item will
+   not go below its content width. The picker shows the full name anyway, so an
+   ellipsis here costs nothing. */
+.status-bar > *:not(.session-btn) {
+    flex-shrink: 0;
+}
+
+.session-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 0 1 auto;
+    min-width: 44px;
+    overflow: hidden;
+    padding: 4px 8px;
+    background: transparent;
+    border: 1px solid var(--dim);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.session-btn:hover {
+    border-color: var(--neon);
+    color: var(--neon);
+}
+
+.session-btn svg {
+    color: var(--dim);
+    flex-shrink: 0;   /* the chevron stays; the NAME is what gives way */
+}
+
+#home-session-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+/* Auto-Accept Button */
+.auto-btn {
+    padding: 4px 8px;
+    background: transparent;
+    border: 1px solid var(--dim);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.auto-btn:hover {
+    border-color: var(--yellow);
+    color: var(--yellow);
+}
+
+.auto-btn.active {
+    border-color: var(--yellow);
+    color: var(--yellow);
+    background: rgba(255, 200, 0, 0.1);
+}
+
+/* [PB] plain brief rides .auto-btn for its geometry but takes CYAN when active.
+   Two reasons: gotcha 21 already established cyan as "the system is acting under
+   its own rule", which is exactly what a forced-brevity mode is; and three
+   yellow buttons in a row (V / PB / AUTO) cannot be told apart at arm's length
+   on a phone, which is where this button gets pressed. */
+#pb-toggle.active {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: rgba(0, 255, 255, 0.1);
+}
+
+/* Expand Button - Push to far right */
+.expand-btn {
+    margin-left: auto;
+    padding: 4px;
+    background: transparent;
+    border: 1px solid var(--dim);
+    border-radius: var(--radius);
+    color: var(--dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.expand-btn:hover {
+    border-color: var(--neon);
+    color: var(--neon);
+}
+
+.expand-btn svg {
+    display: block;
+}
+
+/* Stats Bar (legacy) */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    padding: 10px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+}
+
+.stat {
+    text-align: center;
+    padding: 4px;
+}
+
+
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 2px;
+    border: 1px solid var(--border);
+}
+
+.tab {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.tab.active {
+    background: var(--neon);
+    color: #000;
+    text-shadow: none;
+}

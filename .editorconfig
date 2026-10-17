@@ -1,0 +1,21 @@
+# What the tracked files already do, measured 2026-10-16, so editors stop guessing
+# (cleanup P4 #18). Only rules every file of a kind already follows: a rule the
+# files break would rewrite a whole file the first time someone saves it. That is
+# why CSS has no line-ending rule (7 files are CRLF, 19 LF) and nothing trims
+# trailing whitespace.
+root = true
+
+[*]
+charset = utf-8
+insert_final_newline = true
+
+[*.{js,html,sh,ps1,vbs,md,json}]
+end_of_line = lf
+
+[*.{js,html,css,ps1}]
+indent_style = space
+indent_size = 4
+
+[*.{json,md}]
+indent_style = space
+indent_size = 2

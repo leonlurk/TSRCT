@@ -1,0 +1,309 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   room-factory.css — FACTORY (desktop tab). Lazy via loadRoomCSS('factory').
+   TSRCT DNA, same family as tower/notifs: monospace, 0.66-0.8rem, 1px borders,
+   3px semantic left edge, 2-4% tinted fills, glow only on live things.
+   cyan = live/act · neon = worth it · amber = evidence/quotes · red = dead ·
+   purple = building. Motion is information: it runs while the run runs and
+   stops when it stops. Panel chrome (.pc-factory-panel) lives in desktop.css.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.fx {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(280px, 2fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+        "hud    hud"
+        "cands  builds"
+        "runs   runs";
+    gap: 10px;
+    height: 100%;
+    padding: 10px;
+    overflow: hidden;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--text, #00ff41);
+}
+.fx-hud    { grid-area: hud; }
+.fx-cands  { grid-area: cands; overflow-y: auto; }
+.fx-builds { grid-area: builds; overflow-y: auto; }
+.fx-runs   { grid-area: runs; max-height: 24vh; overflow-y: auto; }
+
+.fx-zone, .fx-hud {
+    border: 1px solid var(--border, #1a3a1a);
+    background: rgba(0, 255, 65, 0.015);
+    padding: 8px 10px;
+}
+
+/* ── zone headers, the house style ── */
+.fx-zone-head {
+    display: flex; align-items: center; gap: 8px;
+    padding-bottom: 6px; margin-bottom: 8px;
+    border-bottom: 1px solid var(--border, #1a3a1a);
+}
+.fx-zone-title { color: var(--cyan, var(--cyan)); letter-spacing: 1.5px; font-size: 0.75rem; font-weight: bold; }
+.fx-zone-count { color: var(--text, #00ff41); font-weight: bold; }
+.fx-zone-sub { color: var(--text-muted, #6aa06a); font-size: 0.68rem; margin-left: auto; letter-spacing: 0.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fx-hot { color: var(--neon, #00ff41); text-shadow: 0 0 8px var(--neon-glow, var(--neon-glow)); }
+
+/* ── the HUD ─────────────────────────────────────────────────────────────
+   Three columns: status + steps · ring + counters · the wire. A capture card
+   and a stamp overlay the whole strip. Built to be filmed: the ring fills, the
+   counters tick, the wire types, the capture slides in. */
+.fx-hud {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto minmax(260px, 1.4fr);
+    gap: 16px;
+    min-height: 190px;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+.fx-hud.fx-live {
+    border-color: rgba(0, 212, 255, 0.5);
+    box-shadow: inset 0 0 40px rgba(0, 212, 255, 0.05), 0 0 18px rgba(0, 212, 255, 0.08);
+}
+.fx-hud.fx-done { border-color: rgba(0, 255, 65, 0.35); }
+/* launching: the button was pressed and the cloud has not written a line yet.
+   Amber, not cyan: something is happening, but not the run itself (2026-09-16,
+   Leon: the tab sat static for a minute or two after the click). */
+.fx-hud.fx-launching {
+    border-color: rgba(255, 176, 0, 0.5);
+    box-shadow: inset 0 0 40px rgba(255, 176, 0, 0.04), 0 0 18px rgba(255, 176, 0, 0.08);
+}
+.fx-hud.fx-launching .fx-scan {
+    opacity: 1; animation: fx-scan 2.2s linear infinite;
+    background: linear-gradient(to bottom, rgba(255,176,0,0) 0%, rgba(255,176,0,0.07) 50%, rgba(255,176,0,0) 100%);
+}
+.fx-launching .fx-word { color: var(--amber, #ffb000); text-shadow: 0 0 14px rgba(255, 176, 0, 0.35); animation: fx-breathe 1.2s ease-in-out infinite; }
+.fx-launching .fx-ring-fg { stroke: var(--amber, #ffb000); filter: drop-shadow(0 0 4px rgba(255, 176, 0, 0.5)); transition: none; animation: fx-spin 1.1s linear infinite; }
+@keyframes fx-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.fx-launching .fx-ring { overflow: visible; }
+.fx-launching .fx-ring-fg { transform-origin: 60px 60px; }
+.fx-launch-line .fx-line-x { color: var(--amber, #ffb000); animation: fx-breathe 1.2s ease-in-out infinite; }
+
+/* scanline: only while live */
+.fx-scan {
+    position: absolute; left: 0; right: 0; top: -40%; height: 40%;
+    background: linear-gradient(to bottom, rgba(0,212,255,0) 0%, rgba(0,212,255,0.06) 50%, rgba(0,212,255,0) 100%);
+    pointer-events: none; opacity: 0;
+}
+.fx-hud.fx-live .fx-scan { opacity: 1; animation: fx-scan 3.2s linear infinite; }
+@keyframes fx-scan { from { top: -40%; } to { top: 100%; } }
+
+.fx-hud-left { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.fx-status { display: flex; flex-direction: column; gap: 2px; }
+.fx-word {
+    font-size: 1.9rem; font-weight: 600; letter-spacing: 4px; line-height: 1;
+    color: var(--text-muted, #6aa06a);
+    transition: color 0.3s, text-shadow 0.3s;
+}
+.fx-live .fx-word { color: var(--cyan, var(--cyan)); text-shadow: 0 0 14px var(--cyan-glow, var(--cyan-glow)); animation: fx-breathe 2.4s ease-in-out infinite; }
+.fx-done .fx-word { color: var(--neon, #00ff41); text-shadow: 0 0 10px var(--neon-glow, var(--neon-glow)); }
+@keyframes fx-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+.fx-sub { color: var(--text-muted, #8fc28f); font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* phase stepper */
+.fx-steps { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.fx-step {
+    font-size: 0.62rem; letter-spacing: 1px; padding: 1px 6px;
+    border: 1px solid var(--border, #1a3a1a); color: var(--text-muted, #6aa06a);
+    transition: color 0.3s, border-color 0.3s, background 0.3s;
+}
+.fx-step-done { color: var(--neon, #00ff41); border-color: rgba(0, 255, 65, 0.35); background: rgba(0, 255, 65, 0.05); }
+.fx-step-on { color: #000; background: var(--cyan, var(--cyan)); border-color: var(--cyan, var(--cyan)); animation: fx-step-pulse 1.2s ease-in-out infinite; }
+@keyframes fx-step-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(0,212,255,0.5); } 50% { box-shadow: 0 0 10px 2px rgba(0,212,255,0.35); } }
+.fx-step-gap { width: 6px; height: 1px; background: var(--border, #1a3a1a); }
+
+.fx-next { color: var(--text-muted, #6aa06a); font-size: 0.68rem; font-variant-numeric: tabular-nums; }
+.fx-actions { display: flex; gap: 6px; margin-top: auto; }
+
+/* ring + counters */
+.fx-hud-mid { display: flex; align-items: center; gap: 16px; }
+.fx-ring-wrap { position: relative; width: 120px; height: 120px; flex: 0 0 120px; }
+.fx-ring { width: 120px; height: 120px; transform: rotate(-90deg); }
+.fx-ring-bg { fill: none; stroke: rgba(0, 212, 255, 0.12); stroke-width: 5; }
+.fx-ring-fg {
+    fill: none; stroke: var(--cyan, var(--cyan)); stroke-width: 5; stroke-linecap: butt;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    filter: drop-shadow(0 0 4px rgba(0, 212, 255, 0.5));
+}
+.fx-done .fx-ring-fg { stroke: var(--neon, #00ff41); filter: drop-shadow(0 0 4px rgba(0, 255, 65, 0.5)); }
+.fx-ring-text {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-variant-numeric: tabular-nums;
+}
+.fx-ring-text span:first-child { font-size: 1.15rem; font-weight: 600; color: var(--text, #00ff41); }
+.fx-ring-label { font-size: 0.58rem; letter-spacing: 2px; color: var(--text-muted, #6aa06a); }
+
+.fx-counters { display: flex; flex-direction: column; gap: 6px; }
+.fx-counter { display: flex; flex-direction: column; min-width: 110px; }
+.fx-c-val { font-size: 1.3rem; font-weight: 600; line-height: 1; color: var(--cyan, var(--cyan)); font-variant-numeric: tabular-nums; transition: text-shadow 0.2s; }
+.fx-c-amber { color: var(--amber, #ffb000); }
+.fx-c-neon { color: var(--neon, #00ff41); }
+.fx-c-tick { text-shadow: 0 0 12px currentColor; }
+.fx-c-label { font-size: 0.58rem; letter-spacing: 2px; color: var(--text-muted, #6aa06a); margin-top: 2px; }
+
+/* the wire */
+.fx-hud-right { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.fx-wire-head { display: flex; align-items: center; gap: 8px; padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px solid var(--border, #1a3a1a); }
+.fx-wire {
+    flex: 1; min-height: 110px; max-height: 150px; overflow-y: auto;
+    font-size: 0.7rem; line-height: 1.5;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 4px 6px;
+}
+.fx-line { display: flex; gap: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fx-line-t { color: var(--text-muted, #6aa06a); flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+.fx-line-x { color: var(--text, #00ff41); overflow: hidden; text-overflow: ellipsis; }
+.fx-line-new .fx-line-x { color: var(--cyan, var(--cyan)); animation: fx-type 0.9s steps(40, end); }
+@keyframes fx-type { from { max-width: 0; } to { max-width: 100%; } }
+.fx-dim { color: var(--text-muted, #6aa06a); }
+.fx-url { color: rgba(0, 212, 255, 0.45); font-size: 0.62rem; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* the capture card: the last quote kept, slides in under the strip */
+.fx-capture {
+    grid-column: 1 / -1;
+    display: none; align-items: baseline; gap: 10px;
+    border-left: 3px solid var(--amber, #ffb000);
+    background: rgba(255, 176, 0, 0.05);
+    padding: 6px 10px;
+    font-size: 0.72rem;
+}
+.fx-capture:not(:empty) { display: flex; }
+.fx-cap-in { animation: fx-slide 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes fx-slide { from { transform: translateX(-12px); opacity: 0; } to { transform: none; opacity: 1; } }
+.fx-cap-tag { color: var(--amber, #ffb000); letter-spacing: 1px; font-size: 0.64rem; flex: 0 0 auto; }
+.fx-cap-q { color: var(--text, #00ff41); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fx-cap-meta { color: var(--text-muted, #6aa06a); font-size: 0.64rem; flex: 0 0 auto; }
+
+/* the stamp: a finding was just written */
+.fx-stamp {
+    position: absolute; right: 14px; top: 10px;
+    padding: 4px 10px;
+    border: 2px solid var(--neon, #00ff41);
+    color: var(--neon, #00ff41);
+    letter-spacing: 2px; font-size: 0.7rem; font-weight: bold;
+    opacity: 0; transform: rotate(-4deg) scale(1.3);
+    pointer-events: none;
+}
+.fx-stamp-on { animation: fx-stamp 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+@keyframes fx-stamp {
+    0%   { opacity: 0; transform: rotate(-4deg) scale(1.6); }
+    12%  { opacity: 1; transform: rotate(-4deg) scale(1); text-shadow: 0 0 14px var(--neon-glow, var(--neon-glow)); }
+    80%  { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* ── buttons, house style ── */
+.fx-act {
+    flex: 0 0 auto;
+    background: transparent;
+    border: 1px solid var(--cyan, var(--cyan));
+    color: var(--cyan, var(--cyan));
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 1px;
+    padding: 3px 9px; cursor: pointer;
+    transition: background 0.12s;
+}
+.fx-act:hover:not([disabled]) { background: rgba(0, 212, 255, 0.12); }
+.fx-act[disabled], .fx-busy { opacity: 0.45; cursor: default; }
+.fx-act-go { border-color: var(--neon, #00ff41); color: var(--neon, #00ff41); }
+.fx-act-go:hover:not([disabled]) { background: rgba(0, 255, 65, 0.12); }
+.fx-act-ghost { border-color: var(--border, #1a3a1a); color: var(--text-muted, #6aa06a); font-size: 0.62rem; padding: 2px 6px; }
+.fx-act-ghost:hover:not([disabled]) { color: var(--cyan, var(--cyan)); }
+
+/* ── candidates ── */
+.fx-card {
+    display: grid;
+    grid-template-columns: 74px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 7px 9px;
+    margin-bottom: 6px;
+    border: 1px solid var(--border, #1a3a1a);
+    border-left: 3px solid var(--cyan, var(--cyan));
+    background: rgba(0, 212, 255, 0.02);
+}
+.fx-card-worth { border-left-color: var(--neon, #00ff41); background: rgba(0, 255, 65, 0.04); }
+.fx-card-dead { border-left-color: var(--red, var(--red)); background: rgba(255, 0, 64, 0.03); opacity: 0.7; }
+.fx-card-score { display: flex; flex-direction: column; gap: 3px; }
+.fx-score-n { font-size: 1.4rem; font-weight: 600; line-height: 1; color: var(--text, #00ff41); font-variant-numeric: tabular-nums; }
+.fx-card-worth .fx-score-n { color: var(--neon, #00ff41); text-shadow: 0 0 8px var(--neon-glow, var(--neon-glow)); }
+.fx-card-dead .fx-score-n { color: var(--red, var(--red)); }
+.fx-score-bar { height: 3px; background: rgba(0, 212, 255, 0.12); }
+.fx-score-bar > i { display: block; height: 100%; background: var(--cyan, var(--cyan)); transition: width 0.6s ease; }
+.fx-card-worth .fx-score-bar > i { background: var(--neon, #00ff41); }
+.fx-card-dead .fx-score-bar > i { background: var(--red, var(--red)); }
+.fx-score-tag { font-size: 0.56rem; letter-spacing: 1.5px; color: var(--neon, #00ff41); }
+.fx-tag-dead { color: var(--red, var(--red)); }
+.fx-card-main { min-width: 0; }
+.fx-card-top { display: flex; align-items: baseline; gap: 8px; }
+.fx-card-id { color: var(--cyan, var(--cyan)); font-weight: bold; letter-spacing: 0.5px; }
+.fx-card-name { color: var(--text-muted, #8fc28f); font-size: 0.7rem; }
+.fx-card-seen { color: var(--text-muted, #6aa06a); font-size: 0.64rem; margin-left: auto; }
+.fx-card-problem { color: var(--text, #00ff41); font-size: 0.75rem; margin-top: 3px; line-height: 1.4; }
+.fx-card-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.fx-chip { font-size: 0.6rem; letter-spacing: 0.5px; padding: 0 5px; border: 1px solid var(--border, #1a3a1a); color: var(--text-muted, #6aa06a); }
+.fx-card-why { margin-top: 6px; font-size: 0.68rem; color: var(--text-muted, #8fc28f); border-left: 1px solid var(--border, #1a3a1a); padding-left: 8px; }
+.fx-card-ev { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+.fx-ev { border-left: 3px solid var(--amber, #ffb000); background: rgba(255, 176, 0, 0.05); padding: 4px 8px; font-size: 0.68rem; }
+.fx-ev-q { color: var(--text, #00ff41); display: block; }
+.fx-ev-a { color: var(--amber, #ffb000); font-size: 0.62rem; }
+.fx-ev-a:hover { text-decoration: underline; }
+.fx-card-acts { display: flex; flex-direction: column; gap: 4px; align-items: stretch; }
+.fx-dead-bar { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+
+/* ── builds ── */
+.fx-tiles { display: grid; grid-template-columns: 1fr; gap: 6px; }
+.fx-tile {
+    border: 1px solid var(--border, #1a3a1a);
+    border-left: 3px solid var(--text-muted, #6aa06a);
+    background: rgba(0, 255, 65, 0.02);
+    padding: 6px 9px;
+}
+.fx-b-building { border-left-color: var(--purple, var(--purple)); background: rgba(155, 89, 182, 0.05); }
+.fx-b-published { border-left-color: var(--neon, #00ff41); }
+.fx-tile-top { display: flex; align-items: center; gap: 8px; }
+.fx-tile-dot { color: var(--text-muted, #6aa06a); }
+.fx-b-building .fx-tile-dot { color: var(--purple, var(--purple)); animation: fx-breathe 1.6s ease-in-out infinite; }
+.fx-tile-id { color: var(--text, #00ff41); font-weight: bold; }
+.fx-tile-st { margin-left: auto; font-size: 0.62rem; letter-spacing: 1px; color: var(--text-muted, #6aa06a); border: 1px solid var(--border, #1a3a1a); padding: 0 5px; }
+.fx-b-building .fx-tile-st { color: var(--purple, var(--purple)); border-color: var(--purple, var(--purple)); }
+.fx-tile-sub { color: var(--text-muted, #6aa06a); font-size: 0.66rem; margin-top: 2px; }
+.fx-tile-acts { display: flex; align-items: center; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.fx-tile-note { color: var(--text-muted, #6aa06a); font-size: 0.6rem; }
+
+/* ── runs ── */
+.fx-run-list { display: flex; flex-direction: column; gap: 3px; }
+.fx-run-row {
+    display: grid;
+    grid-template-columns: 84px minmax(120px, 1fr) 64px 84px 70px minmax(0, 2fr);
+    gap: 10px; align-items: baseline;
+    padding: 4px 8px;
+    border-left: 3px solid var(--border, #1a3a1a);
+    background: rgba(255, 255, 255, 0.015);
+    font-size: 0.7rem;
+}
+.fx-run-worth { border-left-color: var(--neon, #00ff41); }
+.fx-run-date { color: var(--cyan, var(--cyan)); font-variant-numeric: tabular-nums; }
+.fx-run-cat { color: var(--text, #00ff41); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fx-run-n { color: var(--text-muted, #8fc28f); white-space: nowrap; }
+.fx-run-note { color: var(--text-muted, #6aa06a); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── empty / failure states: honest, never blank ── */
+.fx-empty { display: flex; align-items: center; gap: 10px; padding: 14px 6px; color: var(--text-muted, #6aa06a); font-size: 0.74rem; }
+.fx-empty-mark { color: var(--text-muted, #6aa06a); }
+.fx-fail { color: var(--red, var(--red)); border: 1px solid rgba(255, 0, 64, 0.4); padding: 6px 10px; margin-bottom: 8px; font-size: 0.72rem; }
+.fx-warn { color: var(--amber, #ffb000); border: 1px solid rgba(255, 176, 0, 0.4); padding: 6px 10px; margin-bottom: 8px; font-size: 0.72rem; }
+
+/* narrow: stack the HUD, single column below */
+@media (max-width: 1250px) {
+    .fx { grid-template-columns: 1fr; grid-template-areas: "hud" "cands" "builds" "runs"; }
+    .fx-hud { grid-template-columns: 1fr; }
+    .fx-run-row { grid-template-columns: 84px 1fr; }
+    .fx-run-note { grid-column: 1 / -1; }
+}
+
+/* motion is information, but not for someone who cannot take it */
+@media (prefers-reduced-motion: reduce) {
+    .fx-scan, .fx-word, .fx-step-on, .fx-tile-dot, .fx-line-new .fx-line-x, .fx-cap-in, .fx-stamp-on, .fx-launching .fx-ring-fg, .fx-launch-line .fx-line-x { animation: none; }
+    .fx-ring-fg, .fx-score-bar > i { transition: none; }
+}

@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="description" content="TSRCT - Tesseract Remote Control Terminal">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%230a0a0a' width='180' height='180' rx='22'/><path fill='none' stroke='%2300ff41' stroke-width='8' d='M90 30L30 60l60 30 60-30-60-30z'/><path fill='none' stroke='%2300ff41' stroke-width='8' d='M30 120l60 30 60-30'/><path fill='none' stroke='%2300ff41' stroke-width='8' d='M30 90l60 30 60-30'/></svg>">
+    <title>TSRCT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- CSS Modules -->
+    <link rel="stylesheet" href="/src/css/variables.css">
+    <link rel="stylesheet" href="/src/css/base.css">
+    <link rel="stylesheet" href="/src/css/layout.css">
+    <link rel="stylesheet" href="/src/css/terminal.css">
+    <link rel="stylesheet" href="/src/css/permissions.css">
+    <link rel="stylesheet" href="/src/css/hands-free.css">
+    <link rel="stylesheet" href="/src/css/rooms/rooms-base.css">
+    <link rel="stylesheet" href="/src/css/main.css">
+    <link rel="stylesheet" href="/src/css/components.css">
+    <link rel="stylesheet" href="/src/css/desktop.css">
+    <link rel="stylesheet" href="/src/css/desktop-runners.css">
+    <link rel="stylesheet" href="/src/css/desktop-attach.css">
+    <link rel="stylesheet" href="/src/css/desktop-notes.css">
+    <link rel="stylesheet" href="/src/css/desktop-git.css">
+    <link rel="stylesheet" href="/src/css/desktop-sessions.css">
+    <link rel="stylesheet" href="/src/css/restart.css">
+    <!-- The assistant dock: present in every room and both layouts, never modal. -->
+    <link rel="stylesheet" href="/src/css/assistant.css">
+    <link rel="stylesheet" href="/src/css/rooms/room-sfcli.css">
+</head>
+<body>
+    <div class="bg-gradient"></div>
+
+    <!-- Hands-Free Immersive Mode v5 - Single Session -->
+    <div class="hf-immersive" id="hf-immersive">
+        <!-- Top bar with cwd and close -->
+        <div class="hf-topbar">
+            <div class="hf-cwd-display" id="hf-cwd-display" title="Carpeta de trabajo">~/</div>
+            <div class="hf-session-status" id="hf-session-status">Claude</div>
+            <button class="hf-close-btn" onclick="hfExit()">X</button>
+        </div>
+
+        <div class="hf-container">
+            <!-- The Orb -->
+            <div class="hf-orb-wrapper" onclick="hfTapOrb()">
+                <div class="hf-pulse"></div>
+                <div class="hf-pulse"></div>
+                <div class="hf-pulse"></div>
+                <div class="hf-orb"></div>
+            </div>
+
+            <!-- Status -->
+            <div class="hf-status-text" id="hf-status">READY</div>
+
+            <!-- What user said -->
+            <div class="hf-transcript">
+                <div class="hf-transcript-label">You said:</div>
+                <div class="hf-transcript-text" id="hf-transcript">...</div>
+            </div>
+
+            <!-- Claude response -->
+            <div class="hf-response">
+                <div class="hf-response-label">Claude:</div>
+                <div class="hf-response-text" id="hf-response">Waiting...</div>
+            </div>
+
+            <div class="hf-hint">Say: "enviar" • "borrar" • "sí/no" • "silencio" • "salir" • "ayuda"</div>
+        </div>
+
+        <!-- Bottom stats -->
+        <div class="hf-bottom">
+            <div class="hf-stat">$<strong id="hf-cost">0.00</strong></div>
+            <div class="hf-stat"><strong id="hf-time">0:00</strong></div>
+            <div class="hf-stat"><strong id="hf-msgs">0</strong> msgs</div>
+            <button class="hf-debug-btn" onclick="hfToggleDebug()">[D]</button>
+        </div>
+
+        <!-- Debug Panel -->
+        <div class="hf-debug-panel" id="hf-debug-panel">
+            <div class="hf-debug-header">
+                <span>DEBUG LOGS</span>
+                <button onclick="hfClearDebug()">CLEAR</button>
+            </div>
+            <div class="hf-debug-content" id="hf-debug-content"></div>
+        </div>
+    </div>
+
+    <!-- Auth -->
+    <div class="auth" id="auth">
+        <div class="auth-logo"><img src="/logo.png" alt="TSRCT"></div>
+        <div class="auth-title"><h1>TSRCT</h1><p>[ authentication required ]</p></div>
+        <div class="auth-netwarn hidden" id="auth-net-warn">
+            [!] NO CONNECTION TO THE SERVER<br><span>check that Tailscale is connected</span>
+        </div>
+        <!-- Primary: Windows Hello. Revealed by webauthn.js only when a key is
+             enrolled for this exact origin; otherwise the 2FA form below stays
+             as-is, so a JS failure degrades to the old login, never to a lockout. -->
+        <div class="auth-form hidden" id="auth-hello-block">
+            <button class="auth-btn" id="auth-hello-btn" onclick="whLogin()">> UNLOCK WITH WINDOWS HELLO</button>
+        </div>
+        <form class="auth-form" id="auth-form" onsubmit="auth(event)">
+            <input type="password" id="token" class="auth-input" placeholder="ACCESS_TOKEN" autocomplete="off">
+            <input type="text" id="totp" class="auth-input" placeholder="2FA CODE (6 digits)" autocomplete="off" inputmode="numeric" pattern="[0-9]*" maxlength="6">
+            <label class="auth-remember"><input type="checkbox" id="auth-remember" checked> trust this device (skip 2FA next time)</label>
+            <button type="submit" class="auth-btn">> CONNECT</button>
+        </form>
+        <button class="auth-alt hidden" id="auth-fallback-link" onclick="whShowFallback()">use token + 2FA code instead</button>
+        <button class="auth-btn hidden" id="pwa-install" style="margin-top:12px;opacity:0.7" onclick="installPWA()">> INSTALL APP</button>
+    </div>
+
+    <!-- Main App -->
+    <div class="app hidden" id="app">
+        <!-- Header -->
+        <div class="card">
+            <div class="header">
+                <div class="logo" onclick="location.reload()" style="cursor:pointer" title="Refresh">
+                    <div class="logo-icon"><img src="/logo.png" alt="TSRCT"></div>
+                    <div class="logo-text"><h1>TSRCT</h1><span>// remote control</span></div>
+                </div>
+                <button class="sound-toggle" id="sound-toggle" onclick="toggleSound()" title="Toggle sounds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></button>
+                <button class="hf-immersive-btn" id="hf-immersive-btn" onclick="hfEnterImmersive()" title="Modo Inmersivo [VOZ]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><circle cx="12" cy="8" r="0.5" fill="currentColor"/></svg></button>
+                <div class="status" id="status"><div class="status-dot"></div><span>ONLINE</span></div>
+            </div>
+            <!-- Status Bar: Font Size, Session, Auto, Expand -->
+            <div class="status-bar" id="status-bar">
+                <div class="font-size-control" id="font-size-control" title="Terminal font size">
+                    <div class="font-steps">
+                        <button class="font-step" data-size="8" onclick="setTerminalFontSize(8)">S</button>
+                        <button class="font-step active" data-size="10" onclick="setTerminalFontSize(10)">M</button>
+                        <button class="font-step" data-size="12" onclick="setTerminalFontSize(12)">L</button>
+                        <button class="font-step" data-size="14" onclick="setTerminalFontSize(14)">XL</button>
+                    </div>
+                </div>
+                <button class="auto-btn active" id="vault-toggle" onclick="toggleVault()" title="Toggle vault augmentation">
+                    <span id="vault-toggle-label">V</span>
+                </button>
+                <button class="auto-btn" id="pb-toggle" onclick="togglePlainBrief()" title="Plain brief: force short, plain answers in this session">
+                    <span id="pb-toggle-label">PB</span>
+                </button>
+                <button class="session-btn" id="session-btn" onclick="showHomeSessionPicker()">
+                    <span id="home-session-label">claude</span>
+                    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <button class="auto-btn" id="auto-accept-btn" onclick="toggleAutoAcceptModal()" title="Auto-accept permissions">
+                    <span id="auto-accept-label">AUTO</span>
+                </button>
+                <button class="expand-btn" onclick="toggleFullscreen()">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Permission Card (swipeable) -->
+        <div class="card perm-card hidden" id="perm-card">
+            <div class="perm-bg">
+                <div class="perm-bg-approve"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <div class="perm-bg-deny"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+            </div>
+            <div class="perm-content" id="perm-content">
+                <div class="perm-header">
+                    <div class="perm-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                    <div><div class="perm-title" id="perm-title">Permission Required</div><div class="perm-desc" id="perm-desc">Waiting for action...</div></div>
+                </div>
+                <div class="diff-preview" id="diff-preview"></div>
+                <div class="perm-hint">&lt;&lt; DENY | APPROVE &gt;&gt;</div>
+                <button class="perm-purge-btn" onclick="purgeAllPermissions()" title="Purge all pending permissions">PURGE ALL</button>
+            </div>
+        </div>
+
+        <!-- Terminal -->
+        <div class="card" id="terminal-panel">
+            <div class="terminal" id="terminal">> establishing connection...</div>
+        </div>
+
+
+        <!-- Input -->
+        <div class="card">
+            <div class="input-area">
+                <div class="input-row">
+                    <div class="input-wrap">
+                        <input type="text" id="prompt" class="input-field" placeholder="> command..." autocomplete="off">
+                    </div>
+                    <button class="cam-btn" onclick="$('camera-input').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
+                    <button class="cam-btn" onclick="showGalleryModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></button>
+                    <button class="cam-btn" onclick="showFilesModal()" title="Attach file"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+                    <button class="mic-btn" id="mic-btn" onclick="toggleMic()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+                    <button class="send-btn" onclick="send()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+                    <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none" onchange="uploadImages(this)">
+                    <input type="file" id="gallery-input" accept="image/*" multiple style="display:none" onchange="uploadImages(this)">
+                    <input type="file" id="file-input" style="display:none" onchange="uploadFile(this)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Bar -->
+    <div class="quick-bar hidden" id="quick-bar">
+        <!-- Toggle entre modos -->
+        <div class="quick-toggle">
+            <button class="toggle-btn active" id="toggle-claude" onclick="setQuickMode('claude')">CLAUDE</button>
+            <button class="toggle-btn" id="toggle-term" onclick="setQuickMode('term')">TERMINAL</button>
+            <button class="toggle-btn" id="toggle-tools" onclick="setQuickMode('tools')">TOOLS</button>
+        </div>
+        <!-- Menu Claude -->
+        <div class="quick-grid" id="quick-claude">
+            <!-- Fila 1: Permisos y navegación -->
+            <button class="quick-btn" onclick="resetVaultCycle()" style="color:var(--cyan);border-color:var(--cyan)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>VAULT</button>
+            <button class="quick-btn danger" onclick="denyAction()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>NO</button>
+            <button class="quick-btn" onclick="sendKey('Up')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>UP</button>
+            <button class="quick-btn" onclick="sendKey('Down')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>DN</button>
+            <button class="quick-btn cyan" onclick="sendKey('Enter')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>ENT</button>
+            <!-- Fila 2: Respuestas comunes -->
+            <button class="quick-btn" onclick="quick('yes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>YES</button>
+            <button class="quick-btn" onclick="quick('no')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>NO TXT</button>
+            <button class="quick-btn warn" onclick="analyzeProject()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6"/><path d="M8 11h6"/></svg>SCAN</button>
+            <button class="quick-btn" onclick="quick('skip')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>SKIP</button>
+            <button class="quick-btn warn" onclick="sendKey('Escape')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12"/></svg>STOP</button>
+            <!-- Fila 3: Comandos -->
+            <button class="quick-btn" onclick="quick('/compact')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></svg>CMPT</button>
+            <button class="quick-btn" onclick="quick('/clear')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>CLEAR</button>
+            <button class="quick-btn cyan" onclick="showContextModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>INFO</button>
+            <button class="quick-btn" onclick="sendKey('Tab')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="21" y1="6" x2="21" y2="18"/></svg>TAB</button>
+            <button class="quick-btn" onclick="showRunnerAttachPicker()" style="color:var(--amber);border-color:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>ATT</button>
+        </div>
+        <!-- Menu Terminal -->
+        <div class="quick-grid hidden" id="quick-term">
+            <!-- Fila 1: Control de procesos -->
+            <button class="quick-btn danger" onclick="sendCtrl('c')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>^C</button>
+            <button class="quick-btn warn" onclick="sendCtrl('d')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>^D</button>
+            <button class="quick-btn" onclick="sendCtrl('z')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>^Z</button>
+            <button class="quick-btn" onclick="sendCtrl('l')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>^L</button>
+            <button class="quick-btn cyan" onclick="sendKey('Enter')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>ENT</button>
+            <!-- Fila 2: Navegación -->
+            <button class="quick-btn" onclick="termCmd('ls -la')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M7 7h2v2H7z"/><path d="M7 11h2v2H7z"/><path d="M7 15h2v2H7z"/><path d="M11 7h6"/><path d="M11 11h6"/><path d="M11 15h6"/></svg>LS</button>
+            <button class="quick-btn" onclick="toggleEyeProtect()" style="color:#d4a040;border-color:#d4a040"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>EYE</button>
+            <button class="quick-btn" onclick="termCmd('cd ..')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/><line x1="12" y1="9" x2="12" y2="21"/></svg>CD..</button>
+            <button class="quick-btn" onclick="showOrgAttachPicker()" style="color:#00a8ff;border-color:rgba(0,168,255,0.4)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>SF+</button>
+            <button class="quick-btn cyan" onclick="showProjectModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>PROJ</button>
+            <!-- Fila 3: Claude y otros -->
+            <button class="quick-btn primary" onclick="termCmd('claude')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>CLAUDE</button>
+            <button class="quick-btn warn" onclick="showSessionsModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>SESS</button>
+            <button class="quick-btn" style="color:#e91e63;" onclick="tmuxPane()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>PANE</button>
+            <button class="quick-btn danger" onclick="showRollbackModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>UNDO</button>
+            <button class="quick-btn" onclick="sendKey('Up')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>UP</button>
+        </div>
+        <!-- Menu Tools (4x3 grid) -->
+        <div class="quick-grid tools-grid hidden" id="quick-tools">
+            <button class="quick-btn" onclick="WorldManager.open('runners')" style="color: #ff8c00;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>RUN</button>
+            <button class="quick-btn" onclick="showAbbreviationsModal()" style="color: #FF6B6B;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>CMD</button>
+            <button class="quick-btn" onclick="WorldManager.open('remote')" style="color: #00a8ff;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>REMOTE</button>
+            <button class="quick-btn" onclick="WorldManager.open('sfcli')" style="color:#00a8ff;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>SF</button>
+            <button class="quick-btn" onclick="WorldManager.open('lurk')" style="color:#46e0ff;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 21 7 21 17 12 22 3 17 3 7"/><polygon points="12 6 17 9 17 15 12 18 7 15 7 9"/></svg>NULL</button>
+            <button class="quick-btn" onclick="WorldManager.open('studio')" style="color:#00ff88;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="3" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="21"/></svg>STUDIO</button>
+            <button class="quick-btn" onclick="WorldManager.open('playlist')" style="color:#46e0ff;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>LABS</button>
+            <button class="quick-btn" onclick="mrnToggle()" style="color:#ffd166;border-color:rgba(255,209,102,0.4)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>BRIEF</button>
+            <button class="quick-btn" onclick="WorldManager.open('automations')" style="color:#00ff41;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>AUTO<span id="au-quick-badge" style="display:none;width:7px;height:7px;margin-left:3px;border-radius:50%;background:#ff0040;vertical-align:top"></span></button>
+            <button class="quick-btn" onclick="projectorOpen()" style="color:#46e0ff;" title="Watch (and drive) the separate browser a session is using"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><polygon points="10 8 15 10 10 12"/></svg>PROJ</button>
+            <button class="quick-btn" onclick="toggleNavyTheme()" style="color:#22a7ff;border-color:rgba(34,167,255,0.4)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l6.5 8a6.5 6.5 0 1 1-13 0z"/></svg>NAVY</button>
+        </div>
+    </div>
+
+    <!-- Rollback Modal -->
+    <div class="modal-overlay hidden" id="rollback-modal" onclick="hideRollbackModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                GIT ROLLBACK
+            </div>
+            <div class="modal-body">
+                <button class="modal-btn" onclick="gitRollback('uncommitted')">
+                    <span class="modal-btn-title">Discard Changes</span>
+                    <span class="modal-btn-desc">Revert all uncommitted changes</span>
+                </button>
+                <button class="modal-btn" onclick="gitRollback('lastcommit')">
+                    <span class="modal-btn-title">Undo Last Commit</span>
+                    <span class="modal-btn-desc">Keep changes, just undo commit</span>
+                </button>
+                <button class="modal-btn danger" onclick="gitRollback('hard')">
+                    <span class="modal-btn-title">Hard Reset</span>
+                    <span class="modal-btn-desc">Discard ALL changes (destructive!)</span>
+                </button>
+            </div>
+            <button class="modal-close" onclick="hideRollbackModal()">CANCEL</button>
+        </div>
+    </div>
+
+    <!-- Project Switcher Modal -->
+    <div class="modal-overlay hidden" id="project-modal" onclick="hideProjectModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                SWITCH PROJECT
+            </div>
+            <div class="modal-body project-list" id="project-list">
+                <div class="modal-btn-desc" style="text-align:center;padding:20px">Loading projects...</div>
+            </div>
+            <button class="modal-close" onclick="hideProjectModal()">CANCEL</button>
+        </div>
+    </div>
+
+    <!-- Project Context Modal -->
+    <div class="modal-overlay hidden" id="context-modal" onclick="hideContextModal()">
+        <div class="modal" style="max-width:400px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                PROJECT INFO
+            </div>
+            <div class="modal-body" id="context-body" style="overflow-y:auto;flex:1">
+                <div class="modal-btn-desc" style="text-align:center;padding:20px">Loading...</div>
+            </div>
+            <div style="padding:8px 12px;border-top:1px solid var(--border)">
+                <button class="modal-btn" onclick="hideContextModal();showRestartConfirm()" style="width:100%;border-color:var(--amber)">
+                    <span class="modal-btn-title" style="color:var(--amber)">RESTART SERVER</span>
+                    <span class="modal-btn-desc">Restart the TSRCT bridge server</span>
+                </button>
+            </div>
+            <button class="modal-close" onclick="hideContextModal()">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- Restart: confirm modal -->
+    <div class="modal-overlay hidden" id="restart-confirm-modal" onclick="cancelRestart()">
+        <div class="modal" style="max-width:380px" onclick="event.stopPropagation()">
+            <div class="modal-header" style="color:var(--amber)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                RESTART BRIDGE SERVER
+            </div>
+            <div class="modal-body">
+                <p class="restart-warn">This restarts the TSRCT bridge server. Active tmux sessions keep running, but the connection drops for a few seconds while it reboots. On the desktop app the native launcher splash opens; on mobile the interface reconnects automatically.</p>
+            </div>
+            <div class="restart-confirm-actions">
+                <button class="modal-btn restart-cancel" onclick="cancelRestart()">CANCEL</button>
+                <button class="modal-btn restart-go" onclick="confirmRestart()">RESTART</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Restart: boot splash overlay -->
+    <div class="restart-splash hidden" id="restart-splash">
+        <div class="rs-inner">
+            <div class="rs-brand">
+                <div class="rs-mark"></div>
+                <div class="rs-title">TSRCT</div>
+                <div class="rs-sub">BRIDGE RESTART</div>
+            </div>
+            <div class="rs-phase" id="restart-splash-phase">STARTING...</div>
+            <div class="rs-progress"><div class="rs-progress-bar"></div></div>
+            <div class="rs-term" id="restart-splash-term"></div>
+            <button class="rs-reload hidden" id="restart-splash-reload" onclick="restartReloadNow()">RELOAD</button>
+        </div>
+    </div>
+
+    <!-- Sessions Modal -->
+    <div class="modal-overlay hidden" id="sessions-modal" onclick="hideSessionsModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                TMUX SESSIONS
+            </div>
+            <div class="modal-body" id="sessions-list">
+                <div class="modal-btn-desc" style="text-align:center;padding:20px">Loading sessions...</div>
+            </div>
+            <button class="modal-btn primary" onclick="createNewSession()" style="margin:8px 12px;border-color:var(--neon)">
+                <span class="modal-btn-title" style="color:var(--neon)">+ NEW SESSION</span>
+                <span class="modal-btn-desc">Create a new tmux session</span>
+            </button>
+            <button class="modal-close" onclick="hideSessionsModal()">CANCEL</button>
+        </div>
+    </div>
+
+    <!-- Server Gallery Modal -->
+    <div class="modal-overlay hidden" id="gallery-modal" onclick="hideGalleryModal()">
+        <div class="modal gallery-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                GALLERY
+            </div>
+            <div class="gallery-source-btns">
+                <button class="gallery-source-btn" onclick="galleryPickPhone()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                    PHONE
+                </button>
+                <button class="gallery-source-btn active" id="gallery-server-btn" onclick="loadServerGallery()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                    SERVER
+                </button>
+            </div>
+            <div class="gallery-bar">
+                <div class="gallery-count" id="gallery-count">Loading...</div>
+                <div class="gallery-zoom" id="gallery-zoom">
+                    <button onclick="gallerySetCols(3)" data-cols="3" title="Small">[:::]</button>
+                    <button onclick="gallerySetCols(2)" data-cols="2" title="Medium">[::]</button>
+                    <button onclick="gallerySetCols(1)" data-cols="1" title="Big">[:]</button>
+                </div>
+            </div>
+            <div class="gallery-tools">
+                <button class="gallery-tool" onclick="gallerySelectAll()">ALL</button>
+                <button class="gallery-tool" onclick="galleryClearSelection()">NONE</button>
+                <button class="gallery-tool danger" id="gallery-del-btn" onclick="galleryAskDelete()" disabled>DELETE (0)</button>
+                <button class="gallery-tool danger" id="gallery-empty-btn" onclick="galleryAskEmpty()">EMPTY</button>
+            </div>
+            <div class="modal-body">
+                <div class="gallery-grid cols-2" id="gallery-grid">
+                    <div class="gallery-empty">Loading images...</div>
+                </div>
+            </div>
+            <div class="gallery-confirm hidden" id="gallery-confirm">
+                <div class="gallery-confirm-text" id="gallery-confirm-text"></div>
+                <div class="gallery-confirm-btns">
+                    <button class="gallery-btn-cancel" onclick="galleryCancelConfirm()">NO, KEEP</button>
+                    <button class="gallery-btn-danger" id="gallery-confirm-yes" onclick="galleryConfirmRun()">DELETE</button>
+                </div>
+            </div>
+            <div class="gallery-actions" id="gallery-actions">
+                <button class="gallery-btn-cancel" onclick="hideGalleryModal()">CLOSE</button>
+                <button class="gallery-btn-attach" id="gallery-attach-btn" onclick="attachSelectedImages()" disabled>ATTACH (0)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery viewer: one image, full screen. Sibling of the modal (not a
+         child) so the overlay's click-to-close cannot fire behind it. -->
+    <div class="gallery-lightbox hidden" id="gallery-lightbox">
+        <div class="glb-top">
+            <div class="glb-meta" id="glb-meta"></div>
+            <button class="glb-x" onclick="galleryCloseViewer()">[x]</button>
+        </div>
+        <div class="glb-stage">
+            <button class="glb-nav prev" onclick="galleryViewerStep(-1)" title="Previous">&#8249;</button>
+            <img id="glb-img" alt="">
+            <button class="glb-nav next" onclick="galleryViewerStep(1)" title="Next">&#8250;</button>
+        </div>
+        <div class="glb-actions">
+            <button class="gallery-btn-cancel" id="glb-select" onclick="galleryViewerToggleSelect()">SELECT</button>
+            <button class="gallery-btn-danger" onclick="galleryViewerDelete()">DELETE</button>
+        </div>
+    </div>
+
+    <!-- File Picker Modal -->
+    <div class="modal-overlay hidden" id="files-modal" onclick="hideFilesModal()">
+        <div class="modal gallery-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                ARCHIVOS
+            </div>
+            <div class="modal-body">
+                <div class="gallery-source-btns">
+                    <button class="gallery-source-btn" onclick="$('file-input').click();hideFilesModal()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                        TELEFONO
+                    </button>
+                    <button class="gallery-source-btn active" onclick="loadServerFiles()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                        SERVIDOR
+                    </button>
+                </div>
+                <div class="gallery-count" id="files-count">Loading...</div>
+                <div class="files-list" id="files-list">
+                    <div class="gallery-empty">Loading files...</div>
+                </div>
+            </div>
+            <div class="gallery-actions">
+                <button class="gallery-btn-cancel" onclick="hideFilesModal()">CANCELAR</button>
+                <button class="gallery-btn-attach" id="files-attach-btn" onclick="attachSelectedFiles()" disabled>ADJUNTAR (0)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Command Builder Modal -->
+    <div class="modal-overlay hidden" id="abbreviations-modal" onclick="hideAbbreviationsModal()">
+        <div class="modal abbr-modal" onclick="event.stopPropagation()">
+            <div class="modal-header" style="color: #FF6B6B;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+                COMMANDS
+            </div>
+            <div class="modal-body abbr-body">
+                <input type="text" class="abbr-search" placeholder="Search commands..." oninput="renderAbbreviationsList(this.value)">
+                <div class="abbr-list" id="abbreviations-list">
+                    <!-- Dynamically populated -->
+                </div>
+                <div class="abbr-add-form">
+                    <select id="new-abbr-type" class="abbr-type-select">
+                        <option value="text">Text</option>
+                        <option value="ctrl">Ctrl+</option>
+                        <option value="key">Key</option>
+                    </select>
+                    <input type="text" id="new-abbr-key" placeholder="key" class="abbr-input-key" maxlength="6">
+                    <input type="text" id="new-abbr-value" placeholder="value..." class="abbr-input-value">
+                    <button class="abbr-add-btn" onclick="addNewAbbreviation()">+</button>
+                </div>
+            </div>
+            <div class="abbr-actions">
+                <button class="abbr-reset-btn" onclick="resetAbbreviations()">RESET</button>
+                <button class="modal-close" onclick="hideAbbreviationsModal()">DONE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auto-Accept Session Modal -->
+    <div class="modal-overlay hidden" id="auto-accept-modal" onclick="closeAutoAcceptModal()">
+        <div class="modal auto-accept-content" onclick="event.stopPropagation()">
+            <div class="modal-header" style="color: var(--neon);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 12 15 16 10"/></svg>
+                AUTO-ACCEPT SESSIONS
+            </div>
+            <div class="modal-body">
+                <p class="auto-accept-warning">WARNING: Permissions will be auto-approved for selected sessions</p>
+                <div class="session-list" id="auto-accept-sessions"></div>
+            </div>
+            <div class="modal-actions" style="display: flex; gap: 8px; padding: 12px;">
+                <button class="modal-close" style="flex: 1; background: rgba(255,60,60,0.2); border-color: var(--red); color: var(--red);" onclick="clearAllAutoAccept()">CLEAR ALL</button>
+                <button class="modal-close" style="flex: 1;" onclick="closeAutoAcceptModal()">CLOSE</button>
+            </div>
+        </div>
+    </div>
+    <!-- SF CLI Modals -->
+    <div class="modal-overlay hidden" id="sf-soql-modal" onclick="sfCloseModal('sf-soql-modal')">
+        <div class="modal" style="max-width:600px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column" onclick="event.stopPropagation()">
+            <div class="modal-header" style="color:#00a8ff;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 12l10 5 10-5"/></svg>
+                SOQL RUNNER
+            </div>
+            <div class="modal-body" style="flex:1;overflow-y:auto;">
+                <div class="sf-modal-row">
+                    <select id="sf-m-soql-org" class="sf-modal-select"></select>
+                </div>
+                <div id="sf-m-soql-bookmarks" class="sf-modal-bookmarks"></div>
+                <textarea id="sf-m-soql-input" class="sf-modal-textarea" rows="3" placeholder="SELECT Id, Name FROM Account LIMIT 10"></textarea>
+                <div class="sf-modal-actions">
+                    <button class="sf-modal-btn sf-modal-btn-primary" onclick="sfModalExecuteSOQL()">[>] EXECUTE</button>
+                    <button class="sf-modal-btn" onclick="sfModalClearResult('sf-m-soql-result')">[x] CLEAR</button>
+                </div>
+                <div id="sf-m-soql-result" class="sf-modal-result"></div>
+            </div>
+            <button class="modal-close" onclick="sfCloseModal('sf-soql-modal')">CLOSE</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="sf-apex-modal" onclick="sfCloseModal('sf-apex-modal')">
+        <div class="modal" style="max-width:600px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column" onclick="event.stopPropagation()">
+            <div class="modal-header" style="color:#00a8ff;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>
+                APEX RUNNER
+            </div>
+            <div class="modal-body" style="flex:1;overflow-y:auto;">
+                <div class="sf-modal-row">
+                    <select id="sf-m-apex-org" class="sf-modal-select"></select>
+                </div>
+                <textarea id="sf-m-apex-input" class="sf-modal-textarea" rows="6" placeholder="System.debug('Hello from Apex');"></textarea>
+                <div class="sf-modal-actions">
+                    <button class="sf-modal-btn sf-modal-btn-primary" onclick="sfModalExecuteApex()">[>] RUN APEX</button>
+                    <button class="sf-modal-btn" onclick="sfModalClearResult('sf-m-apex-result')">[x] CLEAR</button>
+                </div>
+                <div id="sf-m-apex-result" class="sf-modal-result"></div>
+            </div>
+            <button class="modal-close" onclick="sfCloseModal('sf-apex-modal')">CLOSE</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="sf-ws-modal" onclick="sfCloseModal('sf-ws-modal')">
+        <div class="modal" style="max-width:500px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column" onclick="event.stopPropagation()">
+            <div class="modal-header" style="color:#00a8ff;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 12l10 5 10-5"/></svg>
+                <span id="sf-ws-modal-title">NEW WORKSPACE</span>
+            </div>
+            <div class="modal-body" style="flex:1;overflow-y:auto;">
+                <label class="sf-modal-label">ID (lowercase, no spaces)</label>
+                <input type="text" id="sf-m-ws-id" class="sf-modal-input" placeholder="wineries" pattern="[a-z0-9-]+">
+                <label class="sf-modal-label">NAME</label>
+                <input type="text" id="sf-m-ws-name" class="sf-modal-input" placeholder="Wineries">
+                <label class="sf-modal-label">THEME</label>
+                <select id="sf-m-ws-theme" class="sf-modal-select">
+                    <option value="default">Default</option>
+                    <option value="vineyard">Vineyard</option>
+                </select>
+                <label class="sf-modal-label">PROJECT PATH</label>
+                <input type="text" id="sf-m-ws-path" class="sf-modal-input" placeholder="/mnt/c/Users/...">
+                <label class="sf-modal-label">EXTENSIONS</label>
+                <label class="sf-modal-checkbox"><input type="checkbox" id="sf-m-ws-recon"> Recon Dashboard</label>
+                <div id="sf-m-ws-bookmarks-wrap" class="hidden">
+                    <label class="sf-modal-label" style="margin-top:12px">SOQL BOOKMARKS</label>
+                    <div id="sf-m-ws-bookmarks"></div>
+                    <button class="sf-modal-btn" onclick="sfModalAddBookmark()" style="margin-top:4px">[+] Add Bookmark</button>
+                </div>
+                <div class="sf-modal-actions" style="margin-top:12px">
+                    <button class="sf-modal-btn sf-modal-btn-primary" id="sf-m-ws-save" onclick="sfModalSaveWorkspace()">[+] CREATE</button>
+                </div>
+            </div>
+            <button class="modal-close" onclick="sfCloseModal('sf-ws-modal')">CANCEL</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="sf-addorg-modal" onclick="sfCloseModal('sf-addorg-modal')">
+        <div class="modal" style="max-width:400px" onclick="event.stopPropagation()">
+            <div class="modal-header" style="color:#00a8ff;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                ADD ORG
+            </div>
+            <div class="modal-body" id="sf-addorg-list"></div>
+            <button class="modal-close" onclick="sfCloseModal('sf-addorg-modal')">CANCEL</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="sf-login-modal" onclick="sfCloseModal('sf-login-modal')">
+        <div class="modal" style="max-width:400px" onclick="event.stopPropagation()">
+            <div class="modal-header" style="color:#00a8ff;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                LOGIN ORG
+            </div>
+            <div class="modal-body">
+                <label class="sf-modal-label">ALIAS</label>
+                <input type="text" id="sf-login-alias" class="sf-modal-input" placeholder="my-org-prod">
+                <label class="sf-modal-label">INSTANCE URL (optional)</label>
+                <input type="text" id="sf-login-instance" class="sf-modal-input" placeholder="https://login.salesforce.com">
+                <div class="sf-modal-actions" style="margin-top:12px">
+                    <button class="sf-modal-btn sf-modal-btn-primary" onclick="sfDoLogin()">[>] LOGIN</button>
+                </div>
+                <div id="sf-login-status" style="margin-top:8px"></div>
+            </div>
+            <button class="modal-close" onclick="sfCloseModal('sf-login-modal')">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span id="toast-msg">Sent!</span></div>
+
+    <!-- Zen Reminder -->
+    <div class="zen-reminder" id="zen-reminder">
+        <div class="zen-reminder-content">
+            <div class="zen-reminder-icon" id="zen-icon">*</div>
+            <div class="zen-reminder-text" id="zen-text">Remember, your phone doesn't replace your PC.</div>
+            <div class="zen-reminder-sub">breathe · ground · continue</div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         REMOTE DESKTOP - VNC Remote Control via Gateway Portal
+         View and control your PC desktop from your phone
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div class="room" id="remote-room">
+        <!-- Gateway portal background -->
+        <div class="room-bg rd-bg"></div>
+
+        <!-- Ambient Effects - scan lines, grid, portal glow -->
+        <div class="room-ambient" style="opacity: 0.5;">
+            <div class="rd-scanline"></div>
+            <div class="rd-grid-bg"></div>
+            <div class="rd-portal-glow"></div>
+        </div>
+
+        <!-- Room Content -->
+        <div class="room-content">
+            <div class="room-header rd-header">
+                <span class="room-title rd-title">
+                    <!-- Monitor icon -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                    Remote Desktop
+                </span>
+                <span class="rd-status" id="rd-status">OFFLINE</span>
+                <button class="room-close" onclick="WorldManager.close('remote')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+
+            <div class="room-body rd-body" id="rd-body">
+                <!-- Connection Panel (shown when disconnected) -->
+                <div class="rd-connect-panel" id="rd-connect-panel">
+                    <div class="room-section-title">CONNECTION</div>
+                    <div class="rd-form">
+                        <input class="rd-input" id="rd-host" type="text" placeholder="VNC Host (localhost)" value="localhost">
+                        <input class="rd-input" id="rd-port" type="number" placeholder="Port (5900)" value="5900">
+                        <input class="rd-input" id="rd-password" type="password" placeholder="VNC Password (optional)">
+                        <button class="rd-connect-btn" id="rd-connect-btn" onclick="rdConnect()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            CONNECT
+                        </button>
+                    </div>
+                </div>
+
+                <!-- VNC Canvas Container (shown when connected) -->
+                <div class="rd-canvas-wrap" id="rd-canvas-wrap" style="display:none;">
+                    <div class="rd-canvas-container" id="rd-canvas-container">
+                        <!-- noVNC renders its canvas here -->
+                    </div>
+
+                    <!-- Zoom level indicator -->
+                    <div class="rd-zoom-indicator" id="rd-zoom-indicator">100%</div>
+
+                    <!-- Floating toggle to show toolbar after auto-hide -->
+                    <button class="rd-toolbar-toggle" id="rd-toolbar-toggle" onclick="rdShowToolbar()">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                    </button>
+
+                    <!-- Hidden input for native keyboard capture -->
+                    <input type="text" id="rd-native-keyboard" class="rd-native-keyboard" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value=" ">
+                </div>
+
+                <!-- Magnifier: zoomed view around cursor during touch -->
+                <div class="rd-magnifier" id="rd-magnifier">
+                    <canvas id="rd-magnifier-canvas"></canvas>
+                    <div class="rd-magnifier-crosshair"></div>
+                </div>
+                <!-- Cursor dot: shows cursor position on canvas -->
+                <div class="rd-cursor-dot" id="rd-cursor-dot"></div>
+
+                <!-- Click strip: OUTSIDE canvas-wrap so gesture engine cannot interfere -->
+                <div class="rd-click-strip" id="rd-click-strip">
+                    <button class="rd-click-btn" id="rd-drag-btn" ontouchstart="rdToggleDrag(); event.preventDefault();">D</button>
+                    <button class="rd-click-btn" ontouchstart="rdDoubleClickAtCursor(); event.preventDefault();">2x</button>
+                    <button class="rd-click-btn" ontouchstart="rdRightClickAtCursor(); event.preventDefault();">R</button>
+                    <button class="rd-click-btn rd-click-center" id="rd-left-btn" ontouchstart="rdClickDown(); event.preventDefault();" ontouchend="rdClickUp(); event.preventDefault();" ontouchcancel="rdClickUp();">L</button>
+                    <div class="rd-click-sep"></div>
+                    <button class="rd-click-btn rd-clip-btn" ontouchstart="rdCopy(); event.preventDefault();">C</button>
+                    <button class="rd-click-btn rd-clip-btn" ontouchstart="rdPaste(); event.preventDefault();">P</button>
+                    <button class="rd-click-btn rd-click-kb" onclick="rdToggleKeyboard()">KB</button>
+                </div>
+                <!-- Scroll bar: separate from click strip -->
+                <div class="rd-scroll-bar" id="rd-scroll-bar" style="display:none">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5l-4 4h8z"/></svg>
+                    <div class="rd-scroll-track"></div>
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l-4-4h8z"/></svg>
+                </div>
+
+                <!-- Touch Toolbar (shown when connected) -->
+                <div class="rd-toolbar" id="rd-toolbar" style="display:none;">
+                    <!-- Keyboard (opens native + special keys) -->
+                    <button class="rd-tool-btn" id="rd-kb-btn" onclick="rdToggleKeyboard()" title="Keyboard">
+                        <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="8" x2="6" y2="8"/><line x1="10" y1="8" x2="10" y2="8"/><line x1="14" y1="8" x2="14" y2="8"/><line x1="18" y1="8" x2="18" y2="8"/><line x1="6" y1="12" x2="6" y2="12"/><line x1="10" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="14" y2="12"/><line x1="18" y1="12" x2="18" y2="12"/><line x1="8" y1="16" x2="16" y2="16"/></svg>
+                    </button>
+                    <!-- Quick Actions -->
+                    <button class="rd-tool-btn" id="rd-actions-btn" onclick="rdToggleQuickActions()" title="Quick Actions">
+                        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    </button>
+                    <!-- Clipboard -->
+                    <button class="rd-tool-btn" id="rd-clip-btn" onclick="rdToggleClipboard()" title="Clipboard">
+                        <svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+                    </button>
+                    <!-- Fit / Reset Zoom -->
+                    <button class="rd-tool-btn" id="rd-fit-btn" onclick="rdFitToScreen()" title="Fit / Reset Zoom">
+                        <svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                    </button>
+                    <!-- Quality -->
+                    <button class="rd-tool-btn" id="rd-quality-btn" onclick="rdToggleQuality()" title="Quality">
+                        <svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                    </button>
+                    <!-- Monitor select (cycles all -> 1 -> 2 -> all) -->
+                    <button class="rd-tool-btn rd-monitor-btn" id="rd-monitor-btn" onclick="rdCycleMonitor()" title="Screen">
+                        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        <span class="rd-mon-badge" id="rd-mon-badge">*</span>
+                    </button>
+                    <!-- SOLO: collapse Windows to the screen being watched, or restore both -->
+                    <button class="rd-tool-btn" id="rd-solo-btn" onclick="rdToggleSolo()" title="Use only this screen" style="display:none;">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="14" height="10" rx="2"/><line x1="10" y1="18" x2="10" y2="14"/><line x1="6" y1="18" x2="14" y2="18"/><line x1="20" y1="6" x2="20" y2="12" stroke-dasharray="2 2"/></svg>
+                    </button>
+                    <!-- Pull the focused window onto the monitor being viewed (Win+Shift+arrow) -->
+                    <button class="rd-tool-btn" id="rd-pull-btn" onclick="rdPullWindowHere()" title="Pull focused window to this screen" style="display:none;">
+                        <svg viewBox="0 0 24 24"><rect x="2" y="5" width="12" height="9" rx="2"/><line x1="8" y1="18" x2="8" y2="14"/><line x1="5" y1="18" x2="11" y2="18"/><polyline points="18.5 7 16 9.5 18.5 12"/><line x1="16" y1="9.5" x2="22" y2="9.5"/></svg>
+                    </button>
+                    <!-- Fullscreen -->
+                    <button class="rd-tool-btn" id="rd-fs-btn" onclick="rdToggleFullscreen()" title="Fullscreen">
+                        <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                    </button>
+                    <!-- Audio Stream (tap=toggle, hold=device picker) -->
+                    <button class="rd-tool-btn" id="rd-audio-btn" onclick="rdAudioToggle()" oncontextmenu="event.preventDefault();rdAudioShowDevices()" title="Audio (long-press: device)">
+                        <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                    </button>
+                    <!-- VNC Dictation -->
+                    <button class="rd-tool-btn" id="rd-vnc-mic" onclick="rdVncDictateToggle()" title="Dictate">
+                        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+                    </button>
+                    <!-- Nexus PiP -->
+                    <button class="rd-tool-btn" id="rd-pip-btn" onclick="rdPipToggle()" title="Nexus PiP">
+                        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><rect x="12" y="10" width="8" height="5" rx="1" fill="currentColor" opacity="0.4"/><line x1="8" y1="21" x2="16" y2="21"/></svg>
+                    </button>
+                    <!-- Terminal Overlay -->
+                    <button class="rd-tool-btn" id="rd-terminal-btn" onclick="rdToggleTerminalOverlay()" title="Terminal">
+                        <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                    </button>
+                    <!-- VR Cardboard Mode -->
+                    <button class="rd-tool-btn" id="rd-vr-btn" onclick="rdVrToggle()" title="VR Mode">
+                        <svg viewBox="0 0 24 24"><path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-4l-2 2-2-2H4a2 2 0 0 1-2-2V8z"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg>
+                    </button>
+                    <!-- Disconnect -->
+                    <button class="rd-tool-btn rd-disconnect" id="rd-disconnect-btn" onclick="rdDisconnect()" title="Disconnect">
+                        <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+                    </button>
+                </div>
+
+                <!-- Quick Actions Panel (hidden by default) -->
+                <div class="rd-quick-actions-panel" id="rd-quick-actions-panel" style="display:none;">
+                    <div class="rd-quick-actions-list" id="rd-quick-actions-list">
+                        <!-- Actions rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Nexus PiP (floating Claude output) -->
+                <div class="rd-nexus-pip" id="rd-nexus-pip" style="display:none;">
+                    <div class="rd-pip-header" id="rd-pip-header">
+                        <span class="rd-pip-status" id="rd-pip-status">[~]</span>
+                        <select class="rd-pip-session" id="rd-pip-session" onchange="rdPipSwitchSession(this.value)"></select>
+                        <button class="rd-pip-btn" onclick="rdPipToggleSize()" title="Resize">[=]</button>
+                        <button class="rd-pip-btn" onclick="rdPipClose()">[x]</button>
+                    </div>
+                    <div class="rd-pip-output" id="rd-pip-output"></div>
+                    <div class="rd-pip-perm" id="rd-pip-perm" style="display:none;">
+                        <span class="rd-pip-perm-text" id="rd-pip-perm-text"></span>
+                        <button class="rd-pip-approve" onclick="rdPipApprove()">Y</button>
+                        <button class="rd-pip-deny" onclick="rdPipDeny()">N</button>
+                    </div>
+                </div>
+
+                <!-- Terminal Overlay Toggle (always visible top-left) -->
+                <button class="rd-overlay-toggle" id="rd-overlay-toggle" onclick="rdToggleTerminalOverlay()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                </button>
+
+                <!-- Terminal Overlay -->
+                <div class="rd-terminal-overlay" id="rd-terminal-overlay">
+                    <div class="rd-terminal-header">
+                        <span class="rd-terminal-title">[>] TSRCT</span>
+                        <div class="rd-terminal-session-picker" id="rd-session-picker"></div>
+                        <button class="rd-terminal-close" onclick="rdToggleTerminalOverlay()">[x]</button>
+                    </div>
+                    <div class="rd-terminal-output" id="rd-terminal-output"></div>
+                    <div class="rd-terminal-input-row">
+                        <input type="text" id="rd-terminal-input" class="rd-terminal-input" placeholder="> prompt..." autocomplete="off">
+                        <button class="rd-overlay-btn" id="rd-overlay-mic" onclick="rdOverlayToggleMic()">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+                        </button>
+                        <button class="rd-overlay-btn" onclick="document.getElementById('rd-overlay-camera').click()">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        </button>
+                        <button class="rd-overlay-btn" onclick="rdOverlayServerGallery()">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        </button>
+                        <button class="rd-terminal-send" onclick="rdOverlaySend()">[>]</button>
+                    </div>
+                    <input type="file" id="rd-overlay-camera" accept="image/*" capture="environment" style="display:none" onchange="rdOverlayUpload(this)">
+                    <input type="file" id="rd-overlay-gallery" accept="image/*" multiple style="display:none" onchange="rdOverlayUpload(this)">
+                </div>
+
+                <!-- Keyboard Panel: text preview + keys + toolbar -->
+                <!-- Floating text preview (overlays desktop, not in panel) -->
+                <div class="rd-type-floating" id="rd-type-floating">
+                    <span class="rd-type-text" id="rd-type-text"></span>
+                    <span class="rd-type-cursor">|</span>
+                </div>
+
+                <div class="rd-keyboard-panel" id="rd-keyboard-panel" style="display:none;">
+                    <!-- Compact row: modifiers + essentials + expand toggle -->
+                    <div class="rd-key-row">
+                        <button class="rd-key rd-kb-close" onclick="rdToggleNativeKeyboard()">
+                            <svg viewBox="0 0 24 24" width="12" height="12"><path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                        </button>
+                        <button class="rd-key modifier" id="rd-key-ctrl" onclick="rdToggleModifier('ctrl')">Ctrl</button>
+                        <button class="rd-key modifier" id="rd-key-alt" onclick="rdToggleModifier('alt')">Alt</button>
+                        <button class="rd-key modifier" id="rd-key-shift" onclick="rdToggleModifier('shift')">Shift</button>
+                        <span class="rd-key-sep"></span>
+                        <button class="rd-key" onclick="rdSendKey(0xff1b)">Esc</button>
+                        <button class="rd-key" onclick="rdSendKey(0xff09)">Tab</button>
+                        <button class="rd-key" onclick="rdSendKey(0xff0d)">Ent</button>
+                        <button class="rd-key" onclick="rdSendKey(0xff08)">Bk</button>
+                        <span class="rd-key-sep"></span>
+                        <button class="rd-key" onclick="rdSendKey(0xff51)">&lt;</button>
+                        <button class="rd-key" onclick="rdSendKey(0xff54)">v</button>
+                        <button class="rd-key" onclick="rdSendKey(0xff52)">^</button>
+                        <button class="rd-key" onclick="rdSendKey(0xff53)">&gt;</button>
+                        <span class="rd-key-sep"></span>
+                        <button class="rd-key rd-keys-expand" id="rd-keys-expand" onclick="rdToggleKeysExpanded()">+</button>
+                    </div>
+                    <!-- Expandable rows (hidden by default) -->
+                    <div class="rd-keys-extra" id="rd-keys-extra">
+                        <div class="rd-key-row">
+                            <button class="rd-key modifier" id="rd-key-super" onclick="rdToggleModifier('super')">Win</button>
+                            <button class="rd-key" onclick="rdSendKey(0xffff)">Del</button>
+                            <button class="rd-key combo" onclick="rdSendCombo(['ctrl','alt','del'])">C+A+Del</button>
+                            <button class="rd-key combo" onclick="rdSendCombo(['alt','tab'])">Alt+Tab</button>
+                            <button class="rd-key" onclick="rdSendKey(0xff50)">Home</button>
+                            <button class="rd-key" onclick="rdSendKey(0xff57)">End</button>
+                            <button class="rd-key" onclick="rdSendKey(0xff55)">PgU</button>
+                            <button class="rd-key" onclick="rdSendKey(0xff56)">PgD</button>
+                            <button class="rd-key" onclick="rdSendKey(0xff61)">PrtSc</button>
+                        </div>
+                        <div class="rd-key-row rd-key-row-scroll">
+                            <button class="rd-key" onclick="rdSendKey(0xffbe)">F1</button>
+                            <button class="rd-key" onclick="rdSendKey(0xffbf)">F2</button>
+                            <button class="rd-key" onclick="rdSendKey(0xffc0)">F3</button>
+                            <button class="rd-key" onclick="rdSendKey(0xffc1)">F4</button>
+                            <button class="rd-key" onclick="rdSendKey(0xffc2)">F5</button>
+                            <button class="rd-key" onclick="rdSendKey(0xffc3)">F6</button>
+                            <button class="rd-key" onclick="rdSendKey(0xffc4)">F7</button>
+                            <button class="rd-key" onclick="rdSendKey(0xffc5)">F8</button>
+                            <button class="rd-key" onclick="rdSendKey(0xffc6)">F9</button>
+                            <button class="rd-key" onclick="rdSendKey(0xffc7)">F10</button>
+                            <button class="rd-key" onclick="rdSendKey(0xffc8)">F11</button>
+                            <button class="rd-key" onclick="rdSendKey(0xffc9)">F12</button>
+                        </div>
+                        <div class="rd-key-row rd-key-toolbar">
+                            <button class="rd-key" onclick="rdToggleClipboard()">Clip</button>
+                            <button class="rd-key" onclick="rdToggleQuickActions()">Acts</button>
+                            <button class="rd-key" onclick="rdFitToScreen()">Fit</button>
+                            <button class="rd-key" onclick="rdToggleQuality()">Q</button>
+                            <button class="rd-key" onclick="rdToggleFullscreen()">FS</button>
+                            <button class="rd-key rd-key-dc" onclick="rdDisconnect()">DC</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quality Slider Panel (hidden by default) -->
+                <div class="rd-quality-panel" id="rd-quality-panel" style="display:none;">
+                    <div class="rd-qp-row">
+                        <span class="rd-quality-label">Quality</span>
+                        <input type="range" id="rd-quality-slider" min="0" max="9" value="6" oninput="rdSetQuality(this.value)">
+                        <span class="rd-quality-value" id="rd-quality-value">6</span>
+                    </div>
+                    <div class="rd-qp-row">
+                        <span class="rd-quality-label">Speed</span>
+                        <input type="range" id="rd-speed-slider" min="30" max="200" step="2" value="74" oninput="rdSetPointerSpeed(this.value)">
+                        <span class="rd-quality-value" id="rd-speed-value">0.74x</span>
+                    </div>
+                    <!-- Live data meter. Counted by the proxy, which sees every
+                         byte. Only polled while this panel is open, so watching
+                         the cost never adds to it. -->
+                    <div class="rd-qp-data" id="rd-qp-data">data: --</div>
+                </div>
+
+                <!-- Clipboard Panel (hidden by default) -->
+                <div class="rd-clipboard-panel" id="rd-clipboard-panel" style="display:none;">
+                    <textarea class="rd-clipboard-text" id="rd-clipboard-text" placeholder="Paste text to send to remote..."></textarea>
+                    <div class="rd-clipboard-actions">
+                        <button class="rd-clip-action" onclick="rdSendClipboard()">[>] Send</button>
+                        <button class="rd-clip-action" onclick="rdClipOcrGrab()">[?] OCR Grab</button>
+                    </div>
+                </div>
+                <!-- Audio Device Panel (hidden by default) -->
+                <div class="rd-audio-panel" id="rd-audio-panel" style="display:none;"></div>
+
+                <!-- VR Cardboard Overlay -->
+                <div class="rd-vr-overlay" id="rd-vr-overlay" style="display:none;">
+                    <canvas id="rd-vr-canvas"></canvas>
+                    <div class="rd-vr-divider"></div>
+                    <div class="rd-vr-crosshair rd-vr-crosshair-l"></div>
+                    <div class="rd-vr-crosshair rd-vr-crosshair-r"></div>
+                    <div class="rd-vr-controls">
+                        <button class="rd-vr-ctrl-btn" onclick="rdVrShowSettings()">SET</button>
+                        <button class="rd-vr-ctrl-btn" onclick="rdVrRecenter()">CTR</button>
+                        <button class="rd-vr-ctrl-btn" onclick="rdVrGoHub()">HUB</button>
+                        <button class="rd-vr-ctrl-btn" onclick="rdVrTesla()" title="Talk to Tesla (the same conversation as the orb)">TSL</button>
+                        <button class="rd-vr-ctrl-btn" onclick="rdVncDictateToggle()">MIC</button>
+                        <button class="rd-vr-ctrl-btn" onclick="rdVrToggleLang()" id="rd-vr-lang-btn">ES</button>
+                        <button class="rd-vr-ctrl-btn" onclick="rdVrSendEnter()">RET</button>
+                        <button class="rd-vr-ctrl-btn" onclick="rdVrSendBackspace()">DEL</button>
+                        <button class="rd-vr-ctrl-btn" onclick="rdVrToggle360()">360</button>
+                        <button class="rd-vr-ctrl-btn" onclick="rdVrReload()">RLD</button>
+                        <button class="rd-vr-ctrl-btn rd-vr-exit-btn" onclick="rdVrToggle()">EXIT</button>
+                    </div>
+                    <div class="rd-vr-settings" id="rd-vr-settings" style="display:none;">
+                        <button class="rd-vr-param-btn" onclick="rdVrSelectParam('scale')">Z <span id="rd-vr-scale-val">1.4</span></button>
+                        <button class="rd-vr-param-btn" onclick="rdVrSelectParam('ipd')">E <span id="rd-vr-ipd-val">0</span></button>
+                        <button class="rd-vr-param-btn" onclick="rdVrSelectParam('voffset')">V <span id="rd-vr-voffset-val">0</span></button>
+                        <button class="rd-vr-param-btn" onclick="rdVrSelectParam('brightness')">B <span id="rd-vr-bright-val">20</span></button>
+                        <button class="rd-vr-param-btn" onclick="rdVrSelectParam('contrast')">C <span id="rd-vr-contrast-val">1.2</span></button>
+                        <button class="rd-vr-param-btn" onclick="rdVrSelectParam('sensitivity')">S <span id="rd-vr-sensitivity-val">60</span></button>
+                        <button class="rd-vr-param-btn" onclick="rdVrSelectParam('saturate')">SAT <span id="rd-vr-saturate-val">100</span></button>
+                        <button class="rd-vr-param-btn" onclick="rdVrSelectParam('warmth')">WRM <span id="rd-vr-warmth-val">0</span></button>
+                        <button class="rd-vr-param-btn" onclick="rdVrSelectParam('blur')">BLR <span id="rd-vr-blur-val">0</span></button>
+                        <button class="rd-vr-param-btn" onclick="rdVrSelectParam('invert')">INV <span id="rd-vr-invert-val">0</span></button>
+                        <button class="rd-vr-param-btn" onclick="rdVrSelectParam('nightMode')">NIT <span id="rd-vr-night-val">0</span></button>
+                        <button class="rd-vr-param-btn rd-vr-param-ok" onclick="rdVrConfirmParam()">OK</button>
+                    </div>
+                </div>
+
+                <!-- OCR Region Selection Overlay -->
+                <div class="rd-ocr-overlay" id="rd-ocr-overlay" style="display:none;">
+                    <div class="rd-ocr-hint">Drag to select region</div>
+                    <div class="rd-ocr-rect" id="rd-ocr-rect"></div>
+                    <button class="rd-ocr-cancel" onclick="rdClipOcrCancel()">[x]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Input (for dictation & expanded writing) -->
+    <div class="input-fullscreen" id="input-fs">
+        <div class="ifs-header">
+            <span class="ifs-title">> PROMPT</span>
+            <button class="ifs-close" onclick="closeInputFs()">X</button>
+        </div>
+        <div class="ifs-attach hidden" id="ifs-attach">📷 <span></span> <button onclick="clearAttachment();updateIfsAttach()">×</button></div>
+        <textarea id="ifs-input" class="ifs-textarea" placeholder="Type or dictate..."></textarea>
+        <div class="ifs-actions">
+            <button class="ifs-btn" onclick="$('ifs-camera').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>CAM</button>
+            <button class="ifs-btn" onclick="$('ifs-gallery').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>IMG</button>
+            <button class="ifs-btn" id="ifs-lang-btn" onclick="toggleLang()">ES</button>
+            <button class="ifs-btn" id="ifs-mic-btn" onclick="toggleMicFs()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>MIC</button>
+            <button class="ifs-btn primary" onclick="sendFromFs()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>SEND</button>
+            <input type="file" id="ifs-camera" accept="image/*" capture="environment" style="display:none" onchange="uploadImages(this);updateIfsAttach()">
+            <input type="file" id="ifs-gallery" accept="image/*" multiple style="display:none" onchange="uploadImages(this);updateIfsAttach()">
+        </div>
+    </div>
+
+    <!-- Fullscreen Terminal -->
+    <div class="terminal-fullscreen" id="terminal-fs">
+        <div class="fs-header">
+            <span class="fs-title" id="fs-active-title">$ Terminal</span>
+            <button class="fs-deck-btn" id="fs-deck-group" onclick="deckPickGroup()" title="Which sessions are in the deck">[all]</button>
+            <div class="fs-font-control" title="Terminal font size">
+                <button class="fs-font-step" data-size="8" onclick="setTerminalFontSize(8)">S</button>
+                <button class="fs-font-step active" data-size="10" onclick="setTerminalFontSize(10)">M</button>
+                <button class="fs-font-step" data-size="12" onclick="setTerminalFontSize(12)">L</button>
+                <button class="fs-font-step" data-size="14" onclick="setTerminalFontSize(14)">XL</button>
+            </div>
+            <button class="fs-deck-btn" id="fs-deck-overview" onclick="deckToggleOverview()" title="All sessions at a glance (or pinch)">[#]</button>
+            <button class="fs-menu-toggle" onclick="toggleFsMenu()">MENU</button>
+            <button class="fs-close" onclick="toggleFullscreen()">X</button>
+        </div>
+        <div class="fs-deck-dots" id="fs-deck-dots"></div>
+        <div class="fs-split-container fs-deck" id="fs-split-container"></div>
+        <div class="fs-content hidden" id="terminal-fs-content"></div>
+        <div class="fs-quick hidden" id="fs-quick">
+            <!-- Input -->
+            <div class="fs-input-row">
+                <input type="text" id="fs-prompt" class="fs-input" placeholder="> command..." autocomplete="off">
+                <!-- Same five buttons as the home input row (2026-10-08). -->
+                <button class="cam-btn" onclick="$('fs-camera').click()" title="Camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
+                <button class="cam-btn" onclick="showGalleryModal()" title="Gallery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></button>
+                <button class="cam-btn" onclick="showFilesModal()" title="Attach file"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+                <button class="mic-btn" id="fs-mic-btn" onclick="toggleFsMic()" title="Dictate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+                <button class="send-btn" onclick="fsSend()" title="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+                <input type="file" id="fs-camera" accept="image/*" capture="environment" style="display:none" onchange="uploadImages(this)">
+            </div>
+            <!-- Toggle -->
+            <div class="fs-toggle">
+                <button class="toggle-btn active" id="fs-toggle-claude" onclick="setFsMode('claude')">CLAUDE</button>
+                <button class="toggle-btn" id="fs-toggle-term" onclick="setFsMode('term')">TERMINAL</button>
+            </div>
+            <!-- Menu Claude (synced with main) -->
+            <div class="fs-quick-grid" id="fs-claude">
+                <button class="quick-btn primary" onclick="approveAction()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>OK</button>
+                <button class="quick-btn danger" onclick="denyAction()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>NO</button>
+                <button class="quick-btn" onclick="sendKey('Up')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>UP</button>
+                <button class="quick-btn" onclick="sendKey('Down')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>DN</button>
+                <button class="quick-btn cyan" onclick="sendKey('Enter')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>ENT</button>
+                <button class="quick-btn" onclick="quick('yes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>YES</button>
+                <button class="quick-btn" onclick="quick('no')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>NO</button>
+                <button class="quick-btn warn" onclick="analyzeProject()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6"/><path d="M8 11h6"/></svg>SCAN</button>
+                <button class="quick-btn" onclick="quick('skip')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>SKIP</button>
+                <button class="quick-btn warn" onclick="sendKey('Escape')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12"/></svg>STOP</button>
+                <button class="quick-btn" onclick="quick('/compact')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></svg>CMPT</button>
+                <button class="quick-btn" onclick="quick('/clear')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>CLR</button>
+                <button class="quick-btn cyan" onclick="showContextModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>INFO</button>
+                <button class="quick-btn" onclick="sendKey('Tab')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="21" y1="6" x2="21" y2="18"/></svg>TAB</button>
+                <button class="quick-btn" onclick="quick('/help')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>HELP</button>
+            </div>
+            <!-- Menu Terminal (synced with main) -->
+            <div class="fs-quick-grid hidden" id="fs-term">
+                <button class="quick-btn danger" onclick="sendCtrl('c')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>^C</button>
+                <button class="quick-btn warn" onclick="sendCtrl('d')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>^D</button>
+                <button class="quick-btn" onclick="sendCtrl('z')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>^Z</button>
+                <button class="quick-btn" onclick="sendCtrl('l')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>^L</button>
+                <button class="quick-btn cyan" onclick="sendKey('Enter')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>ENT</button>
+                <button class="quick-btn" onclick="termCmd('ls -la')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M7 7h2v2H7z"/><path d="M7 11h2v2H7z"/><path d="M7 15h2v2H7z"/><path d="M11 7h6"/><path d="M11 11h6"/><path d="M11 15h6"/></svg>LS</button>
+                <button class="quick-btn" onclick="toggleEyeProtect()" style="color:#d4a040;border-color:#d4a040"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>EYE</button>
+                <button class="quick-btn" onclick="termCmd('cd ..')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/><line x1="12" y1="9" x2="12" y2="21"/></svg>CD..</button>
+                <button class="quick-btn" onclick="showOrgAttachPicker()" style="color:#00a8ff;border-color:rgba(0,168,255,0.4)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>SF+</button>
+                <button class="quick-btn cyan" onclick="showProjectModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>PROJ</button>
+                <button class="quick-btn primary" onclick="termCmd('claude')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>CLAUDE</button>
+                <button class="quick-btn warn" onclick="showSessionsModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>SESS</button>
+                <button class="quick-btn cyan" onclick="tabComplete()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="21" y1="6" x2="21" y2="18"/></svg>TAB</button>
+                <button class="quick-btn danger" onclick="showRollbackModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>UNDO</button>
+                <button class="quick-btn" onclick="sendKey('Up')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>UP</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Runners Room -->
+    <!-- SF CLI Room (mobile) -->
+    <div class="room theme-sfcli" id="sfcli-room">
+        <div class="room-bg" style="background: radial-gradient(ellipse at 30% 20%, rgba(0,40,80,0.3), transparent 60%), #0a0a0a;"></div>
+        <div class="room-content">
+            <div class="room-header">
+                <span class="room-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    SF CLI
+                </span>
+                <button class="room-close" onclick="WorldManager.close('sfcli')">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="room-body" id="sfcli-body">
+                <div class="sf-loading">Initializing SF CLI...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LURK mode / NULL face (mobile room overlay) -->
+    <div class="room theme-navy" id="lurk-room">
+        <div class="room-content">
+            <div class="room-header">
+                <span class="room-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 21 7 21 17 12 22 3 17 3 7"/><polygon points="12 6 17 9 17 15 12 18 7 15 7 9"/></svg>
+                    NULL
+                </span>
+                <button class="room-close" onclick="WorldManager.close('lurk')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="room-body" style="padding:0;">
+                <div class="lurk-mount" style="height:100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generative AI Studio (mobile room overlay) -->
+    <div class="room theme-studio" id="studio-room">
+        <div class="room-content">
+            <div class="room-header">
+                <span class="room-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>
+                    STUDIO
+                </span>
+                <button class="room-close" onclick="WorldManager.close('studio')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="room-body" style="padding:0;">
+                <div class="studio-mount" style="height:100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LURK Labs / stem rack (mobile room overlay) -->
+    <div class="room theme-navy" id="playlist-room">
+        <div class="room-content">
+            <div class="room-header">
+                <span class="room-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                    LABS
+                </span>
+                <button class="room-close" onclick="WorldManager.close('playlist')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="room-body" style="padding:0;">
+                <div class="playlist-mount" style="height:100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Automations (mobile room overlay): everything that runs by itself -->
+    <div class="room theme-terminal" id="automations-room">
+        <div class="room-content">
+            <div class="room-header">
+                <span class="room-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                    AUTOMATIONS
+                </span>
+                <button class="room-close" onclick="WorldManager.close('automations')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="room-body">
+                <div class="au-mount"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="room theme-terminal" id="runners-room">
+        <div class="room-content">
+            <div class="room-header">
+                <span class="room-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                    RUNNERS
+                </span>
+                <button class="room-close" onclick="WorldManager.close('runners')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="room-body">
+                <!-- Runner List View -->
+                <div id="runners-list-wrap">
+                    <div class="mr-toolbar">
+                        <button class="mr-add-btn" onclick="mRunnerShowCreate()">[+] NEW</button>
+                        <button class="mr-sync-btn" onclick="WorldManager.close('runners');setTimeout(()=>WorldManager.open('runners'),500)">[~] SYNC</button>
+                    </div>
+                    <div id="runners-list" class="mr-list"></div>
+                </div>
+                <!-- Create Runner View -->
+                <div id="runners-create" class="hidden">
+                    <div class="mr-create-form">
+                        <label class="mr-label">NAME</label>
+                        <input type="text" id="mr-name-input" class="mr-input" placeholder="runner name" maxlength="8" autocomplete="off">
+                        <label class="mr-label">DIRECTORY</label>
+                        <div class="mr-dir-current" id="mr-dir-current" data-path="">~/</div>
+                        <div class="mr-dir-browser" id="mr-dir-list"></div>
+                        <div class="mr-create-actions">
+                            <button class="mr-btn-cancel" onclick="mRunnerHideCreate()">CANCEL</button>
+                            <button class="mr-btn-create" onclick="mRunnerCreate()">CREATE</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Runner Terminal View -->
+                <div id="runners-view" class="hidden">
+                    <div class="mr-view-header">
+                        <button class="mr-back-btn" onclick="mRunnerBack()">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                        </button>
+                        <span class="mr-view-name" id="mr-view-name">runner</span>
+                        <span class="mr-view-status" id="mr-view-status">[*]</span>
+                        <span class="mr-view-cwd" id="mr-view-cwd">~</span>
+                    </div>
+                    <div class="mr-view-output" id="mr-view-output">Waiting for output...</div>
+                    <div class="mr-view-controls">
+                        <button class="mr-ctrl-btn danger" onclick="mRunnerCtrl('c')">^C</button>
+                        <button class="mr-ctrl-btn" onclick="mRunnerCtrl('d')">^D</button>
+                        <button class="mr-ctrl-btn" onclick="mRunnerCtrl('z')">^Z</button>
+                        <button class="mr-ctrl-btn" onclick="mRunnerCtrl('l')">^L</button>
+                        <button class="mr-ctrl-btn" onclick="mRunnerKey('Up')">UP</button>
+                        <button class="mr-ctrl-btn" onclick="mRunnerKey('Down')">DN</button>
+                        <button class="mr-ctrl-btn cyan" onclick="mRunnerKey('Enter')">ENT</button>
+                        <button class="mr-ctrl-btn" onclick="mRunnerKey('Tab')">TAB</button>
+                        <button class="mr-ctrl-btn" onclick="mRunnerAttach()" style="border-color:var(--amber);color:var(--amber)">ATT</button>
+                    </div>
+                    <div class="mr-view-input-row">
+                        <span class="mr-prompt">$</span>
+                        <input type="text" id="mr-view-input" class="mr-input" placeholder="command..." autocomplete="off" onkeydown="mRunnerInputKey(event)">
+                        <button class="mr-send-btn" onclick="mRunnerSend()">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOWER room (the command view) -->
+
+    </div>
+
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <!-- Application Scripts -->
+    <script src="/src/js/app.js"></script>
+    <script src="/src/js/utils.js"></script>
+    <script src="/src/js/terminal-focus.js"></script>
+    <script src="/src/js/terminal-images.js"></script>
+    <script src="/src/js/world-manager.js"></script>
+    <script src="/src/js/hands-free.js"></script>
+    <script src="/src/js/gallery.js"></script>
+    <script type="module" src="/src/js/remote-desktop.js"></script>
+    <!-- sf-cli.js loaded on demand via loadSfCli() -->
+    <script src="/src/js/runners.js"></script>
+    <script src="/src/js/factory.js"></script>
+    <script src="/src/js/dashboard.js"></script>
+    <script src="/src/js/codemap.js"></script>
+    <script src="/src/js/clients.js"></script>
+    <script src="/src/js/automations.js"></script>
+    <script src="/src/js/notifications.js"></script>
+    <script src="/src/js/lurk.js"></script>
+    <script src="/src/js/studio.js"></script>
+    <!-- Three.js (vendored, UMD global `THREE`) — powers the GPU reactor in the LURK Catalog -->
+    <script src="/src/js/vendor/three.min.js"></script>
+    <script src="/src/js/playlist.js"></script>
+    <script src="/src/js/omni.js"></script>
+    <script src="/src/js/handson.js"></script>
+    <script src="/src/js/morning.js"></script>
+    <script src="/src/js/session-voice.js"></script>
+    <script src="/src/js/session-weight.js"></script>
+    <script src="/src/js/usage.js"></script>
+    <script src="/src/js/main.js"></script>
+    <script src="/src/js/webauthn.js"></script>
+    <script src="/src/js/restart.js"></script>
+    <script src="/src/js/layout-memory.js"></script>
+    <script src="/src/js/desktop-git.js"></script>
+    <script src="/src/js/desktop-runners.js"></script>
+    <script src="/src/js/desktop-attach.js"></script>
+    <script src="/src/js/desktop-notes.js"></script>
+    <script src="/src/js/desktop-sessions.js"></script>
+    <script src="/src/js/desktop.js"></script>
+    <script src="/src/js/projector.js"></script>
+    <!-- The assistant (the orb). Loads after windows.js so every global it may
+         reach for - getCurrentTargetSession, toast, createSpeechRecognizer - is
+         already defined; it builds its own DOM, so it needs no markup here. -->
+    <!-- The buttons the assistant may press, with its own allowlist. Before
+         assistant.js, which is what drains the queue of presses. -->
+    <script src="/src/js/ui-actions.js"></script>
+    <script src="/src/js/assistant.js"></script>
+    <script src="/src/js/windows.js"></script>
+</body>
+</html>

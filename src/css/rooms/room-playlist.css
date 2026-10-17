@@ -1,0 +1,205 @@
+/* ==========================================================================
+   room-playlist.css — LURK LABS (was Catalog). File name stays room-playlist.css
+   because WorldManager.loadRoomCSS resolves room-<css key>.css and the key is
+   still `playlist`.
+
+   The stage IS the frame: THE STRAND (WebGL) fills it edge to edge, and the rack
+   floats over its lower third on smoked glass so knobs, hands and visuals share
+   one shot. Everything stays visible in fullscreen — this is what gets filmed.
+   Navy/cyan leonlurk palette, bracket-free mono labels, no emojis.
+   ========================================================================== */
+
+.pl {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    font-family: var(--mono);
+    color: #bfe0ff;
+    padding: 0;
+    overflow: hidden;
+    background: #05070d;
+    --lb-cyan: #46e0ff;
+    --lb-accent: #22a7ff;
+    --lb-ink: #dff4ff;
+    --lb-dim: #6f9bd0;
+    --lb-mute: #3d5a82;
+    --lb-line: rgba(34, 167, 255, 0.22);
+    --lb-glass: rgba(4, 9, 20, 0.62);
+    --lb-hot: #ff4d6d;
+}
+#playlist-room { background: #05070d; }
+#playlist-room .room-body { background: #05070d; }
+
+/* ── stage ───────────────────────────────────────────────────────────────── */
+.pl-stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 320px;
+    background:
+        radial-gradient(60% 60% at 50% 40%, rgba(20, 60, 110, 0.18), transparent 70%),
+        #02040a;
+    overflow: hidden;
+}
+.pl-gl, .pl-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+.pl-gl { z-index: 0; pointer-events: none; }
+.pl-canvas { z-index: 1; cursor: default; }
+.pl-stage:fullscreen, .pl-stage:-webkit-full-screen { width: 100vw; height: 100vh; background: #02040a; }
+
+/* ── top bar (over the stage) ────────────────────────────────────────────── */
+.lb-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(2, 4, 10, 0.75), transparent);
+}
+.lb-top > * { pointer-events: auto; }
+.pl-brand {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    color: var(--lb-cyan);
+    text-shadow: 0 0 14px rgba(70, 224, 255, 0.3);
+}
+.pl-brand-sub { color: var(--lb-dim); font-weight: 500; letter-spacing: 0.14em; }
+.lb-top-r { display: flex; align-items: center; gap: 12px; }
+.lb-pos {
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    color: var(--lb-dim);
+    font-variant-numeric: tabular-nums;
+}
+.pl-full {
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(10, 18, 32, 0.6);
+    border: 1px solid var(--lb-line);
+    color: var(--lb-cyan);
+    cursor: pointer;
+}
+.pl-full:hover { background: rgba(70, 224, 255, 0.14); }
+.pl-stage:fullscreen .pl-full, .pl-stage:-webkit-full-screen .pl-full { opacity: 0.25; }
+
+.pl-empty {
+    position: absolute; left: 5%; top: 30%; z-index: 3;
+    padding: 18px 20px; max-width: 42%;
+    background: rgba(4, 8, 16, 0.72); border: 1px solid var(--lb-line);
+    color: var(--lb-dim); pointer-events: none;
+}
+.pl-empty[hidden] { display: none; }
+.pl-empty-h { font-size: 0.8rem; letter-spacing: 0.24em; color: var(--lb-cyan); margin-bottom: 8px; }
+.pl-empty-p { font-size: 0.82rem; line-height: 1.6; }
+.pl-empty-p code { color: var(--lb-ink); }
+
+/* ── rack (floats over the lower part of the stage) ──────────────────────── */
+.lb-rack {
+    position: absolute;
+    left: 14px; right: 14px; bottom: 14px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    background: var(--lb-glass);
+    border: 1px solid var(--lb-line);
+    backdrop-filter: blur(10px) saturate(1.2);
+    -webkit-backdrop-filter: blur(10px) saturate(1.2);
+    user-select: none; -webkit-user-select: none;
+}
+.lb-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.lb-group { display: flex; align-items: center; gap: 4px; }
+.lb-cap { font-size: 0.6rem; letter-spacing: 0.2em; color: var(--lb-mute); margin-right: 4px; }
+.lb-btn {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    padding: 8px 12px;
+    color: var(--lb-cyan);
+    background: rgba(70, 224, 255, 0.05);
+    border: 1px solid var(--lb-line);
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s, box-shadow 0.1s, border-color 0.1s;
+}
+.lb-btn:hover { border-color: rgba(70, 224, 255, 0.5); }
+.lb-btn.on {
+    background: var(--lb-cyan);
+    color: #04121f;
+    border-color: var(--lb-cyan);
+    font-weight: 700;
+    box-shadow: 0 0 16px rgba(70, 224, 255, 0.45);
+}
+.lb-btn kbd {
+    font: inherit; font-size: 0.58rem; opacity: 0.55; margin-left: 4px;
+}
+.lb-play { min-width: 104px; font-weight: 700; font-size: 0.8rem; }
+.lb-loop { min-width: 38px; padding: 8px 6px; }
+.lb-chop { min-width: 70px; }
+.lb-chop.on { background: var(--lb-hot); border-color: var(--lb-hot); color: #1a0208; box-shadow: 0 0 18px rgba(255, 77, 109, 0.5); }
+.lb-nullmute { margin-left: auto; color: var(--lb-hot); border-color: rgba(255, 77, 109, 0.45); font-weight: 700; }
+.lb-nullmute.flash { background: var(--lb-hot); color: #1a0208; }
+
+.lb-phase { display: flex; gap: 3px; flex: 1 1 120px; min-width: 100px; }
+.lb-phase i { flex: 1; height: 4px; background: rgba(34, 167, 255, 0.14); }
+.lb-phase i.b { background: rgba(34, 167, 255, 0.3); }
+.lb-phase i.now { background: var(--lb-cyan); box-shadow: 0 0 8px var(--lb-cyan); }
+
+.lb-strips {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(0, 1.35fr);
+    gap: 8px;
+}
+.lb-strip {
+    position: relative;
+    border: 1px solid var(--lb-line);
+    background: rgba(8, 16, 34, 0.55);
+    padding: 10px 8px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: opacity 0.15s;
+}
+.lb-strip.off { opacity: 0.38; }
+.lb-master { border-color: rgba(70, 224, 255, 0.35); }
+.lb-name { font-size: 0.7rem; letter-spacing: 0.24em; color: var(--lb-ink); text-align: center; font-weight: 700; }
+.lb-meter { position: absolute; left: 0; right: 0; top: 0; height: 2px; overflow: hidden; }
+.lb-meter i { display: block; height: 100%; background: var(--lb-cyan); transform-origin: left; transform: scaleX(0); }
+.lb-knobs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+.lb-knobs4 { grid-template-columns: repeat(4, 1fr); }
+.lb-sw { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.lb-sw .lb-btn { padding: 7px 0; font-size: 0.66rem; }
+.lb-mute.on { background: var(--lb-hot); border-color: var(--lb-hot); color: #1a0208; box-shadow: 0 0 14px rgba(255, 77, 109, 0.45); }
+
+/* knob */
+.lb-knob { display: flex; flex-direction: column; align-items: center; cursor: ns-resize; touch-action: none; }
+.lb-knob svg { width: 100%; max-width: 64px; aspect-ratio: 1; display: block; overflow: visible; }
+.lb-k-track { fill: none; stroke: rgba(34, 167, 255, 0.16); stroke-width: 8; }
+.lb-k-arc { fill: none; stroke: var(--lb-cyan); stroke-width: 8; stroke-linecap: round; filter: drop-shadow(0 0 4px rgba(70, 224, 255, 0.6)); }
+.lb-k-ptr { stroke: var(--lb-ink); stroke-width: 4; stroke-linecap: round; }
+.lb-k-dot { fill: var(--lb-ink); }
+.lb-knob.lb-k-hot .lb-k-ptr { stroke: var(--lb-cyan); }
+.lb-knob.lb-k-drag svg { transform: scale(1.06); }
+.lb-k-lab { font-size: 0.56rem; letter-spacing: 0.12em; color: var(--lb-mute); margin-top: 2px; white-space: nowrap; }
+.lb-k-lab b { color: var(--lb-ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* narrow panels / phone room: two rows of strips */
+@media (max-width: 900px) {
+    .lb-strips { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lb-master { grid-column: 1 / -1; }
+    .lb-rack { position: relative; left: auto; right: auto; bottom: auto; margin: 0; }
+    .pl-stage { display: flex; flex-direction: column; justify-content: flex-end; }
+}

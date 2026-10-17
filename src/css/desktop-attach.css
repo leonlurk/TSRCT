@@ -1,0 +1,737 @@
+/* desktop-attach.css - the image gallery and the file attachment modal.
+   Cut out of desktop.css on 2026-10-17 (cleanup P2 #14) and loaded right after it,
+   in this order, so the cascade is exactly what it was: keep the <link> order. */
+
+/* ==============================================
+   IMAGE GALLERY
+   ============================================== */
+
+body.pc-mode .pc-attach-indicator {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    background: rgba(0, 212, 255, 0.05);
+    border: 1px solid var(--cyan);
+    border-radius: 8px;
+}
+
+body.pc-mode .pc-attach-indicator.hidden {
+    display: none;
+}
+
+body.pc-mode .pc-attach-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid var(--neon-dim);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--neon);
+}
+
+body.pc-mode .pc-attach-item button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    cursor: pointer;
+    padding: 0 2px;
+}
+
+body.pc-mode .pc-attach-item button:hover {
+    color: var(--red);
+}
+
+body.pc-mode .pc-attach-name {
+    cursor: pointer;
+}
+
+body.pc-mode .pc-attach-item button.pc-attach-rename-btn {
+    color: var(--neon-dim);
+}
+
+body.pc-mode .pc-attach-item button.pc-attach-rename-btn:hover,
+body.pc-mode .pc-attach-item button.pc-attach-rename-ok {
+    color: var(--neon);
+}
+
+body.pc-mode .pc-attach-rename-input {
+    background: var(--bg);
+    border: 1px solid var(--neon);
+    color: var(--neon);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    padding: 1px 4px;
+    border-radius: 3px;
+    width: 16ch;
+}
+
+body.pc-mode .pc-attach-clear {
+    padding: 4px 8px;
+    background: rgba(255, 0, 64, 0.1);
+    border: 1px solid var(--red);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--red);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-attach-clear:hover {
+    background: var(--red);
+    color: #fff;
+}
+
+body.pc-mode .pc-gallery-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    max-width: 90vw;
+    max-height: 80vh;
+    background: var(--surface);
+    border: 1px solid var(--neon-dim);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8), 0 0 30px var(--neon-glow);
+    z-index: 1001;
+}
+
+body.pc-mode .pc-gallery-modal.hidden {
+    display: none;
+}
+
+body.pc-mode .pc-gallery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+body.pc-mode .pc-gallery-header span {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+body.pc-mode .pc-gallery-header button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+body.pc-mode .pc-gallery-header button:hover {
+    color: var(--red);
+}
+
+body.pc-mode .pc-gallery-hint {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    margin-left: auto;
+    margin-right: 12px;
+}
+
+body.pc-mode .pc-gallery-info {
+    padding: 8px 16px;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+}
+
+body.pc-mode .pc-gallery-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+    padding: 16px;
+    overflow-y: auto;
+    min-height: 200px;
+    max-height: 400px;
+}
+
+body.pc-mode .pc-gallery-grid::-webkit-scrollbar { width: 4px; }
+body.pc-mode .pc-gallery-grid::-webkit-scrollbar-track { background: transparent; }
+body.pc-mode .pc-gallery-grid::-webkit-scrollbar-thumb { background: var(--neon-dim); border-radius: 2px; }
+
+body.pc-mode .pc-gallery-item {
+    position: relative;
+    aspect-ratio: 1;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-gallery-item:hover {
+    border-color: var(--neon-dim);
+    transform: scale(1.02);
+}
+
+body.pc-mode .pc-gallery-item.selected {
+    border-color: var(--neon);
+    box-shadow: 0 0 15px var(--neon-glow);
+}
+
+body.pc-mode .pc-gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+body.pc-mode .pc-gallery-check {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    padding: 2px 6px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--neon);
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+body.pc-mode .pc-gallery-item.selected .pc-gallery-check {
+    opacity: 1;
+    background: var(--neon);
+    color: #000;
+}
+
+body.pc-mode .pc-gallery-name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 4px 6px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+    font-family: var(--mono);
+    font-size: 0.45rem;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.pc-mode .pc-gallery-loading,
+body.pc-mode .pc-gallery-empty,
+body.pc-mode .pc-gallery-error {
+    grid-column: 1 / -1;
+    padding: 40px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-gallery-error {
+    color: var(--red);
+}
+
+body.pc-mode .pc-gallery-actions {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+}
+
+body.pc-mode .pc-gallery-actions button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-gallery-actions .cancel {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-gallery-actions .cancel:hover {
+    border-color: var(--text);
+    color: var(--text);
+}
+
+body.pc-mode .pc-gallery-actions .attach {
+    background: var(--neon);
+    border: none;
+    color: #000;
+}
+
+body.pc-mode .pc-gallery-actions .attach:hover:not(:disabled) {
+    box-shadow: 0 0 15px var(--neon-glow);
+}
+
+body.pc-mode .pc-gallery-actions .attach:disabled {
+    background: var(--border);
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+/* Image Preview */
+.pc-gallery-preview {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.pc-gallery-preview.visible {
+    display: flex;
+}
+
+.pc-preview-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    cursor: pointer;
+}
+
+.pc-preview-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    z-index: 1;
+}
+
+.pc-preview-content img {
+    max-width: 90vw;
+    max-height: 80vh;
+    object-fit: contain;
+    border: 2px solid var(--neon-dim);
+    border-radius: 8px;
+    box-shadow: 0 0 40px var(--border-light);
+}
+
+.pc-preview-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.pc-preview-info span {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text);
+}
+
+.pc-preview-info button {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.pc-preview-info button:hover {
+    border-color: var(--red);
+    color: var(--red);
+}
+
+/* ==============================================
+   FILE ATTACHMENT MODAL
+   ============================================== */
+
+body.pc-mode .pc-file-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 550px;
+    max-width: 90vw;
+    max-height: 85vh;
+    background: var(--surface);
+    border: 1px solid var(--neon-dim);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8), 0 0 30px var(--neon-glow);
+    z-index: 1001;
+}
+
+body.pc-mode .pc-file-modal.hidden {
+    display: none;
+}
+
+body.pc-mode .pc-file-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+body.pc-mode .pc-file-header span {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+body.pc-mode .pc-file-header button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+body.pc-mode .pc-file-header button:hover {
+    color: var(--red);
+}
+
+body.pc-mode .pc-file-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+}
+
+body.pc-mode .pc-file-tabs button {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-file-tabs button:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+body.pc-mode .pc-file-tabs button.active {
+    color: var(--neon);
+    border-bottom-color: var(--neon);
+}
+
+body.pc-mode .pc-file-content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+body.pc-mode .pc-file-text-panel {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+    overflow: hidden;
+}
+
+body.pc-mode .pc-file-text-panel.hidden {
+    display: none;
+}
+
+body.pc-mode .pc-file-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+body.pc-mode .pc-file-field:last-child {
+    flex: 1;
+    min-height: 0;
+}
+
+body.pc-mode .pc-file-field label {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+body.pc-mode .pc-file-field input {
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+body.pc-mode .pc-file-field input:focus {
+    border-color: var(--neon);
+}
+
+body.pc-mode .pc-file-field textarea {
+    flex: 1;
+    min-height: 200px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    line-height: 1.5;
+    outline: none;
+    resize: none;
+    transition: border-color 0.15s;
+}
+
+body.pc-mode .pc-file-field textarea:focus {
+    border-color: var(--neon);
+}
+
+body.pc-mode .pc-file-browse-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+body.pc-mode .pc-file-browse-panel.hidden {
+    display: none;
+}
+
+body.pc-mode .pc-file-path {
+    padding: 8px 16px;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--cyan);
+    background: rgba(0, 212, 255, 0.05);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.pc-mode .pc-file-list {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 200px;
+    max-height: 300px;
+}
+
+body.pc-mode .pc-file-list::-webkit-scrollbar { width: 4px; }
+body.pc-mode .pc-file-list::-webkit-scrollbar-track { background: transparent; }
+body.pc-mode .pc-file-list::-webkit-scrollbar-thumb { background: var(--neon-dim); border-radius: 2px; }
+
+body.pc-mode .pc-file-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+}
+
+body.pc-mode .pc-file-item:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+body.pc-mode .pc-file-item.selected {
+    background: rgba(0, 255, 65, 0.1);
+}
+
+body.pc-mode .pc-file-item .icon {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    min-width: 24px;
+}
+
+body.pc-mode .pc-file-dir .icon {
+    color: var(--amber);
+}
+
+body.pc-mode .pc-file-up .icon {
+    color: var(--cyan);
+}
+
+body.pc-mode .pc-file-item .name {
+    flex: 1;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text);
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.pc-mode .pc-file-dir .name:hover {
+    color: var(--amber);
+}
+
+body.pc-mode .pc-file-up {
+    cursor: pointer;
+}
+
+body.pc-mode .pc-file-up:hover {
+    background: rgba(0, 212, 255, 0.1);
+}
+
+body.pc-mode .pc-file-select {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-file-select:hover {
+    border-color: var(--neon);
+    color: var(--neon);
+}
+
+body.pc-mode .pc-file-item.selected .pc-file-select {
+    border-color: var(--red);
+    color: var(--red);
+}
+
+body.pc-mode .pc-file-selected {
+    padding: 8px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+}
+
+body.pc-mode .pc-file-selected:empty {
+    display: none;
+}
+
+body.pc-mode .pc-file-selected-label {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    margin-right: 4px;
+}
+
+body.pc-mode .pc-file-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid var(--neon-dim);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--neon);
+}
+
+body.pc-mode .pc-file-chip button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+body.pc-mode .pc-file-chip button:hover {
+    color: var(--red);
+}
+
+body.pc-mode .pc-file-loading,
+body.pc-mode .pc-file-empty,
+body.pc-mode .pc-file-error {
+    padding: 40px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-file-error {
+    color: var(--red);
+}
+
+body.pc-mode .pc-file-actions {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+}
+
+body.pc-mode .pc-file-actions button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-file-actions .cancel {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-file-actions .cancel:hover {
+    border-color: var(--text);
+    color: var(--text);
+}
+
+body.pc-mode .pc-file-actions .attach {
+    background: var(--neon);
+    border: none;
+    color: #000;
+}
+
+body.pc-mode .pc-file-actions .attach:hover {
+    box-shadow: 0 0 15px var(--neon-glow);
+}

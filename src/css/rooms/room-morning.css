@@ -1,0 +1,293 @@
+/* room-morning.css — the morning brief OVERLAY ([A] in the header).
+   Lazy-loaded by WorldManager.loadRoomCSS('morning') the first time it opens.
+
+   The old version was a two-column panel and it read badly: the brief — the one
+   thing worth reading — sat in the same box, at the same size, as the project
+   folder list. This is one column, ordered by what matters, with the brief set
+   at reading size and the settings folded away at the bottom.
+
+   Palette from variables.css. The rgba tints are the same ones desktop.css
+   already uses for .active states (there is no token for a tint). */
+
+.mrn-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9500;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 34px 16px;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(2px);
+}
+.mrn-overlay.hidden { display: none; }
+
+.mrn-sheet {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 860px;
+    max-height: 100%;
+    background: var(--bg-darker);
+    border: 1px solid var(--neon);
+    border-radius: var(--radius);
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--text);
+    overflow: hidden;
+}
+
+/* ── header ─────────────────────────────────────────────────────────────── */
+.mrn-top {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+}
+.mrn-title { font-weight: 700; letter-spacing: 2px; color: var(--neon); }
+.mrn-stamp { color: var(--text-muted); letter-spacing: .3px; }
+.mrn-spacer { flex: 1 1 auto; }
+
+.mrn-chip {
+    padding: 1px 7px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: 0.55rem;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+}
+.mrn-chip.ok      { border-color: var(--neon);  color: var(--neon); }
+.mrn-chip.plan    { border-color: var(--cyan);  color: var(--cyan); }
+.mrn-chip.bad     { border-color: var(--red);   color: var(--red); }
+.mrn-chip.working { border-color: var(--amber); color: var(--amber); }
+
+/* ── body ───────────────────────────────────────────────────────────────── */
+/* overflow-x is NOT left at its default here. A box with `overflow-y: auto` and
+   `overflow-x: visible` is computed by the browser as `auto` on BOTH axes, so a
+   single long path (`/home/you/PROJECTS/...`) inside the brief turned
+   the whole sheet into a horizontally scrollable strip on the phone - which is
+   also what made it look like the panel jumped, because a re-render resets the
+   sideways offset. Nothing in this panel should ever scroll sideways: the text
+   wraps instead (see .mrn-wrap-anywhere below). */
+.mrn-scroll {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Long unbroken tokens - absolute paths, session names, URLs - are the only
+   things here wide enough to push the layout out. `pre-wrap` alone does not
+   break them; `anywhere` does. */
+.mrn-brief, .mrn-raw, .mrn-why, .mrn-note, .mrn-empty, .mrn-dim,
+.mrn-ptitle, .mrn-sname, .mrn-job-state {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+.mrn-card, .mrn-srow, .mrn-prow, .mrn-preg { min-width: 0; max-width: 100%; }
+
+.mrn-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    padding: 11px 13px;
+}
+.mrn-h {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--neon);
+}
+.mrn-h.bad { color: var(--red); }
+.mrn-sub, .mrn-dim { color: var(--text-muted); font-weight: 400; letter-spacing: .3px; }
+.mrn-empty, .mrn-note { color: var(--text-muted); line-height: 1.55; }
+.mrn-note { margin-bottom: 8px; }
+.mrn-raw { white-space: pre-wrap; margin-top: 6px; max-height: 160px; overflow: auto; }
+
+/* The brief is the reason the overlay exists: bigger, looser, and measured so a
+   line never runs the full width of a 27" monitor. */
+.mrn-hero { border-left: 2px solid var(--neon); }
+.mrn-brief {
+    white-space: pre-wrap;
+    font-size: 0.78rem;
+    line-height: 1.75;
+    color: var(--text);
+    max-width: 74ch;
+}
+
+/* ── the loader ─────────────────────────────────────────────────────────── */
+.mrn-working { border-color: var(--amber); }
+.mrn-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+.mrn-bar span {
+    display: block;
+    width: 38%;
+    height: 100%;
+    background: var(--amber);
+    animation: mrn-slide 1.4s ease-in-out infinite;
+}
+@keyframes mrn-slide {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(300%); }
+}
+.mrn-work-line { display: flex; align-items: baseline; gap: 10px; margin-bottom: 5px; }
+.mrn-work-what { flex: 1 1 auto; color: var(--amber); letter-spacing: .3px; }
+.mrn-elapsed { flex: 0 0 auto; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+
+/* ── the plan ───────────────────────────────────────────────────────────── */
+.mrn-plan { border-color: var(--cyan); }
+.mrn-srow {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.5;
+    cursor: pointer;
+}
+.mrn-srow:last-child { border-bottom: 0; }
+.mrn-srow.dim { opacity: .5; cursor: default; }
+.mrn-srow input { flex: 0 0 auto; margin: 3px 0 0; cursor: pointer; accent-color: var(--cyan); }
+.mrn-sname {
+    flex: 0 0 auto;
+    max-width: 34%;
+    color: var(--cyan);
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.mrn-rest { margin-top: 12px; color: var(--cyan); }
+.mrn-smain { flex: 1 1 auto; min-width: 0; }
+.mrn-why { color: var(--text); word-break: break-word; }
+.mrn-why.bad { color: var(--red); }
+.mrn-go {
+    flex: 0 0 auto;
+    padding: 1px 7px;
+    border: 1px solid var(--neon);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--neon);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    cursor: pointer;
+}
+.mrn-go:hover { background: rgba(0, 255, 65, 0.08); }
+
+/* ── pending ────────────────────────────────────────────────────────────── */
+.mrn-prow {
+    padding: 7px 0 7px 10px;
+    border-bottom: 1px solid var(--border);
+    border-left: 2px solid var(--border);
+    line-height: 1.5;
+}
+.mrn-prow:last-child { border-bottom: 0; }
+.mrn-prow:hover { border-left-color: var(--neon); }
+.mrn-ptitle { font-weight: 700; color: var(--text); margin-bottom: 2px; }
+
+/* ── buttons and settings ───────────────────────────────────────────────── */
+.mrn-btn {
+    padding: 3px 9px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .15s;
+}
+.mrn-btn:hover { border-color: var(--neon); color: var(--neon); }
+.mrn-btn.on { border-color: var(--neon); color: var(--neon); background: rgba(0, 255, 65, 0.08); }
+.mrn-btn:disabled { opacity: .35; cursor: default; }
+.mrn-btn:disabled:hover { border-color: var(--border); color: var(--text-dim); }
+.mrn-go-btn {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    font-weight: 700;
+    padding: 4px 12px;
+}
+.mrn-go-btn:hover { background: rgba(0, 212, 255, 0.10); border-color: var(--cyan); color: var(--cyan); }
+
+/* Settings live at the bottom and are visibly quieter than the brief. */
+.mrn-foot { background: transparent; }
+.mrn-fold { cursor: pointer; margin-bottom: 0; color: var(--text-dim); }
+.mrn-fold:hover { color: var(--neon); }
+.mrn-job { padding-top: 8px; }
+.mrn-job.off { opacity: .6; }
+.mrn-job-top { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.mrn-job-name { font-weight: 700; letter-spacing: .5px; color: var(--text); }
+.mrn-job-state { color: var(--text-muted); letter-spacing: .3px; margin-top: 5px; }
+.mrn-job-state.bad { color: var(--red); }
+.mrn-bad {
+    color: var(--red);
+    background: var(--red-bg);
+    padding: 6px 8px;
+    border-left: 2px solid var(--red);
+    line-height: 1.5;
+}
+.mrn-time {
+    padding: 2px 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+}
+
+/* ── the project registry ───────────────────────────────────────────────── */
+.mrn-preg { display: flex; gap: 8px; align-items: center; padding: 3px 0; border-bottom: 1px solid var(--border); }
+.mrn-pname { flex: 0 0 30%; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mrn-pcwd { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: rtl; text-align: left; }
+.mrn-src { flex: 0 0 auto; color: var(--text-muted); font-size: 0.52rem; letter-spacing: .5px; text-transform: uppercase; }
+.mrn-pin {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 2px 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.58rem;
+}
+.mrn-pin:focus { outline: none; border-color: var(--neon); }
+
+/* TALK — the spoken conversation. It sits directly under the head because it is
+   the one thing here you USE rather than read, and the state word (listening /
+   thinking / speaking) is the whole interface: if it is wrong you are talking to
+   a machine that is not listening. */
+/* TALK's styles moved to src/css/assistant.css on 2026-09-19 with the feature
+   itself — it is not part of this sheet any more. */
+
+/* Phone: the sheet is the screen. */
+@media (max-width: 700px) {
+    .mrn-overlay { padding: 0; }
+    .mrn-sheet { max-width: none; height: 100%; max-height: none; border: 0; border-radius: 0; }
+    .mrn-brief { font-size: 0.74rem; }
+    /* nowrap is a desktop affordance (the name column lines up); on a phone it
+       is just a row that will not fit. */
+    .mrn-sname { max-width: none; flex: 1 1 100%; white-space: normal; }
+    .mrn-pname { flex: 1 1 100%; white-space: normal; }
+    .mrn-pcwd { flex: 1 1 100%; }
+}

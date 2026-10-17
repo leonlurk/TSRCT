@@ -1,0 +1,100 @@
+node_modules/
+# Ignore the WHOLE .env FAMILY, not just `.env` — a dated backup like
+# `.env.bak-2026-09-01` matches neither `.env` nor `*.bak`, and it carries the same
+# 5 live secrets (BRIDGE_TOKEN, the 3 Slack tokens, SYFTEN_TOKEN). Caught 2026-09-08,
+# untracked but one `git add -A` away from being published. Same lesson as `.tsrct/`:
+# ignore the SHAPE, never the individual filenames.
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+*.tmp
+
+# Uploads and screenshots
+mobile-upload-*.jpg
+mobile-upload-*.png
+mobile-upload-*.jpeg
+2026-*.jpg
+2026-*.png
+*.screenshot.jpg
+*.screenshot.png
+
+# Downloads and temp folders
+Descargas/
+Downloads/
+temp/
+tmp/
+
+# Cloudflare Tunnel binary — DELETED from the tree 2026-09-08 (tunnel retired 2026-08-11).
+# The rule stays on purpose: if anyone re-downloads it for an emergency, this is what keeps
+# 39 MB out of a commit.
+cloudflared
+
+# SF CLI workspace config (user-specific)
+data/
+
+# Machine-local runtime state - NEVER commit. Ignore the WHOLE directory, not
+# file-by-file: this used to list auth.json + *.pem individually, which is how
+# vnc-config.json (plaintext VNC password) ended up tracked. Anything dropped in
+# here later is secret-shaped by default. (Audit 2026-08-14.)
+.tsrct/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Dispatcher user-specific data - personal contacts + client/project names, NEVER commit
+lib/dispatcher/relationships.json
+lib/dispatcher/projectHints.json
+
+# Foreign / scratch - NOT part of TSRCT, never deploy
+securecheckout.apib
+test_parser.js
+*.csv
+
+# Backups (e.g. /tmp restore copies that get pulled in by mistake)
+*.bak
+*.bak[0-9]*
+
+# repo-map navigation index (regenerated locally)
+MAP.md
+
+# TSRCT launcher boot log (transient)
+.tsrct-boot.log
+splash-preview.png
+# machine-local launcher state / backups
+.tsrct-appid
+logo.ico.bak
+
+# rotated by boot-server.sh so a crash trace survives the restart that follows it
+.tsrct-boot.log.prev
+
+# Scheduler + morning routine state (per machine, never shared)
+.tsrct-scheduler.json
+.tsrct-morning.json
+# Client-health report: client names, mail subjects, quotes. Never commit.
+.tsrct-clients.json
+.tsrct-automations.json
+.tsrct-shopwatch.json
+.tsrct-clients-expired.json
+.tsrct-progress.json
+.tsrct-clients-config.json
+.tsrct-boot.lock
+
+# Generated test sheets and exports
+out/
+.tsrct-prompt-jobs.jsonl
+logs/tesla-workarounds.md
+# Every Tesla conversation, one JSONL per day (lib/teslaLog.js)
+logs/tesla/
+# Session memory audit log (lib/sessionFolders.js), machine-local.
+logs/sessions/
+
+# Server freeze log (lib/stallWatch.js), machine-local.
+logs/stalls.jsonl*
+
+# A contributor's own Claude Code permissions
+.claude/settings.local.json

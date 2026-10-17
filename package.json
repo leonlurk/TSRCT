@@ -1,0 +1,26 @@
+{
+  "name": "tsrct",
+  "version": "1.0.0",
+  "description": "A control room for many Claude Code sessions at once, with Tesla, a voice assistant",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:session": "bash start-claude-session.sh",
+    "check": "node scripts/check-all.js",
+    "check:fast": "node scripts/check-all.js --fast",
+    "hooks": "bash scripts/install-hooks.sh"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "tmux",
+    "voice-assistant",
+    "pwa",
+    "remote-control"
+  ],
+  "author": "Leon (leonlurk)",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  }
+}

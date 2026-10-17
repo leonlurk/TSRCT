@@ -1,0 +1,411 @@
+/* ==============================================
+   TSRCT - Base Styles
+   Reset, body, scrollbars, CRT effect
+   ============================================== */
+
+/* Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    overflow: hidden;
+    height: 100%;
+}
+
+/* ==============================================
+   PERFORMANCE OPTIMIZATIONS
+   GPU acceleration, contain, reduced motion
+   ============================================== */
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* GPU-accelerated animation hint class */
+
+/* For elements that will animate */
+
+/* Contain paint for isolated components - prevents repaint propagation */
+
+/* Contain layout for components that don't affect outside layout */
+
+/* Full containment for completely isolated components */
+
+/* Optimize backdrop-filter performance */
+
+/* Fallback for devices that struggle with backdrop-filter */
+@supports not (backdrop-filter: blur(12px)) {
+}
+
+/* Low-power mode detection (Safari) */
+@media (prefers-reduced-motion: reduce), (update: slow) {
+}
+
+body {
+    font-family: var(--mono);
+    background: var(--bg);
+    color: var(--text);
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
+/* ==============================================
+   Global scrollbars — TSRCT terminal theme
+   Themed via vars so they track both the neon-green default
+   and the amber eye-protect palette. Replaces the OS default
+   (white) scrollbar on every scrollable container.
+   Specific narrow scrollbars (.pc-sidebar / .pc-terminal in
+   desktop.css) override width with higher specificity.
+   ============================================== */
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--neon-dim) var(--bg-darker);
+}
+
+/* WebKit / Chromium / Safari */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-darker);
+    border-left: 1px solid var(--border);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--neon-dim);
+    border: 1px solid var(--border-light);
+    border-radius: 0; /* sharp corners = hacker aesthetic */
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
+    transition: background var(--transition-normal),
+                box-shadow var(--transition-normal);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--neon);
+    box-shadow: 0 0 8px var(--neon-glow);
+}
+::-webkit-scrollbar-thumb:active {
+    background: var(--neon);
+}
+::-webkit-scrollbar-corner {
+    background: var(--bg-darker);
+}
+
+/* Scanlines & CRT effect */
+.bg-gradient {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px),
+        radial-gradient(ellipse 80% 80% at 50% 50%, rgba(0,255,65,0.03), transparent 70%);
+}
+
+.bg-gradient::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.4) 100%);
+}
+
+/* Base flicker animation */
+@keyframes flicker {
+    0%, 100% { opacity: 1; }
+    92% { opacity: 1; }
+    93% { opacity: 0.8; }
+    94% { opacity: 1; }
+    97% { opacity: 0.9; }
+}
+
+/* Global spin animation */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ==============================================
+   AUTH SCREEN
+   ============================================== */
+
+.auth {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    gap: 24px;
+    background: var(--bg);
+    /* ABOVE EVERYTHING (2026-09-24). At 50, Tesla's orb (9400) and the handoff
+       sign (9400) were drawn over the lock screen - visible without a finger.
+       The lock is opaque, so whatever a module adds later is covered too. */
+    z-index: 200000;
+}
+.auth.hidden { display: none !important; }
+/* A login error still has to be readable over the lock. */
+body:has(#auth:not(.hidden)) .toast { z-index: 200001; }
+/* Scanline overlay on the auth/login screen */
+.auth::before { content: ''; position: fixed; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px); pointer-events: none; }
+
+/* Global utility class */
+.hidden { display: none !important; }
+
+@keyframes auth-glow {
+    0% { box-shadow: 0 0 20px var(--neon-glow), inset 0 0 15px rgba(0,255,65,0.05); }
+    100% { box-shadow: 0 0 40px var(--neon-glow), inset 0 0 30px var(--border); }
+}
+
+.auth-logo {
+    width: 100px;
+    height: 100px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    border: 2px solid var(--neon);
+    box-shadow: 0 0 40px var(--neon-glow), inset 0 0 30px rgba(0,255,65,0.1);
+    animation: auth-glow 2s ease-in-out infinite alternate;
+}
+.auth-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: drop-shadow(0 0 5px var(--neon));
+}
+.auth-logo svg {
+    width: 40px;
+    height: 40px;
+    color: var(--neon);
+    filter: drop-shadow(0 0 10px var(--neon));
+}
+.auth-title {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+.auth-title h1 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--neon);
+    text-shadow: 0 0 20px var(--neon-glow);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+.auth-title p {
+    color: var(--text-muted);
+    margin-top: 8px;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+.auth-form {
+    width: 100%;
+    max-width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+}
+.auth-input {
+    padding: 14px 16px;
+    background: #000;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--neon);
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    text-align: center;
+    letter-spacing: 3px;
+}
+.auth-input:focus {
+    outline: none;
+    border-color: var(--neon);
+    box-shadow: 0 0 20px var(--neon-glow);
+}
+.auth-input::placeholder {
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+.auth-remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+.auth-remember input {
+    accent-color: var(--neon);
+}
+.auth-btn {
+    padding: 14px;
+    background: transparent;
+    border: 1px solid var(--neon);
+    border-radius: var(--radius);
+    color: var(--neon);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s var(--spring);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+.auth-btn:hover {
+    background: var(--neon);
+    color: #000;
+    box-shadow: 0 0 30px var(--neon-glow);
+}
+.auth-btn:active {
+    transform: scale(0.96);
+}
+/* Server unreachable banner. The app shell is cached by the service worker, so
+   TSRCT opens fine with no network and every API call fails -- which read as
+   "wrong token" instead of "no connection". This says which one it is. */
+.auth-netwarn {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--amber);
+    border-radius: var(--radius);
+    color: var(--amber);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    text-align: center;
+}
+.auth-netwarn span {
+    display: block;
+    margin-top: 4px;
+    opacity: 0.75;
+    font-size: 0.68rem;
+}
+.auth-btn:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+/* Secondary "use the 2FA form instead" affordance. Sets `color` explicitly:
+   a <button> does NOT inherit it and would fall back to system black. */
+.auth-alt {
+    margin-top: 10px;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    text-decoration: underline;
+}
+.auth-alt:hover {
+    color: var(--neon);
+}
+
+/* ============================================================
+   TermFocus -- terminal freeze / focus controls
+   Injected into a terminal element's parent (which TermFocus
+   sets position:relative). Works on every pane: main mobile,
+   pc-terminal, and split / combined panels.
+   ============================================================ */
+.tf-toggle {
+    position: absolute;
+    bottom: 8px;
+    right: 10px;
+    z-index: 6;
+    font-family: var(--font-mono, monospace);
+    font-size: var(--text-xs, 0.7rem);
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    color: var(--text-dim);
+    background: var(--bg-darker, var(--bg-darker));
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0.45;
+    transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.tf-toggle:hover {
+    opacity: 1;
+    color: var(--text);
+    border-color: var(--border-light);
+}
+.tf-toggle.frozen {
+    opacity: 1;
+    color: var(--bg-darker, #000);
+    background: var(--text);
+    border-color: var(--text);
+    box-shadow: 0 0 10px var(--neon-glow, var(--neon-glow));
+}
+
+.tf-pill {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    z-index: 6;
+    font-family: var(--font-mono, monospace);
+    font-size: var(--text-xs, 0.7rem);
+    letter-spacing: 0.04em;
+    padding: 4px 12px;
+    color: var(--text);
+    background: var(--bg-darker, var(--bg-darker));
+    border: 1px solid var(--text);
+    border-radius: 999px;
+    cursor: pointer;
+    pointer-events: none;
+    opacity: 0;
+    box-shadow: 0 0 12px var(--neon-glow, rgba(0,255,65,0.35));
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.tf-pill.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+}
+.tf-pill:hover {
+    background: var(--text);
+    color: var(--bg-darker, #000);
+}
+
+/* Frozen pane gets a subtle outline so the held state is unmistakable. */
+.tf-frozen {
+    outline: 1px solid var(--border-light);
+    outline-offset: -1px;
+}
+
+/* ==============================================
+   Touch press feedback
+   Sound alone is not feedback on a phone -- the finger covers the control,
+   so the press has to be visible at the edges of it. Scoped to coarse
+   pointers so the desktop is untouched, and transform/filter only (no
+   layout properties) so nothing can reflow under a thumb.
+   ============================================== */
+@media (pointer: coarse) {
+    button:active,
+    .quick-btn:active,
+    .modal-btn:active,
+    .modal-close:active,
+    .session-picker-item:active,
+    .btn:active,
+    [role="button"]:active {
+        transform: scale(0.955);
+        filter: brightness(1.4);
+    }
+}

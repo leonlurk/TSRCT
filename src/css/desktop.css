@@ -1,0 +1,2033 @@
+/* ==============================================
+   TSRCT - Desktop/PC Mode CSS
+   Uses body.pc-mode class for clean specificity
+   ============================================== */
+
+/* ==============================================
+   PC MODE LAYOUT
+   Requires both media query AND .pc-mode class
+   ============================================== */
+
+@media (min-width: 900px) {
+body.pc-mode .app {
+    display: grid;
+    /* Sidebar width is a variable so it can be dragged at runtime. The breakpoints
+       below set --sidebar-w-default (the width for this viewport); a user drag sets
+       --sidebar-w on :root, which is inherited here and wins over the default. */
+    grid-template-columns: var(--sidebar-w, var(--sidebar-w-default, 220px)) 1fr;
+    grid-template-rows: 1fr;
+    height: 100vh;
+    width: 100vw;
+    max-width: none;
+    min-height: 100vh;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0;
+    margin: 0;
+    gap: 0;
+    animation: none;
+    flex-direction: unset;
+}
+
+/* Hide mobile elements in PC mode */
+body.pc-mode .app > .card,
+body.pc-mode .app > .card.perm-card,
+body.pc-mode .quick-bar,
+body.pc-mode #quick-bar,
+body.pc-mode .bottom-nav,
+body.pc-mode .mobile-only,
+body.pc-mode .swipe-hint,
+body.pc-mode .input-bar,
+body.pc-mode .quick-menu,
+body.pc-mode .status-bar,
+body.pc-mode #status-bar,
+body.pc-mode .hf-immersive-btn,
+body.pc-mode #hf-immersive-btn,
+body.pc-mode .perm-hint,
+body.pc-mode #hf-immersive,
+body.pc-mode .perm-card,
+body.pc-mode #perm-card {
+    display: none;
+}
+
+/* ==============================================
+   SIDEBAR
+   ============================================== */
+
+body.pc-mode .pc-sidebar {
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, var(--surface) 0%, rgba(10, 10, 10, 0.98) 100%);
+    border-right: 1px solid var(--border);
+    padding: 12px;
+    gap: 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    grid-column: 1;
+    grid-row: 1;
+}
+
+body.pc-mode .pc-sidebar::-webkit-scrollbar { width: 6px; }
+body.pc-mode .pc-sidebar::-webkit-scrollbar-track { background: var(--border); border-radius: 3px; }
+body.pc-mode .pc-sidebar::-webkit-scrollbar-thumb {
+    background: var(--dim);
+    border-radius: 3px;
+}
+body.pc-mode .pc-sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--neon-dim);
+}
+
+
+
+
+
+/* Public tunnel URL label -- click to copy */
+body.pc-mode .pc-tunnel {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    margin-bottom: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--cyan);
+    transition: border-color 0.15s, background 0.15s;
+}
+
+body.pc-mode .pc-tunnel:hover {
+    border-color: var(--cyan);
+    background: var(--surface-hover, var(--surface));
+}
+
+body.pc-mode .pc-tunnel svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    color: var(--cyan);
+}
+
+body.pc-mode .pc-tunnel-url {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.pc-mode .pc-tunnel-copy {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: 0.55rem;
+}
+
+body.pc-mode .pc-tunnel:hover .pc-tunnel-copy {
+    color: var(--cyan);
+}
+
+body.pc-mode .pc-tunnel-off {
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
+body.pc-mode .pc-tunnel-off svg,
+body.pc-mode .pc-tunnel-off .pc-tunnel-copy {
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-sidebar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+body.pc-mode .pc-sidebar-grow {
+    flex: 0 0 auto;
+    min-height: 40px;
+}
+
+body.pc-mode .pc-sidebar-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 4px 0;
+}
+
+body.pc-mode .pc-sidebar-title svg {
+    width: 12px;
+    height: 12px;
+    opacity: 0.6;
+}
+
+body.pc-mode .pc-sidebar-action {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-sidebar-action:hover {
+    border-color: var(--neon);
+    color: var(--neon);
+}
+
+body.pc-mode .pc-sidebar-action.pc-auto-toggle {
+    margin-left: 4px;
+}
+
+body.pc-mode .pc-sidebar-action.pc-auto-toggle.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #000;
+    box-shadow: 0 0 6px var(--blue);
+}
+
+body.pc-mode .pc-sidebar-action.pc-voice-toggle {
+    margin-left: 4px;
+}
+
+body.pc-mode .pc-sidebar-action.pc-voice-toggle.active {
+    background: var(--neon);
+    border-color: var(--neon);
+    color: #000;
+    box-shadow: 0 0 6px var(--neon);
+}
+
+/* Sessions */
+body.pc-mode .pc-session-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-session-item:hover {
+    background: rgba(0, 255, 65, 0.05);
+    border-color: var(--border);
+}
+
+/* ── Session grouping (drag & drop + drill-down) ── */
+body.pc-mode .pc-session-item.pc-dragging { opacity: 0.4; }
+/* A session hovered as a drop target while dragging another onto it. */
+body.pc-mode .pc-session-item.pc-drop-target {
+    box-shadow: inset 0 0 0 1px var(--cyan, var(--cyan));
+    background: rgba(0, 212, 255, 0.08);
+    border-radius: 6px;
+}
+
+body.pc-mode .pc-ungrouped-zone { display: flex; flex-direction: column; gap: 2px; }
+
+/* Groups: a soft, self-contained card — quiet by default, only accents on hover. */
+body.pc-mode .pc-group {
+    margin-top: 8px;
+    border-radius: 8px;
+    background: rgba(0, 212, 255, 0.028);
+    border: 1px solid rgba(0, 212, 255, 0.1);
+    transition: border-color 0.15s, background 0.15s;
+}
+body.pc-mode .pc-group.pc-drop-active,
+body.pc-mode .pc-ungrouped-zone.pc-drop-active {
+    border-radius: 8px;
+    background: rgba(0, 212, 255, 0.08);
+    box-shadow: inset 0 0 0 1px var(--cyan, var(--cyan));
+}
+
+body.pc-mode .pc-group-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 9px;
+    cursor: grab;
+    /* NO user-select:none here — in Blink it suppresses native drag on a
+       draggable element (the session items that DO drag don't set it either). */
+    border-radius: 8px 8px 0 0;
+}
+body.pc-mode .pc-group-header:active { cursor: grabbing; }
+/* Nested groups: slightly deeper tint so the hierarchy reads at a glance. */
+body.pc-mode .pc-group .pc-group {
+    background: rgba(0, 212, 255, 0.045);
+    border-color: rgba(0, 212, 255, 0.14);
+}
+body.pc-mode .pc-group.pc-dragging,
+body.pc-mode .pc-group-header.pc-dragging { opacity: 0.4; }
+
+/* Manual (mouse-based) group drag: floating label + grabbing cursor while active. */
+body.pc-mode.pc-manual-dragging { cursor: grabbing; user-select: none; }
+body.pc-mode.pc-manual-dragging * { user-select: none; }
+.pc-group-drag-ghost {
+    position: fixed;
+    z-index: 99999;
+    pointer-events: none;
+    background: var(--cyan, var(--cyan));
+    color: #001018;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.3px;
+    padding: 3px 9px;
+    border-radius: 4px;
+    opacity: 0.92;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.55);
+    white-space: nowrap;
+}
+body.pc-mode .pc-group.collapsed .pc-group-header { border-radius: 8px; }
+body.pc-mode .pc-group-header:hover { background: rgba(0, 212, 255, 0.06); }
+
+body.pc-mode .pc-group-chevron {
+    color: var(--cyan, var(--cyan));
+    font-size: 0.62rem;
+    width: 9px;
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+body.pc-mode .pc-group-name {
+    color: var(--cyan, var(--cyan));
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+/* Inline rename input — matches the label so it feels like editing in place. */
+body.pc-mode .pc-group-name-input {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.3px;
+    color: var(--cyan, var(--cyan));
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--cyan, var(--cyan));
+    border-radius: 4px;
+    padding: 1px 6px;
+    outline: none;
+}
+body.pc-mode .pc-group-count {
+    color: var(--cyan, var(--cyan));
+    font-size: 0.64rem;
+    background: rgba(0, 212, 255, 0.12);
+    min-width: 16px;
+    text-align: center;
+    padding: 1px 6px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    opacity: 0.75;
+}
+body.pc-mode .pc-group-del {
+    background: transparent;
+    border: none;
+    color: var(--text-muted, var(--text-muted));
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s;
+    flex-shrink: 0;
+}
+body.pc-mode .pc-group-header:hover .pc-group-del { opacity: 0.6; }
+body.pc-mode .pc-group-del:hover { color: var(--red, var(--red)); opacity: 1; }
+
+body.pc-mode .pc-group-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 2px 6px 6px 14px;
+    margin-left: 9px;
+    border-left: 1px solid rgba(0, 212, 255, 0.14);
+}
+body.pc-mode .pc-group.collapsed .pc-group-body { display: none; }
+
+/* ── Focus mode ────────────────────────────────────────────────────────────
+   The sidebar with the dead weight removed. Deliberately NO blur and no dimming
+   of what stays: anything irrelevant is simply not in the DOM, which costs a
+   repaint instead of a filter pass. What survives gets tighter spacing, a
+   breadcrumb for the folders that were folded away, and a brighter status dot. */
+body.pc-mode .pc-focus-toggle.active {
+    color: var(--cyan, var(--cyan));
+    background: rgba(0, 212, 255, 0.14);
+    border-radius: 3px;
+}
+body.pc-mode.pc-focus-sessions .pc-group { margin-top: 5px; }
+body.pc-mode.pc-focus-sessions .pc-group-header { padding: 4px 8px; }
+body.pc-mode.pc-focus-sessions .pc-group-body {
+    padding: 2px 4px 4px 8px;
+    margin-left: 6px;
+}
+body.pc-mode.pc-focus-sessions .pc-session-item { padding: 4px 7px; }
+/* The folded ancestors, quieter than the folder they lead to. */
+body.pc-mode .pc-group-crumb { opacity: 0.45; font-weight: 400; }
+body.pc-mode .pc-group-crumb::after { content: ' / '; opacity: 0.5; }
+/* Live sessions are the whole point — brighten the dot, not the row. */
+body.pc-mode.pc-focus-sessions .pc-session-item .dot.idle { box-shadow: 0 0 5px var(--neon-dim); }
+body.pc-mode.pc-focus-sessions .pc-session-item .dot.working { box-shadow: 0 0 7px var(--amber); }
+body.pc-mode.pc-focus-sessions .pc-session-item .dot.perm { box-shadow: 0 0 7px var(--red); }
+
+/* ── Per-folder split controls ─────────────────────────────────────────────
+   Shown only on a folder holding 2+ living tmux; [Unsplit] only once armed. */
+body.pc-mode .pc-group-split {
+    background: transparent;
+    border: 1px solid rgba(0, 212, 255, 0.22);
+    color: var(--cyan, var(--cyan));
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    line-height: 1;
+    padding: 2px 5px;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0.45;
+    flex-shrink: 0;
+    transition: opacity 0.15s, background 0.15s;
+}
+body.pc-mode .pc-group-header:hover .pc-group-split { opacity: 0.85; }
+body.pc-mode .pc-group-split:hover { background: rgba(0, 212, 255, 0.14); opacity: 1; }
+body.pc-mode .pc-group-split.active {
+    opacity: 1;
+    background: rgba(0, 212, 255, 0.18);
+    border-color: var(--cyan, var(--cyan));
+}
+/* The folder whose split is on screen carries the semantic left edge. */
+body.pc-mode .pc-group.split-active { border-left: 3px solid var(--cyan, var(--cyan)); }
+
+/* Hints stay hidden until an actual drag is in progress — no idle clutter. */
+body.pc-mode .pc-group-empty {
+    color: var(--text-muted, var(--text-muted));
+    font-size: 0.68rem;
+    font-style: italic;
+    padding: 4px 6px;
+    opacity: 0.6;
+}
+body.pc-mode .pc-group-drophint {
+    display: none;
+    color: var(--cyan, var(--cyan));
+    font-size: 0.66rem;
+    font-style: italic;
+    padding: 6px 8px;
+    margin-top: 4px;
+    text-align: center;
+    border: 1px dashed rgba(0, 212, 255, 0.35);
+    border-radius: 6px;
+    opacity: 0.75;
+}
+body.pc-mode.pc-dragging-session .pc-group-drophint { display: block; }
+/* While dragging, keep the ungrouped zone an easy target for "pull out to top". */
+body.pc-mode.pc-dragging-session .pc-ungrouped-zone { min-height: 34px; }
+body.pc-mode.pc-dragging-session .pc-group { border-color: rgba(0, 212, 255, 0.25); }
+
+body.pc-mode .pc-session-item.active {
+    background: rgba(0, 255, 65, 0.1);
+    border-color: var(--neon-dim);
+}
+
+body.pc-mode .pc-session-item .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+body.pc-mode .pc-session-item .dot.idle { background: var(--neon-dim); }
+body.pc-mode .pc-session-item .dot.working { background: var(--amber); animation: pulse 1s infinite; }
+body.pc-mode .pc-session-item .dot.perm { background: var(--red); animation: pulse 0.5s infinite; }
+
+body.pc-mode .pc-session-item span {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+body.pc-mode .pc-session-kill {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    padding: 2px 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-session-item:hover .pc-session-kill {
+    opacity: 1;
+}
+
+body.pc-mode .pc-session-kill:hover {
+    color: var(--red);
+}
+
+/* Rooms */
+
+
+
+
+/* Favorites */
+
+body.pc-mode .pc-favorites-empty {
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    padding: 8px;
+    text-align: center;
+}
+
+body.pc-mode .pc-favorite-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-favorite-item:hover {
+    background: rgba(0, 255, 65, 0.1);
+}
+
+body.pc-mode .pc-favorite-item .text {
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+body.pc-mode .pc-favorite-item button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.6rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+body.pc-mode .pc-favorite-item:hover button {
+    opacity: 1;
+}
+
+/* Terminal controls */
+
+
+
+
+/* ==============================================
+   MAIN AREA
+   ============================================== */
+
+body.pc-mode .pc-main {
+    display: flex;
+    flex-direction: column;
+    background: #000;
+    overflow: hidden;
+    position: relative;
+    grid-column: 2;
+    grid-row: 1;
+    height: 100vh;
+    min-height: 0;
+}
+
+/* Header */
+body.pc-mode .pc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    gap: 12px;
+}
+
+body.pc-mode .pc-header-left,
+body.pc-mode .pc-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.pc-mode .pc-session-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid var(--neon-dim);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-session-btn:hover {
+    border-color: var(--neon);
+    box-shadow: 0 0 10px var(--neon-glow);
+}
+
+body.pc-mode .pc-session-btn span {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--neon);
+}
+
+body.pc-mode .pc-session-btn svg {
+    color: var(--neon);
+}
+
+body.pc-mode .pc-quick-actions {
+    display: flex;
+    gap: 4px;
+}
+
+body.pc-mode .pc-quick-actions button {
+    padding: 5px 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-quick-actions button:hover {
+    border-color: var(--neon);
+    color: var(--neon);
+    background: rgba(0, 255, 65, 0.1);
+}
+
+body.pc-mode .pc-font-btns {
+    display: flex;
+    gap: 2px;
+    background: var(--bg);
+    padding: 2px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+
+body.pc-mode .pc-font-btns button {
+    padding: 4px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 2px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-font-btns button:hover {
+    color: var(--text);
+}
+
+body.pc-mode .pc-font-btns button.active {
+    background: var(--neon);
+    color: #000;
+}
+
+/* [PB] shares VAULT's geometry rather than pasting a second copy of it -- the
+   same override pasted twice is the tell that it belongs upstream (invariant 24).
+   Only the active colour differs, below. */
+body.pc-mode .pc-vault-toggle,
+body.pc-mode .pc-mute-toggle,
+body.pc-mode .pc-morning-btn,
+body.pc-mode .pc-pb-toggle {
+    padding: 3px 8px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-vault-toggle.active {
+    border-color: var(--neon);
+    color: var(--neon);
+    background: rgba(0, 255, 65, 0.08);
+}
+
+body.pc-mode .pc-vault-toggle:hover,
+body.pc-mode .pc-mute-toggle:hover,
+body.pc-mode .pc-morning-btn:hover,
+body.pc-mode .pc-pb-toggle:hover {
+    border-color: var(--neon);
+}
+
+/* [A] carries a dot when there is a brief he has not opened yet. It is the only
+   thing in the header that pulses, so it has to mean something: one unread
+   brief, cleared the moment he opens it. */
+body.pc-mode .pc-morning-btn.has-new {
+    border-color: var(--amber);
+    color: var(--amber);
+    animation: mrn-pulse 2s ease-in-out infinite;
+}
+@keyframes mrn-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 176, 0, 0.35); }
+    50%      { box-shadow: 0 0 0 3px rgba(255, 176, 0, 0); }
+}
+
+/* Muted is the loud state here: the point is to see at a glance that TSRCT
+   cannot speak, without hunting for a button that looks off. */
+body.pc-mode .pc-mute-toggle.active {
+    border-color: var(--red);
+    color: var(--red);
+    background: var(--red-bg);
+}
+/* The sidebar [V] keeps its own .active look; this only marks it overridden. */
+body.pc-mode .pc-sidebar-action.pc-voice-toggle.muted {
+    color: var(--red);
+    opacity: 0.8;
+    text-decoration: line-through;
+}
+
+body.pc-mode .pc-pb-toggle.active {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: rgba(0, 255, 255, 0.08);
+}
+
+body.pc-mode .pc-vault-reset {
+    padding: 3px 8px;
+    background: transparent;
+    border: 1px solid var(--cyan);
+    border-radius: var(--radius);
+    color: var(--cyan);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+body.pc-mode .pc-vault-reset:hover {
+    background: rgba(0,255,255,0.1);
+}
+
+
+
+body.pc-mode .pc-search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-search-btn:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+}
+
+body.pc-mode .pc-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: rgba(0, 255, 65, 0.05);
+    border: 1px solid var(--neon-dim);
+    border-radius: 4px;
+}
+
+body.pc-mode .pc-status .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--neon);
+}
+
+body.pc-mode .pc-status span {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: var(--neon);
+}
+
+body.pc-mode .pc-status.working {
+    border-color: var(--amber);
+    background: rgba(255, 170, 0, 0.1);
+}
+
+body.pc-mode .pc-status.working .dot {
+    background: var(--amber);
+    animation: pulse 0.8s infinite;
+}
+
+body.pc-mode .pc-status.working span {
+    color: var(--amber);
+}
+
+/* Search bar */
+body.pc-mode .pc-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(0, 212, 255, 0.1);
+    border-bottom: 1px solid var(--cyan);
+    flex-shrink: 0;
+}
+
+body.pc-mode .pc-search-bar.hidden { display: none; }
+
+body.pc-mode .pc-search-bar input {
+    flex: 1;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    outline: none;
+}
+
+body.pc-mode .pc-search-bar input:focus {
+    border-color: var(--cyan);
+}
+
+body.pc-mode .pc-search-count {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--cyan);
+    min-width: 40px;
+}
+
+body.pc-mode .pc-search-bar button {
+    padding: 4px 8px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-search-bar button:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+}
+
+/* ── Omni file finder (center header universal search bar) ─────────────── */
+body.pc-mode .pc-omni {
+    position: relative;
+    flex: 1 1 auto;
+    max-width: 640px;
+    margin: 0 auto;
+    min-width: 0;
+}
+
+body.pc-mode .pc-omni-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    cursor: text;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+body.pc-mode .pc-omni-bar:focus-within {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 1px var(--cyan), 0 4px 18px rgba(0, 0, 0, 0.4);
+}
+
+body.pc-mode .pc-omni-bar svg { color: var(--text-muted); flex-shrink: 0; }
+
+body.pc-mode #pc-omni-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+}
+body.pc-mode #pc-omni-input::placeholder { color: var(--text-muted); opacity: 0.7; }
+
+body.pc-mode .pc-omni-kbd {
+    flex-shrink: 0;
+    padding: 1px 6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.04em;
+}
+
+body.pc-mode .pc-omni-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 200;
+    max-height: 62vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--cyan);
+    border-radius: 8px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+}
+body.pc-mode .pc-omni-panel.hidden { display: none; }
+
+body.pc-mode .pc-omni-crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+body.pc-mode .pc-omni-crumb { cursor: pointer; color: var(--cyan); padding: 1px 3px; border-radius: 3px; }
+body.pc-mode .pc-omni-crumb:hover { background: rgba(0, 212, 255, 0.12); }
+body.pc-mode .pc-omni-crumb-sep { color: var(--text-muted); opacity: 0.5; }
+
+body.pc-mode .pc-omni-results {
+    overflow-y: auto;
+    flex: 1 1 auto;
+}
+
+body.pc-mode .pc-omni-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+}
+body.pc-mode .pc-omni-row:hover { background: rgba(255, 255, 255, 0.04); }
+body.pc-mode .pc-omni-row.sel {
+    background: rgba(0, 212, 255, 0.1);
+    border-left-color: var(--cyan);
+}
+body.pc-mode .pc-omni-row.is-dir .pc-omni-name { color: var(--cyan); }
+
+body.pc-mode .pc-omni-ic { display: flex; color: var(--text-muted); flex-shrink: 0; }
+body.pc-mode .pc-omni-row.is-dir .pc-omni-ic { color: var(--cyan); }
+
+body.pc-mode .pc-omni-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    overflow: hidden;
+}
+body.pc-mode .pc-omni-name { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.pc-mode .pc-omni-dir {
+    color: var(--text-muted);
+    font-size: 0.6rem;
+    opacity: 0.75;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    direction: rtl;      /* keep the tail (nearest folders) visible when clipped */
+    text-align: left;
+}
+
+body.pc-mode .pc-omni-actions {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.12s;
+}
+body.pc-mode .pc-omni-row:hover .pc-omni-actions,
+body.pc-mode .pc-omni-row.sel .pc-omni-actions { opacity: 1; }
+
+body.pc-mode .pc-omni-actions button {
+    padding: 2px 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    cursor: pointer;
+    transition: all 0.12s;
+}
+body.pc-mode .pc-omni-actions button:hover { border-color: var(--cyan); color: var(--cyan); }
+
+body.pc-mode .pc-omni-empty {
+    padding: 18px 12px;
+    text-align: center;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+}
+
+body.pc-mode .pc-omni-foot {
+    padding: 5px 10px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Permission banner */
+body.pc-mode .pc-perm-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: linear-gradient(90deg, var(--red-bg), rgba(255, 0, 64, 0.05));
+    border-bottom: 2px solid var(--red);
+    flex-shrink: 0;
+    animation: permPulse 2s infinite;
+}
+
+body.pc-mode .pc-perm-banner.hidden { display: none; }
+
+@keyframes permPulse {
+    0%, 100% { background-color: rgba(255, 0, 64, 0.1); }
+    50% { background-color: rgba(255, 0, 64, 0.2); }
+}
+
+body.pc-mode .pc-perm-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+body.pc-mode .pc-perm-icon {
+    font-size: 1.2rem;
+}
+
+body.pc-mode .pc-perm-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+body.pc-mode .pc-perm-title {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--red);
+}
+
+body.pc-mode .pc-perm-desc {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    max-width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.pc-mode .pc-perm-btns {
+    display: flex;
+    gap: 8px;
+}
+
+body.pc-mode .pc-perm-btns button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-perm-btns button kbd {
+    padding: 2px 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+    font-size: 0.6rem;
+}
+
+body.pc-mode .pc-perm-btns .approve {
+    background: var(--neon);
+    color: #000;
+}
+
+body.pc-mode .pc-perm-btns .approve:hover {
+    box-shadow: 0 0 15px var(--neon-glow);
+}
+
+body.pc-mode .pc-perm-btns .deny {
+    background: rgba(255, 0, 64, 0.2);
+    color: var(--red);
+    border: 1px solid var(--red);
+}
+
+body.pc-mode .pc-perm-btns .deny:hover {
+    background: var(--red);
+    color: #fff;
+}
+
+body.pc-mode .pc-perm-btns .purge {
+    background: rgba(255, 100, 50, 0.2);
+    border-color: var(--amber);
+    color: var(--amber);
+}
+
+body.pc-mode .pc-perm-btns .purge:hover {
+    background: var(--amber);
+    color: #000;
+}
+
+body.pc-mode .pc-perm-btns .auto {
+    background: rgba(100, 100, 255, 0.2);
+    border-color: var(--blue);
+    color: var(--blue);
+}
+
+body.pc-mode .pc-perm-btns .auto:hover {
+    background: var(--blue);
+    color: #000;
+}
+
+body.pc-mode .pc-perm-btns .auto.active {
+    background: var(--blue);
+    color: #000;
+    box-shadow: 0 0 10px var(--blue);
+}
+
+/* ==============================================
+   TERMINAL
+   ============================================== */
+
+body.pc-mode .pc-terminal-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+}
+
+body.pc-mode .pc-terminal {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--neon);
+    background: #000;
+    white-space: pre-line;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    user-select: text;
+    cursor: text;
+}
+
+/* Preserve formatting for code blocks inside terminal */
+body.pc-mode .pc-terminal pre,
+body.pc-mode .pc-terminal code {
+    white-space: pre-wrap;
+    display: block;
+}
+
+body.pc-mode .pc-terminal::-webkit-scrollbar { width: 4px; }
+body.pc-mode .pc-terminal::-webkit-scrollbar-track { background: transparent; }
+body.pc-mode .pc-terminal::-webkit-scrollbar-thumb {
+    background: var(--neon-dim);
+    border-radius: 2px;
+    transition: background 0.2s;
+}
+body.pc-mode .pc-terminal::-webkit-scrollbar-thumb:hover {
+    background: var(--neon);
+    box-shadow: 0 0 8px var(--neon-glow);
+}
+
+/* Search highlights */
+body.pc-mode mark.pc-search-match {
+    background: var(--cyan-glow);
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 2px;
+}
+
+body.pc-mode mark.pc-search-match.pc-search-current {
+    background: var(--cyan);
+    color: #000;
+    font-weight: 600;
+}
+
+/* Scroll indicator */
+body.pc-mode .pc-scroll-indicator {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+}
+
+body.pc-mode .pc-scroll-indicator.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+}
+
+body.pc-mode .pc-scroll-indicator button {
+    padding: 8px 16px;
+    background: var(--amber);
+    border: none;
+    border-radius: 20px;
+    color: #000;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255, 170, 0, 0.4);
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-scroll-indicator button:hover {
+    transform: scale(1.05);
+}
+
+/* ==============================================
+   SUGGESTIONS
+   ============================================== */
+
+body.pc-mode .pc-suggestions {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+}
+
+body.pc-mode .pc-suggestions.hidden { display: none; }
+
+body.pc-mode .pc-suggestion {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.1s;
+    border-bottom: 1px solid var(--border);
+}
+
+body.pc-mode .pc-suggestion:last-child {
+    border-bottom: none;
+}
+
+body.pc-mode .pc-suggestion:hover,
+body.pc-mode .pc-suggestion.selected {
+    background: rgba(0, 255, 65, 0.1);
+}
+
+body.pc-mode .pc-suggestion .icon {
+    font-size: 0.8rem;
+    opacity: 0.6;
+}
+
+body.pc-mode .pc-suggestion .text {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text);
+    flex: 1;
+}
+
+body.pc-mode .pc-suggestion .expand {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.pc-mode .pc-suggestion kbd {
+    padding: 2px 6px;
+    background: var(--cyan);
+    color: #000;
+    border-radius: 3px;
+    font-size: 0.5rem;
+    font-weight: 600;
+}
+
+/* ==============================================
+   INPUT
+   ============================================== */
+
+body.pc-mode .pc-input-wrap {
+    flex-shrink: 0;
+    padding: 12px 16px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    position: relative;
+}
+
+body.pc-mode .pc-input-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+
+body.pc-mode .pc-input-container.focused {
+    border-color: var(--neon);
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+}
+
+body.pc-mode .pc-input-prefix {
+    font-family: var(--mono);
+    font-size: 1rem;
+    color: var(--neon);
+    font-weight: 600;
+}
+
+body.pc-mode .pc-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    outline: none;
+}
+
+body.pc-mode .pc-input::placeholder {
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-input.sending {
+    animation: sendPulse 0.2s;
+}
+
+/* Expanded Input Modal */
+.pc-expand-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pc-expand-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+}
+
+.pc-expand-content {
+    position: relative;
+    width: 90%;
+    max-width: 800px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.pc-expand-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.pc-expand-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pc-expand-hint {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.pc-expand-header button {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+.pc-expand-header button:hover {
+    color: var(--text);
+}
+
+#pc-expand-textarea {
+    flex: 1;
+    min-height: 300px;
+    max-height: 60vh;
+    padding: 16px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+}
+
+#pc-expand-textarea::-webkit-scrollbar {
+    width: 8px;
+}
+
+#pc-expand-textarea::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#pc-expand-textarea::-webkit-scrollbar-thumb {
+    background: var(--neon);
+    border-radius: 4px;
+}
+
+.pc-expand-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+}
+
+.pc-expand-mic-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.pc-expand-mic-controls button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.pc-expand-mic-controls button:hover {
+    border-color: var(--neon);
+    color: var(--neon);
+}
+
+.pc-expand-mic-controls button.recording {
+    background: var(--red);
+    border-color: var(--red);
+    color: #000;
+    animation: pulse-mic 1s ease-in-out infinite;
+}
+
+#pc-expand-lang-btn {
+    min-width: 40px;
+    justify-content: center;
+}
+
+.pc-expand-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.pc-expand-actions button {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.pc-expand-actions button:hover {
+    border-color: var(--text-muted);
+}
+
+.pc-expand-actions button.primary {
+    background: var(--neon);
+    border-color: var(--neon);
+    color: #000;
+    font-weight: 600;
+}
+
+.pc-expand-actions button.primary:hover {
+    box-shadow: 0 0 15px var(--neon-glow);
+}
+
+@keyframes sendPulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+body.pc-mode .pc-input-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.pc-mode .pc-input-actions button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.pc-mode .pc-input-actions button:hover {
+    border-color: var(--neon);
+    color: var(--neon);
+}
+
+body.pc-mode .pc-input-actions button.send {
+    background: var(--neon);
+    border-color: var(--neon);
+    color: #000;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+body.pc-mode .pc-input-actions button.send:hover {
+    box-shadow: 0 0 15px var(--neon-glow);
+}
+
+body.pc-mode .pc-input-actions button.send kbd {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.65rem;
+}
+
+body.pc-mode .pc-input-hints {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+    padding-left: 40px;
+}
+
+body.pc-mode .pc-input-hints span {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-input-hints kbd {
+    display: inline-block;
+    padding: 1px 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin-right: 4px;
+}
+
+/* ==============================================
+   HISTORY PANEL
+   ============================================== */
+
+body.pc-mode .pc-history-panel {
+    position: absolute;
+    bottom: 100%;
+    right: 16px;
+    width: 350px;
+    max-height: 300px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+}
+
+body.pc-mode .pc-history-panel.hidden { display: none; }
+
+body.pc-mode .pc-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+body.pc-mode .pc-panel-header span {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+body.pc-mode .pc-panel-header button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+body.pc-mode .pc-history-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+body.pc-mode .pc-history-empty {
+    padding: 20px;
+    text-align: center;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-history-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.1s;
+}
+
+body.pc-mode .pc-history-item:hover {
+    background: rgba(0, 255, 65, 0.1);
+}
+
+body.pc-mode .pc-history-item .index {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    min-width: 20px;
+}
+
+body.pc-mode .pc-history-item .cmd {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ==============================================
+   COMMAND PALETTE
+   ============================================== */
+
+body.pc-mode .pc-command-palette {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 500px;
+    max-width: 90vw;
+    background: var(--surface);
+    border: 1px solid var(--neon-dim);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8), 0 0 30px var(--neon-glow);
+    z-index: 1000;
+}
+
+body.pc-mode .pc-command-palette.hidden { display: none; }
+
+body.pc-mode .pc-palette-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+}
+
+body.pc-mode .pc-palette-input-wrap svg {
+    color: var(--neon);
+}
+
+body.pc-mode .pc-palette-input-wrap input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    outline: none;
+}
+
+body.pc-mode .pc-palette-list {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+body.pc-mode .pc-palette-empty {
+    padding: 20px;
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-palette-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    cursor: pointer;
+    transition: all 0.1s;
+    border-bottom: 1px solid var(--border);
+}
+
+body.pc-mode .pc-palette-item:hover,
+body.pc-mode .pc-palette-item.selected {
+    background: var(--border);
+}
+
+body.pc-mode .pc-palette-item .label {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--text);
+}
+
+body.pc-mode .pc-palette-item kbd {
+    padding: 3px 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-muted);
+}
+
+/* ==============================================
+   CONTEXT MENU
+   ============================================== */
+
+body.pc-mode .pc-context-menu {
+    position: fixed;
+    z-index: 1000;
+    min-width: 180px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 0;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    display: none;
+}
+
+body.pc-mode .pc-context-menu.visible {
+    display: block;
+    animation: ctxFadeIn 0.15s ease-out;
+}
+
+@keyframes ctxFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+body.pc-mode .pc-ctx-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text);
+    transition: all 0.1s;
+}
+
+body.pc-mode .pc-ctx-item:hover {
+    background: var(--border);
+}
+
+body.pc-mode .pc-ctx-item span:first-child {
+    font-size: 0.8rem;
+}
+
+body.pc-mode .pc-ctx-item kbd {
+    margin-left: auto;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    font-size: 0.5rem;
+    color: var(--text-muted);
+}
+
+body.pc-mode .pc-ctx-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 6px 0;
+}
+
+/* ==============================================
+   DROP OVERLAY
+   ============================================== */
+
+body.pc-mode .pc-drop-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+body.pc-mode .pc-drop-overlay.active {
+    display: flex;
+    animation: dropFadeIn 0.2s;
+}
+
+@keyframes dropFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+body.pc-mode .pc-drop-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 40px;
+    border: 2px dashed var(--neon);
+    border-radius: 20px;
+}
+
+body.pc-mode .pc-drop-content svg {
+    width: 64px;
+    height: 64px;
+    color: var(--neon);
+    animation: dropBounce 0.5s infinite alternate;
+}
+
+@keyframes dropBounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-10px); }
+}
+
+body.pc-mode .pc-drop-content span {
+    font-family: var(--mono);
+    font-size: 1rem;
+    color: var(--neon);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+body.pc-mode .pc-drop-content small {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* ==============================================
+   WELCOME HINT
+   ============================================== */
+
+body.pc-mode .pc-welcome-hint {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid var(--neon-dim);
+    border-radius: 30px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 100;
+}
+
+body.pc-mode .pc-welcome-hint.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+body.pc-mode .pc-welcome-hint span {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text);
+}
+
+body.pc-mode .pc-welcome-hint kbd {
+    padding: 3px 8px;
+    background: var(--neon);
+    color: #000;
+    border-radius: 4px;
+    font-size: 0.55rem;
+    font-weight: 600;
+}
+
+/* ==============================================
+   TAB BAR
+   ============================================== */
+
+body.pc-mode .pc-tab-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+}
+
+body.pc-mode .pc-tab {
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+body.pc-mode .pc-tab:hover {
+    color: var(--neon);
+    background: rgba(0, 255, 65, 0.05);
+}
+
+body.pc-mode .pc-tab.active {
+    color: var(--neon);
+    border-bottom-color: var(--neon);
+    background: rgba(0, 255, 65, 0.1);
+}
+
+/* ==============================================
+   ANIMATIONS
+   ============================================== */
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+} /* End @media (min-width: 900px) */
+
+/* ==============================================
+   LARGER DESKTOP (>= 1200px)
+   ============================================== */
+
+@media (min-width: 1200px) {
+    body.pc-mode .app {
+        --sidebar-w-default: 250px;
+    }
+
+    body.pc-mode .pc-terminal {
+        font-size: 0.9rem;
+        padding: 20px 24px;
+    }
+
+    body.pc-mode .pc-input {
+        font-size: 0.95rem;
+    }
+}
+
+/* ==============================================
+   ULTRA-WIDE (>= 1600px)
+   ============================================== */
+
+@media (min-width: 1600px) {
+    body.pc-mode .app {
+        --sidebar-w-default: 280px;
+    }
+
+    body.pc-mode .pc-terminal {
+        font-size: 0.95rem;
+        padding: 24px 32px;
+    }
+
+    body.pc-mode .pc-command-palette {
+        width: 600px;
+    }
+}

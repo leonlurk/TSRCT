@@ -1,0 +1,675 @@
+/* ==============================================
+   TSRCT - SF CLI Sidebar + Modals
+   Salesforce workspace management
+   ============================================== */
+
+/* ── Sidebar Section ───────────────────────────── */
+
+body.pc-mode .pc-sf-section {
+    border-top: 1px solid var(--border);
+    padding-top: 4px;
+}
+
+body.pc-mode .pc-sf-section.collapsed .pc-sf-panel {
+    display: none;
+}
+
+body.pc-mode .pc-sf-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+body.pc-mode .pc-sf-header span {
+    flex: 1;
+}
+
+body.pc-mode .pc-sf-actions {
+    display: flex;
+    gap: 2px;
+    margin-left: auto;
+}
+
+body.pc-mode .pc-sf-actions button {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    cursor: pointer;
+    padding: 2px 4px;
+}
+
+body.pc-mode .pc-sf-actions button:hover {
+    color: var(--text);
+}
+
+body.pc-mode .pc-sf-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+body.pc-mode .pc-sf-select {
+    width: 100%;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    padding: 4px 6px;
+    cursor: pointer;
+}
+
+body.pc-mode .pc-sf-select:focus {
+    outline: none;
+    border-color: #00a8ff;
+}
+
+/* ── Org List ──────────────────────────────────── */
+
+body.pc-mode .pc-sf-orgs {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+body.pc-mode .pc-sf-org {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 4px;
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    border: 1px solid transparent;
+    transition: border-color 0.15s;
+}
+
+body.pc-mode .pc-sf-org:hover {
+    border-color: var(--border);
+    background: rgba(0,255,65,0.03);
+}
+
+body.pc-mode .pc-sf-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+body.pc-mode .pc-sf-dot-ok { background: #00ff41; box-shadow: 0 0 4px rgba(0,255,65,0.5); }
+body.pc-mode .pc-sf-dot-err { background: var(--red); box-shadow: 0 0 4px rgba(255,0,64,0.5); }
+body.pc-mode .pc-sf-dot-unk { background: #555; }
+
+body.pc-mode .pc-sf-org-alias {
+    flex: 1;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.pc-mode .pc-sf-org-status {
+    font-size: 0.45rem;
+    letter-spacing: 0.5px;
+}
+
+body.pc-mode .pc-sf-st-ok { color: #00ff41; }
+body.pc-mode .pc-sf-st-err { color: var(--red); }
+body.pc-mode .pc-sf-st-unk { color: #555; }
+
+body.pc-mode .pc-sf-org-acts {
+    display: none;
+    gap: 2px;
+}
+
+body.pc-mode .pc-sf-org:hover .pc-sf-org-acts {
+    display: flex;
+}
+
+body.pc-mode .pc-sf-org:hover .pc-sf-org-status {
+    display: none;
+}
+
+body.pc-mode .pc-sf-org-acts button {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.45rem;
+    cursor: pointer;
+    padding: 1px 3px;
+}
+
+body.pc-mode .pc-sf-org-acts button:hover {
+    color: var(--text);
+}
+
+/* ── Quick Actions ─────────────────────────────── */
+
+body.pc-mode .pc-sf-quick {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+body.pc-mode .pc-sf-quick button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    padding: 3px 6px;
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+}
+
+body.pc-mode .pc-sf-quick button:hover {
+    border-color: #00a8ff;
+    color: #00a8ff;
+    background: rgba(0,168,255,0.08);
+}
+
+body.pc-mode .pc-sf-org-toolbar {
+    display: flex;
+    margin-bottom: 4px;
+}
+
+body.pc-mode .pc-sf-org-toolbar button {
+    background: transparent;
+    border: 1px dashed rgba(0,168,255,0.3);
+    color: #00a8ff;
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    padding: 2px 6px;
+    cursor: pointer;
+    width: 100%;
+}
+
+body.pc-mode .pc-sf-org-toolbar button:hover {
+    background: rgba(0,168,255,0.1);
+    border-style: solid;
+}
+
+body.pc-mode .pc-sf-empty {
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 8px 4px;
+}
+
+/* ── Modal Elements ────────────────────────────── */
+
+.sf-modal-select {
+    width: 100%;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 8px;
+}
+
+.sf-modal-input {
+    width: 100%;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.sf-modal-textarea {
+    width: 100%;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 8px;
+    resize: vertical;
+    min-height: 50px;
+    box-sizing: border-box;
+}
+
+.sf-modal-input:focus,
+.sf-modal-select:focus,
+.sf-modal-textarea:focus {
+    outline: none;
+    border-color: #00a8ff;
+}
+
+.sf-modal-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-top: 6px;
+    text-transform: uppercase;
+}
+
+.sf-modal-checkbox {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sf-modal-row {
+    margin-bottom: 6px;
+}
+
+.sf-modal-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.sf-modal-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+.sf-modal-btn:hover {
+    border-color: var(--neon);
+    background: rgba(0,255,65,0.08);
+}
+
+.sf-modal-btn-primary {
+    background: rgba(0,168,255,0.12);
+    border-color: rgba(0,168,255,0.4);
+    color: #00a8ff;
+}
+
+.sf-modal-btn-primary:hover {
+    background: rgba(0,168,255,0.25);
+}
+
+/* ── Bookmarks ─────────────────────────────────── */
+
+.sf-modal-bookmarks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.sf-modal-bookmark {
+    background: rgba(0,168,255,0.06);
+    border: 1px solid rgba(0,168,255,0.2);
+    color: #00a8ff;
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 3px 8px;
+    cursor: pointer;
+}
+
+.sf-modal-bookmark:hover {
+    background: rgba(0,168,255,0.2);
+}
+
+.sf-modal-bm-row {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    margin-bottom: 6px;
+}
+
+/* ── Results ───────────────────────────────────── */
+
+.sf-modal-result {
+    margin-top: 8px;
+}
+
+.sf-modal-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #00a8ff;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+}
+
+.sf-modal-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.sf-modal-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 10px;
+}
+
+.sf-modal-table th {
+    background: var(--bg-darker);
+    color: #00a8ff;
+    text-align: left;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.sf-modal-table td {
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sf-modal-table tr:hover td {
+    background: rgba(0,255,65,0.04);
+    color: var(--text);
+}
+
+.sf-modal-log {
+    background: var(--bg-darker);
+    border: 1px solid var(--border);
+    padding: 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    overflow-x: auto;
+    max-height: 250px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 0;
+}
+
+.sf-modal-loading {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 16px;
+}
+
+.sf-modal-empty {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 12px;
+}
+
+.sf-modal-error {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--red);
+    padding: 8px;
+    background: var(--red-bg);
+    border: 1px solid rgba(255,0,64,0.3);
+    margin-bottom: 6px;
+}
+
+/* ── Add Org modal scroll ──────────────────────── */
+
+
+
+/* ── Attach indicator org items ────────────────── */
+
+.pc-attach-item.org,
+.attach-item.org {
+    color: #00a8ff;
+    border-color: rgba(0,168,255,0.3);
+}
+
+.pc-attach-item.org button,
+.attach-item.org button {
+    color: #00a8ff;
+}
+
+/* ── Mobile Room Styles ────────────────────────── */
+
+#sfcli-room .room-header {
+    background: linear-gradient(180deg, rgba(0,20,40,0.95), rgba(0,10,20,0.9));
+    border-bottom: 1px solid rgba(0,168,255,0.3);
+}
+
+#sfcli-room .room-title {
+    color: #00a8ff;
+}
+
+#sfcli-room .room-body {
+    padding: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.sf-toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.sf-btn {
+    background: transparent;
+    border: 1px solid var(--border-light);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+.sf-btn:active { background: rgba(0,255,65,0.1); }
+
+.sf-btn-primary {
+    background: rgba(0,168,255,0.12);
+    border-color: rgba(0,168,255,0.4);
+    color: #00a8ff;
+}
+
+.sf-btn-sm {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    cursor: pointer;
+}
+
+.sf-btn-danger { color: var(--red); border-color: rgba(255,0,64,0.3); }
+
+.sf-ws-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+}
+
+.sf-ws-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 12px;
+    cursor: pointer;
+}
+
+.sf-ws-card:active { border-color: var(--neon); }
+
+.sf-ws-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.sf-ws-name {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+}
+
+.sf-ws-org-count {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+}
+
+.sf-ws-card-health {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.sf-health-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.sf-ws-card-path {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sf-ws-detail {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.sf-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-dark);
+}
+
+.sf-detail-title {
+    flex: 1;
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+}
+
+.sf-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 10px;
+}
+
+.sf-section-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: #00a8ff;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sf-org-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sf-org-card {
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    padding: 8px;
+}
+
+.sf-org-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 3px;
+}
+
+.sf-org-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #555;
+    flex-shrink: 0;
+}
+
+.sf-org-status.sf-status-ok { background: #00ff41; box-shadow: 0 0 6px rgba(0,255,65,0.5); }
+.sf-org-status.sf-status-err { background: var(--red); box-shadow: 0 0 6px rgba(255,0,64,0.5); }
+
+.sf-org-alias {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+}
+
+.sf-org-status-text {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+.sf-org-status-text.sf-status-ok { color: #00ff41; }
+.sf-org-status-text.sf-status-err { color: var(--red); }
+.sf-org-status-text.sf-status-unknown { color: #555; }
+
+.sf-org-username {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+}
+
+.sf-org-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.sf-loading {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    padding: 20px;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.sf-empty {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 12px;
+    text-align: center;
+}
