@@ -6,7 +6,7 @@
 echo "[$(date)] Hook called" >> /tmp/claude-hook-debug.log
 
 # Configuration
-NTFY_TOPIC="${NTFY_TOPIC:-claude-bridge-LURK}"
+NTFY_TOPIC="${NTFY_TOPIC:-}"
 NTFY_SERVER="${NTFY_SERVER:-https://ntfy.sh}"
 BRIDGE_SERVER="${BRIDGE_SERVER:-http://localhost:3847}"
 

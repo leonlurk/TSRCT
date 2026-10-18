@@ -115,6 +115,23 @@ for (const [where, payload] of [
     ok('dropRestricted keeps the rest intact', JSON.stringify(kept).includes('HARBOR'));
     ok('CONTROL: dropRestricted does not drop a clean list',
         push.dropRestricted(['one', 'two', 'three']).length === 3);
+
+    // ntfy topics are public names: a default topic would send every install's
+    // alerts to the same channel. With no NTFY_TOPIC, nothing is sent at all.
+    const http = require('http'), https = require('https');
+    const realHttp = http.request, realHttps = https.request;
+    let calls = 0;
+    http.request = https.request = () => { calls++; throw new Error('no network in a check'); };
+    const savedTopic = process.env.NTFY_TOPIC;
+    delete process.env.NTFY_TOPIC;
+    try {
+        const ntfy = require('../lib/dispatcher/ntfyPush');
+        const r = await ntfy.send({ title: 'TSRCT', body: 'a session needs you' });
+        ok('ntfy sends nothing when NTFY_TOPIC is not set', calls === 0, `${calls} request(s)`);
+        ok('ntfy says why it sent nothing', r && r.skipped === 'no NTFY_TOPIC');
+    } catch (e) { ok('ntfy without NTFY_TOPIC does not throw', false, e.message); }
+    http.request = realHttp; https.request = realHttps;
+    if (savedTopic !== undefined) process.env.NTFY_TOPIC = savedTopic;
     finish();
 })();
 

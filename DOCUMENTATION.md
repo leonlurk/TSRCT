@@ -1412,7 +1412,7 @@ Keep-alive every 15s prevents mobile timeout
 BRIDGE_TOKEN=<your-secret-token>   # real value lives in .env only, never commit it
 BRIDGE_PORT=3847
 TMUX_SESSION=claude
-NTFY_TOPIC=claude-bridge-LURK
+NTFY_TOPIC=<a-long-random-name>   # no default: unset means no ntfy alerts at all
 NTFY_SERVER=https://ntfy.sh
 REMOTE_URL=https://<machine>.<tailnet>.ts.net   # permanent Tailscale hostname
 ```

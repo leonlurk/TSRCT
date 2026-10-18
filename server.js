@@ -577,7 +577,7 @@ function isAuthorized(provided, req) {
     if (!isRemoteRequest(req) && tokensMatch(provided, AUTH_TOKEN)) return true; // local master (hooks)
     return false;
 }
-const NTFY_TOPIC = process.env.NTFY_TOPIC || 'claude-bridge-LURK';
+const NTFY_TOPIC = process.env.NTFY_TOPIC || '';
 const NTFY_SERVER = process.env.NTFY_SERVER || 'https://ntfy.sh';
 
 // Detect if server is running inside a tmux session (to protect it from being killed)
