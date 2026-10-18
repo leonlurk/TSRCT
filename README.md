@@ -21,7 +21,7 @@ step, and 31 checks that run before every commit.
 ## The unusual parts
 
 **Tesla: the model is the mouth, not the brain.** Speak, and what your sentence *means* is decided
-in code first (`lib/understand.js`), then matched against a declared catalogue of 83 actions
+in code first (`lib/understand.js`), then matched against a declared catalogue of 84 actions
 (`lib/actions.js`). Only a catalogued action can run, each one declares how its result is verified,
 and anything that changes something asks once. The language model phrases the answer; it never gets
 to invent what happens. Six destructive buttons have no voice handle at all - those take a finger.
