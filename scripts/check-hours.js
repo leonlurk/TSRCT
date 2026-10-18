@@ -29,5 +29,13 @@ ok(seen.has(600), 'a minute with his mouse/keyboard counts');
 ok(!seen.has(605), 'a minute Tesla clicked in is not him');
 fs.unlinkSync(deskFile);
 
+// Without powershell.exe (Linux, macOS, WSL with interop off) presence must stay
+// off quietly: a missing program arrives as an 'error' event, and an unheard one
+// takes the whole server down at boot.
+const noPs = require('child_process').spawnSync(process.execPath, ['-e',
+    "require('./lib/presence').start(); setTimeout(() => process.exit(0), 800)"],
+    { cwd: path.join(__dirname, '..'), env: { ...process.env, PATH: '/nonexistent' }, encoding: 'utf8', timeout: 10000 });
+ok(noPs.status === 0, `presence crashes the process when powershell.exe is missing (exit ${noPs.status}): ${(noPs.stderr || '').split('\n').find(l => /Error/.test(l)) || ''}`);
+
 console.log(`[check-hours] ${pass}/${pass + fail}`);
 process.exit(fail ? 1 : 0);
