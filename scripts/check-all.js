@@ -12,7 +12,7 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 
 const CHECKS = [
-    'check-syntax',
+    'check-syntax', 'check-setup',
     'check-taste', 'check-assets', 'check-handlers', 'check-restricted', 'check-paneshape',
     'check-plainbrief', 'check-push', 'check-persona', 'check-actions', 'check-talk',
     'check-ui', 'check-automations', 'check-brain', 'check-tesla-log',

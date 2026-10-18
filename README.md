@@ -12,7 +12,7 @@ This is not a chat window onto one cloud session. It is your whole machine - eve
 project, the desktop itself - reachable from a phone, behind a private network and a hardware login.
 
 It is one person's daily tool, built in the open: vanilla JavaScript, zero npm dependencies, no build
-step, and 30 checks that run before every commit.
+step, and 31 checks that run before every commit.
 
 ![Six Claude Code sessions side by side, each with its own colour: three working, one asking to run a command, one asking a question](docs/screenshots/desktop-split.png)
 
@@ -96,26 +96,46 @@ Each layer below holds even if the one above it fails. The full model is in
 - Optional, per feature: Ollama (local model), Piper or edge-tts (voice), ntfy (phone alerts),
   chrome-headless-shell + puppeteer-core (Projector)
 
-## Quick start
+## Install
 
-```bash
-git clone <this repo> TSRCT && cd TSRCT
-cp .env.example .env          # set BRIDGE_TOKEN to a long random string, and PROJECTS_ROOT
-npm run check                 # 30 checks, about a minute
-npm run hooks                 # optional: run the fast checks before every commit
-node server.js                # then open http://127.0.0.1:3847 and log in with BRIDGE_TOKEN
+**1. Have your own Claude Code read it first.** TSRCT has zero dependencies, so every line that
+will run is right here in the repository. Clone it, run `claude` inside the folder, and ask:
+
+```
+Read this repository before I run anything. Tell me what scripts/setup.js installs,
+what it changes on my machine, every address the server connects to, and whether
+anything sends data off this computer.
 ```
 
-Enroll Windows Hello (or note the TOTP key the server prints on first boot) **before** you go
-remote. Then, on the machine running TSRCT:
+**2. Run the guided setup.**
+
+```bash
+git clone https://github.com/leonlurk/TSRCT.git && cd TSRCT
+npm run setup
+```
+
+It checks what you already have, and for anything missing shows the exact command and asks before
+running it, or opens the download page and waits while you install it. It writes `.env` for you (a
+fresh random password, your folders, your time zone), adds TSRCT's hooks to Claude Code next to your
+own, and then asks yes or no about each optional part: remote access, phone alerts, Tesla's voice,
+the local model, remote desktop, the morning routine. Every file it changes is backed up first, and
+it is safe to run again. `npm run setup -- --dry-run` shows what it would do without changing anything.
+
+**3. Start it.**
+
+```bash
+node server.js                # then open http://127.0.0.1:3847 and log in with the BRIDGE_TOKEN in .env
+npm run doctor                # any time: one line per part, working or what to fix
+npm run check                 # the full test suite, 31 checks, about a minute
+```
+
+Enroll Windows Hello (or add the 2-factor key the server prints on first boot to your
+authenticator app) **before** you go remote. The setup offers to run `tailscale serve`; by hand:
 
 ```bash
 tailscale serve --bg 3847     # https://<machine>.<tailnet>.ts.net, tailnet only
 tailscale funnel status       # must show no funnel: TSRCT is never public
 ```
-
-Point Claude Code's hooks at TSRCT to get permission requests in the UI: see
-`claude-hooks-config.json` (replace `/path/to/TSRCT`).
 
 ## How it is built
 

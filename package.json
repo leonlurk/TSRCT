@@ -4,6 +4,8 @@
   "description": "A control room for many Claude Code sessions at once, with Tesla, a voice assistant",
   "main": "server.js",
   "scripts": {
+    "setup": "node scripts/setup.js",
+    "doctor": "node scripts/doctor.js",
     "start": "node server.js",
     "start:session": "bash start-claude-session.sh",
     "check": "node scripts/check-all.js",

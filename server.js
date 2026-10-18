@@ -183,11 +183,10 @@ try {
 // desync the server from the hooks. Other keys keep env-var-wins precedence.
 try {
     const envPath = require('path').join(__dirname, '.env');
-    require('fs').readFileSync(envPath, 'utf8').split('\n').forEach(line => {
-        const match = line.match(/^\s*([^#=]+?)\s*=\s*(.*?)\s*$/);
-        if (!match) return;
-        if (!process.env[match[1]] || match[1] === 'BRIDGE_TOKEN') process.env[match[1]] = match[2];
-    });
+    const settings = require('./lib/envFile').parse(require('fs').readFileSync(envPath, 'utf8'));
+    for (const [key, value] of Object.entries(settings)) {
+        if (!process.env[key] || key === 'BRIDGE_TOKEN') process.env[key] = value;
+    }
 } catch (e) {}
 
 // Configuration

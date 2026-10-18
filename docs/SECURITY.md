@@ -92,7 +92,8 @@ compromised device on the same tailnet, is still inside. So the server does not 
 
 ## What you must do
 
-- Set a long random `BRIDGE_TOKEN` and keep `.env` out of git (it is in `.gitignore`).
+- Set a long random `BRIDGE_TOKEN` (`npm run setup` makes one, and writes `.env` readable by you
+  only) and keep `.env` out of git (it is in `.gitignore`).
 - Enroll Windows Hello / WebAuthn or TOTP **before** using it from another device.
 - Keep `BIND_HOST=127.0.0.1`. Never bind `0.0.0.0`, never put it behind a public tunnel, never turn
   on Funnel for it.
