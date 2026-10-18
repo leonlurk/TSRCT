@@ -169,6 +169,30 @@ for (const f of FORBIDDEN) {
     }
 }
 
+// ── 7. Tesla's button never sits on the phone's keys (2026-10-18) ───────────
+// Its default spot was a fixed 76 px from the bottom, but the phone's key area
+// is ~120 px tall, so the orb covered the TOOLS tab and the ENT key (visible in
+// the README screenshot). With no spot saved by a drag, it now sits just above
+// the typing row, on the left where no button lives.
+{
+    const a = fs.readFileSync(path.join(ROOT, 'src/js/assistant.js'), 'utf8');
+    const i = a.indexOf('function phoneDefaultPos');
+    let fn = null;
+    if (i >= 0) {
+        const end = a.indexOf('\n    }\n', i);
+        try { fn = new Function(`${a.slice(i, end + 6)}; return phoneDefaultPos;`)(); } catch (e) { fail(`phoneDefaultPos does not compile: ${e.message}`); }
+    }
+    if (typeof fn !== 'function') fail('assistant.js has no phoneDefaultPos(): the orb keeps its fixed spot over the phone keys');
+    else {
+        const p = fn(844, 669);
+        if (!p || p.side !== 'l' || p.vert !== 'b') fail(`the default phone spot is ${JSON.stringify(p)}, not bottom-left`); else ok();
+        if (p && 844 - p.y <= 669 - 4) ok(); else fail(`the orb's bottom edge (${p && 844 - p.y}) is not above the typing row (669)`);
+        if (fn(844, null) !== null) fail('with no typing row on screen there must be no default (the CSS spot stays)'); else ok();
+    }
+    const mm = a.indexOf('function makeMovable');
+    if (mm < 0 || !/placePhoneDefault\(|phoneDefaultPos\(/.test(a.slice(mm, mm + 900))) fail('makeMovable does not use phoneDefaultPos when nothing was dragged'); else ok();
+}
+
 if (bad) {
     console.error(`\n[check-ui] ${bad} failure(s). Las dos listas son lib/uiActions.js y src/js/ui-actions.js.`);
     process.exit(1);

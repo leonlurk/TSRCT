@@ -290,11 +290,33 @@
         d.classList.toggle('asst-top', pos.vert === 't');
     }
 
+    // The phone's default spot when he never dragged the orb: just above the
+    // typing row, on the left where no button lives. The CSS spot (76 px up)
+    // sat on the key area, which is ~120 px tall: it covered TOOLS and ENT.
+    function phoneDefaultPos(viewH, rowTop) {
+        if (!rowTop || !viewH) return null;
+        return { side: 'l', vert: 'b', x: 12, y: Math.max(12, viewH - rowTop + 10) };
+    }
+    function placePhoneDefault(d) {
+        if (document.body.classList.contains('pc-mode')) return;
+        const row = document.getElementById('prompt');
+        const card = row && row.closest('.card');
+        const r = card && card.getBoundingClientRect();
+        const p = phoneDefaultPos(window.innerHeight, r && r.height ? r.top : null);
+        if (p) placeDock(d, p);
+    }
+
     function makeMovable(d, orb) {
         let pos = null;
         try { pos = JSON.parse(localStorage.getItem(POS_KEY) || 'null'); } catch { pos = null; }
         if (pos && typeof pos.x === 'number' && typeof pos.y === 'number') placeDock(d, pos);
-        else pos = null;
+        else {
+            pos = null;
+            // Not saved: a default is recomputed, never remembered as his choice.
+            placePhoneDefault(d);
+            setTimeout(() => { if (!pos) placePhoneDefault(d); }, 1500);
+            window.addEventListener('resize', () => { if (!pos) placePhoneDefault(d); });
+        }
 
         let drag = null, moved = false;
         orb.addEventListener('pointerdown', e => {
