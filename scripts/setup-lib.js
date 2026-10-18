@@ -53,7 +53,9 @@ function installHooks(settingsFile, template, tsrctDir) {
     let settings = {};
     if (fs.existsSync(settingsFile)) settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8') || '{}');
     settings.hooks = settings.hooks || {};
-    const real = (cmd) => cmd.split('/path/to/TSRCT').join(tsrctDir);
+    // Point each hook script at THIS folder, whatever path the template carries
+    // (the public one has /path/to/TSRCT, a working copy its own absolute path).
+    const real = (cmd) => cmd.replace(/\S*\/(notify\.sh|permission-hook\.sh)/g, (m, script) => path.join(tsrctDir, script));
     let added = 0;
     for (const [event, groups] of Object.entries(template.hooks || {})) {
         const mine = settings.hooks[event] = settings.hooks[event] || [];

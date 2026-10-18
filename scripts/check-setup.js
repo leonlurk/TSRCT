@@ -18,12 +18,16 @@ const ok = (c, m) => { if (c) pass++; else { fail++; console.log('  [x] ' + m); 
 
 const envFile = require(path.join(ROOT, 'lib', 'envFile'));
 
-// ── the reader, on the example as shipped ───────────────────────────────────
-const example = envFile.parse(fs.readFileSync(path.join(ROOT, '.env.example'), 'utf8'));
-ok(example.BIND_HOST === '127.0.0.1', `BIND_HOST reads as "${example.BIND_HOST}"`);
-ok(example.TMUX_SESSION === '', `an empty value with a comment reads as empty, not "${example.TMUX_SESSION}"`);
-ok(example.WIN_HOME === '', `WIN_HOME must stay empty (it turns the Windows features on), got "${example.WIN_HOME}"`);
-for (const [k, v] of Object.entries(example)) ok(!/\s#/.test(v), `${k} kept its comment: "${v}"`);
+// ── the reader, on the example as shipped (a copy with a real .env has none) ──
+const EXAMPLE = path.join(ROOT, '.env.example');
+const hasExample = fs.existsSync(EXAMPLE);
+if (hasExample) {
+    const example = envFile.parse(fs.readFileSync(EXAMPLE, 'utf8'));
+    ok(example.BIND_HOST === '127.0.0.1', `BIND_HOST reads as "${example.BIND_HOST}"`);
+    ok(example.TMUX_SESSION === '', `an empty value with a comment reads as empty, not "${example.TMUX_SESSION}"`);
+    ok(example.WIN_HOME === '', `WIN_HOME must stay empty (it turns the Windows features on), got "${example.WIN_HOME}"`);
+    for (const [k, v] of Object.entries(example)) ok(!/\s#/.test(v), `${k} kept its comment: "${v}"`);
+}
 
 // ── the reader's edge cases ─────────────────────────────────────────────────
 const p = envFile.parse([
@@ -72,7 +76,7 @@ if (setup) {
     // The example's placeholder is not a token to keep: a copied .env.example
     // must leave setup with a real one, never the public "change-me" string.
     const fresh = path.join(tmp, '.env.fresh');
-    fs.copyFileSync(path.join(ROOT, '.env.example'), fresh);
+    fs.writeFileSync(fresh, 'BRIDGE_TOKEN=change-me-to-a-long-random-string   # the master token\nPROJECTS_ROOT=/home/you/PROJECTS\n');
     setup.writeEnv(fresh, { BRIDGE_TOKEN: 'a-real-token', PROJECTS_ROOT: '/p' }, { keep: ['BRIDGE_TOKEN'] });
     const ft = envFile.parse(fs.readFileSync(fresh, 'utf8'));
     ok(ft.BRIDGE_TOKEN === 'a-real-token', `the example's placeholder token was kept: "${ft.BRIDGE_TOKEN}"`);
