@@ -20,13 +20,9 @@ const ok = (c, msg) => { if (c) pass++; else { fail++; console.log('  [x] ' + ms
 // ── every module asks lib/stateFile.js for its path ───────────────────────
 const MODULES = [
     ['lib/automations.js', 'automations.json'],
-    ['lib/clientHealth.js', 'clients.json'],
-    ['lib/clientHealth.js', 'clients-config.json'],
     ['lib/morningRoutine.js', 'morning.json'],
-    ['lib/progressReport.js', 'progress.json'],
     ['lib/scheduler.js', 'scheduler.json'],
     ['lib/setups.js', 'setups.json'],
-    ['lib/shopWatch.js', 'shopwatch.json'],
     ['server.js', 'prompt-jobs.jsonl'],
 ];
 for (const [file, name] of MODULES) {

@@ -12,7 +12,7 @@ This is not a chat window onto one cloud session. It is your whole machine - eve
 project, the desktop itself - reachable from a phone, behind a private network and a hardware login.
 
 It is one person's daily tool, built in the open: vanilla JavaScript, zero npm dependencies, no build
-step, and 33 checks that run before every commit.
+step, and 30 checks that run before every commit.
 
 ![Six Claude Code sessions side by side, each with its own colour: three working, one asking to run a command, one asking a question](docs/screenshots/desktop-split.png)
 
@@ -21,7 +21,7 @@ step, and 33 checks that run before every commit.
 ## The unusual parts
 
 **Tesla: the model is the mouth, not the brain.** Speak, and what your sentence *means* is decided
-in code first (`lib/understand.js`), then matched against a declared catalogue of 84 actions
+in code first (`lib/understand.js`), then matched against a declared catalogue of 83 actions
 (`lib/actions.js`). Only a catalogued action can run, each one declares how its result is verified,
 and anything that changes something asks once. The language model phrases the answer; it never gets
 to invent what happens. Six destructive buttons have no voice handle at all - those take a finger.
@@ -94,14 +94,14 @@ Each layer below holds even if the one above it fails. The full model is in
 - **Node.js 22+**, **tmux**, and the **Claude Code** CLI
 - **Tailscale** for remote access (strongly recommended over any other way of exposing it)
 - Optional, per feature: Ollama (local model), Piper or edge-tts (voice), ntfy (phone alerts),
-  chrome-headless-shell + puppeteer-core (Projector), a ClickUp token
+  chrome-headless-shell + puppeteer-core (Projector)
 
 ## Quick start
 
 ```bash
 git clone <this repo> TSRCT && cd TSRCT
 cp .env.example .env          # set BRIDGE_TOKEN to a long random string, and PROJECTS_ROOT
-npm run check                 # 33 checks, about a minute
+npm run check                 # 30 checks, about a minute
 npm run hooks                 # optional: run the fast checks before every commit
 node server.js                # then open http://127.0.0.1:3847 and log in with BRIDGE_TOKEN
 ```
@@ -119,14 +119,14 @@ Point Claude Code's hooks at TSRCT to get permission requests in the UI: see
 
 ## How it is built
 
-- `server.js` - boot and the auth gate; all 257 API routes live in `lib/routes/`, in 15 groups tried
+- `server.js` - boot and the auth gate; all 170 API routes live in `lib/routes/`, in 15 groups tried
   in order.
 - `lib/` - the features: Tesla (`talk.js`, `haikuBrain.js`, `actions.js`, `understand.js`), the PC
   (`desk*.js`, `pcDirect.js`, `teslaHands.js`), the Projector, the scheduler and morning routine, the
   guard (`dispatcher/restrictedGuard.js`), all paths in one place (`paths.js`).
 - `src/` - the PWA: plain IIFE modules that publish on `window`, no framework.
 - `scripts/check-*.js` - the suite. `npm run check` runs all of them and fails at the end. Among them:
-  a route inventory and auth-gate check; a check that sends 1,028 requests through the real route
+  a route inventory and auth-gate check; a check that sends 684 requests through the real route
   code and compares every status and reply with a recorded snapshot; a check that drives a whole
   Tesla turn through each brain; the restricted-projects guard check; and `check-public.js`, the
   release gate that keeps private names, paths and secrets out of this repository.

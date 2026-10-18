@@ -131,86 +131,6 @@ body.pc-mode .pc-split-chip-single.active {
     border-left-color: var(--cyan, var(--cyan));
 }
 
-/* [R] progress report (2026-10-06): the button sits at the end of the tab bar,
-   the window is an overlay like the morning brief, never a tab. */
-body.pc-mode .pc-progress-btn { margin-left: auto; opacity: 0.8; }
-body.pc-mode .pc-progress-btn.running {
-    opacity: 1;
-    color: var(--amber, #ffb000);
-    border-color: var(--amber, #ffb000);
-    border-left-color: var(--amber, #ffb000);
-}
-.pc-progress-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 900;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(3px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.pc-progress-overlay.hidden { display: none; }
-.pc-progress-box {
-    width: min(760px, 92vw);
-    max-height: 86vh;
-    display: flex;
-    flex-direction: column;
-    /* Solid: --card-bg does not exist and --bg-card is 85% opaque, and either
-       lets the terminals show through the text (2026-10-06). */
-    background: var(--bg, var(--bg));
-    border: 1px solid var(--cyan, var(--cyan));
-    border-radius: 4px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-    font-family: var(--mono);
-    color: var(--text, #c8ffd8);
-}
-.pc-progress-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-    color: var(--cyan, var(--cyan));
-    font-size: 0.8rem;
-    letter-spacing: 0.5px;
-}
-.pc-progress-body { padding: 10px 12px; overflow-y: auto; font-size: 0.8rem; }
-.pc-progress-sec { margin-bottom: 14px; }
-.pc-progress-h { color: var(--cyan, var(--cyan)); font-size: 0.7rem; letter-spacing: 0.5px; margin-bottom: 5px; }
-.pc-progress-sub { color: var(--text-muted, #5a8a6a); font-size: 0.7rem; }
-.pc-progress-sec ul { margin: 0; padding-left: 18px; }
-.pc-progress-sec li { margin-bottom: 3px; line-height: 1.4; }
-.pc-progress-slack {
-    width: 100%;
-    box-sizing: border-box;
-    resize: vertical;
-    background: rgba(0, 0, 0, 0.35);
-    color: inherit;
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 8px;
-    font-family: var(--mono);
-    font-size: 0.8rem;
-    line-height: 1.45;
-}
-.pc-progress-note { color: var(--text-muted, #5a8a6a); line-height: 1.5; margin-bottom: 8px; }
-.pc-progress-note.err { color: var(--red, var(--red)); }
-.pc-progress-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 6px; }
-.pc-progress-act {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--cyan, var(--cyan));
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    padding: 3px 9px;
-    border-radius: 3px;
-    cursor: pointer;
-}
-.pc-progress-act:hover { background: rgba(0, 212, 255, 0.08); }
-.pc-progress-act.primary { border-color: var(--cyan, var(--cyan)); }
-
 /* Combined terminals wrapper */
 body.pc-mode .pc-combined-wrap {
     position: relative;
@@ -965,9 +885,7 @@ body.pc-mode .pc-attach-item.runner {
     color: var(--cyan);
 }
 
-body.pc-mode .pc-tasks-panel,
 body.pc-mode .pc-codemap-panel,
-body.pc-mode .pc-clients-panel,
 body.pc-mode .pc-automations-panel,
 body.pc-mode .pc-notifs-panel {
     display: none;
@@ -977,20 +895,9 @@ body.pc-mode .pc-notifs-panel {
     background: var(--bg, var(--bg));
     font-family: var(--mono);
 }
-body.pc-mode .pc-tasks-panel:not(.hidden) { display: grid; }
 body.pc-mode .pc-codemap-panel:not(.hidden) { display: grid; }
-body.pc-mode .pc-clients-panel:not(.hidden) { display: grid; }
 body.pc-mode .pc-automations-panel:not(.hidden) { display: grid; }
 body.pc-mode .pc-notifs-panel:not(.hidden) { display: grid; }
-body.pc-mode .pc-lurk-panel { display: none; flex: 1; min-height: 0; background: var(--bg, #05070d); }
-body.pc-mode .pc-lurk-panel:not(.hidden) { display: flex; }
-body.pc-mode #pc-lurk-body { flex: 1; min-height: 0; display: flex; }
-body.pc-mode .pc-studio-panel { display: none; flex: 1; min-height: 0; background: var(--bg, var(--bg)); }
-body.pc-mode .pc-studio-panel:not(.hidden) { display: flex; }
-body.pc-mode #pc-studio-body { flex: 1; min-height: 0; display: flex; }
-body.pc-mode .pc-playlist-panel { display: none; flex: 1; min-height: 0; background: var(--bg, #05070d); }
-body.pc-mode .pc-playlist-panel:not(.hidden) { display: flex; }
-body.pc-mode #pc-playlist-body { flex: 1; min-height: 0; display: flex; }
 body.pc-mode .pc-dash-header {
     display: flex;
     justify-content: space-between;
@@ -1198,45 +1105,6 @@ body.pc-mode .pc-role-btn:hover { background: rgba(0, 212, 255, 0.12); }
 body.pc-mode[data-role="focus"] .pc-tab-bar,
 body.pc-mode[data-role="wall"] .pc-tab-bar { display: none; }
 
-/* ── TOWER panel ────────────────────────────────────────────────────────────
-   `.pc-main` is a flex COLUMN with height:100vh, so a panel only fills the
-   screen if it says `flex:1; min-height:0`. Shipping without this is why TOWER
-   rendered squeezed into the top third with THE PULSE clipped behind the
-   composer and a black void underneath. Mirrors .pc-cockpit-panel. */
-
-
-/* TOWER is a COMMAND view: nothing is typed into it, so the composer hands its
-   height back. Set by twInit(), removed by twTeardown(). */
-
-body.pc-mode .pc-tw-title {
-    color: var(--amber);
-    font-size: 0.8rem;
-    letter-spacing: 2px;
-    font-weight: 500;
-}
-
-/* ── FACTORY panel ─────────────────────────────────────────────────────────
-   Same chrome as TOWER (flex:1 + min-height:0, or it squeezes into the top
-   third), same head, and the same rule that a command view hides the composer:
-   nothing is typed into it. Set by fxInit(), removed by fxTeardown(). */
-body.pc-mode .pc-factory-panel {
-    display: none;
-    grid-template-rows: auto minmax(0, 1fr);
-    flex: 1;
-    min-height: 0;
-    background: var(--bg, var(--bg));
-    font-family: var(--mono);
-}
-body.pc-mode .pc-factory-panel:not(.hidden) { display: grid; }
-body.pc-mode .pc-factory-panel .pc-panel-head {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--border);
-}
-body.pc-mode .pc-factory-panel .fx-root { min-height: 0; overflow: hidden; }
-body.pc-mode.fx-active .pc-input-wrap { display: none; }
 
 /* ── [$] USAGE — the sidebar's cost readout (2026-08-24) ──────────────────────
    Sized for the 220px rail panel first: every row is label / bar / number on one

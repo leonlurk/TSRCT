@@ -257,9 +257,6 @@
             <button class="quick-btn" onclick="showAbbreviationsModal()" style="color: #FF6B6B;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>CMD</button>
             <button class="quick-btn" onclick="WorldManager.open('remote')" style="color: #00a8ff;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>REMOTE</button>
             <button class="quick-btn" onclick="WorldManager.open('sfcli')" style="color:#00a8ff;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>SF</button>
-            <button class="quick-btn" onclick="WorldManager.open('lurk')" style="color:#46e0ff;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 21 7 21 17 12 22 3 17 3 7"/><polygon points="12 6 17 9 17 15 12 18 7 15 7 9"/></svg>NULL</button>
-            <button class="quick-btn" onclick="WorldManager.open('studio')" style="color:#00ff88;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="3" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="21"/></svg>STUDIO</button>
-            <button class="quick-btn" onclick="WorldManager.open('playlist')" style="color:#46e0ff;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>LABS</button>
             <button class="quick-btn" onclick="mrnToggle()" style="color:#ffd166;border-color:rgba(255,209,102,0.4)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>BRIEF</button>
             <button class="quick-btn" onclick="WorldManager.open('automations')" style="color:#00ff41;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>AUTO<span id="au-quick-badge" style="display:none;width:7px;height:7px;margin-left:3px;border-radius:50%;background:#ff0040;vertical-align:top"></span></button>
             <button class="quick-btn" onclick="projectorOpen()" style="color:#46e0ff;" title="Watch (and drive) the separate browser a session is using"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><polygon points="10 8 15 10 10 12"/></svg>PROJ</button>
@@ -1110,60 +1107,6 @@
         </div>
     </div>
 
-    <!-- LURK mode / NULL face (mobile room overlay) -->
-    <div class="room theme-navy" id="lurk-room">
-        <div class="room-content">
-            <div class="room-header">
-                <span class="room-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 21 7 21 17 12 22 3 17 3 7"/><polygon points="12 6 17 9 17 15 12 18 7 15 7 9"/></svg>
-                    NULL
-                </span>
-                <button class="room-close" onclick="WorldManager.close('lurk')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-            </div>
-            <div class="room-body" style="padding:0;">
-                <div class="lurk-mount" style="height:100%;"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Generative AI Studio (mobile room overlay) -->
-    <div class="room theme-studio" id="studio-room">
-        <div class="room-content">
-            <div class="room-header">
-                <span class="room-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>
-                    STUDIO
-                </span>
-                <button class="room-close" onclick="WorldManager.close('studio')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-            </div>
-            <div class="room-body" style="padding:0;">
-                <div class="studio-mount" style="height:100%;"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- LURK Labs / stem rack (mobile room overlay) -->
-    <div class="room theme-navy" id="playlist-room">
-        <div class="room-content">
-            <div class="room-header">
-                <span class="room-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                    LABS
-                </span>
-                <button class="room-close" onclick="WorldManager.close('playlist')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-            </div>
-            <div class="room-body" style="padding:0;">
-                <div class="playlist-mount" style="height:100%;"></div>
-            </div>
-        </div>
-    </div>
-
     <!-- Automations (mobile room overlay): everything that runs by itself -->
     <div class="room theme-terminal" id="automations-room">
         <div class="room-content">
@@ -1269,17 +1212,9 @@
     <script type="module" src="/src/js/remote-desktop.js"></script>
     <!-- sf-cli.js loaded on demand via loadSfCli() -->
     <script src="/src/js/runners.js"></script>
-    <script src="/src/js/factory.js"></script>
-    <script src="/src/js/dashboard.js"></script>
     <script src="/src/js/codemap.js"></script>
-    <script src="/src/js/clients.js"></script>
     <script src="/src/js/automations.js"></script>
     <script src="/src/js/notifications.js"></script>
-    <script src="/src/js/lurk.js"></script>
-    <script src="/src/js/studio.js"></script>
-    <!-- Three.js (vendored, UMD global `THREE`) — powers the GPU reactor in the LURK Catalog -->
-    <script src="/src/js/vendor/three.min.js"></script>
-    <script src="/src/js/playlist.js"></script>
     <script src="/src/js/omni.js"></script>
     <script src="/src/js/handson.js"></script>
     <script src="/src/js/morning.js"></script>

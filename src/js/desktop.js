@@ -1089,15 +1089,6 @@ function buildPCLayout() {
             <button class="pc-tab active" data-tab="terminal" onclick="pcSwitchTab('terminal')">
                 [>] Terminal
             </button>
-            <button class="pc-tab" data-tab="factory" onclick="pcSwitchTab('factory')">
-                [F] Factory
-            </button>
-            <button class="pc-tab" data-tab="tasks" onclick="pcSwitchTab('tasks')">
-                [T] Tasks
-            </button>
-            <button class="pc-tab" data-tab="clients" onclick="pcSwitchTab('clients')">
-                [C] Clients
-            </button>
             <button class="pc-tab" data-tab="automations" onclick="pcSwitchTab('automations')">
                 [@] Automations<span class="nf-tab-badge hidden" id="au-tab-badge"></span>
             </button>
@@ -1106,15 +1097,6 @@ function buildPCLayout() {
             </button>
             <button class="pc-tab" data-tab="notifs" onclick="pcSwitchTab('notifs')">
                 [!] Notifs<span class="nf-tab-badge hidden" id="nf-tab-badge"></span>
-            </button>
-            <button class="pc-tab" data-tab="lurk" onclick="pcSwitchTab('lurk')">
-                [N] NULL
-            </button>
-            <button class="pc-tab" data-tab="studio" onclick="pcSwitchTab('studio')">
-                [G] Studio
-            </button>
-            <button class="pc-tab" data-tab="playlist" onclick="pcSwitchTab('playlist')">
-                [P] LABS
             </button>
             <button class="pc-tab" data-tab="handson" onclick="pcSwitchTab('handson')">
                 [H] Hands On
@@ -1133,41 +1115,6 @@ function buildPCLayout() {
             </div>
         </div>
 
-
-        <!-- Factory Panel: the software factory (RUN / CANDIDATES / BUILDS / RUNS) -->
-        <div class="pc-factory-panel hidden" id="pc-factory-panel">
-            <div class="pc-panel-head">
-                <span class="pc-tw-title">[F] FACTORY</span>
-                <span class="tw-stamp" id="fx-stamp-time"></span>
-            </div>
-            <div class="fx-root" id="pc-factory-body"></div>
-        </div>
-
-        <!-- Tasks (Productivity Dashboard) Panel (hidden by default) -->
-        <div class="pc-tasks-panel hidden" id="pc-tasks-panel">
-            <div class="pc-dash-header">
-                <span class="pc-dash-title">[T] TASKS</span>
-                <div class="pc-dash-header-actions">
-                    <button onclick="window.dashInit && dashInit()" title="Refresh">[~]</button>
-                </div>
-            </div>
-            <div class="pc-dash-body">
-                <div class="dash-target" id="pc-dashboard-list"></div>
-            </div>
-        </div>
-
-        <!-- Clients (client-health board) Panel (hidden by default) -->
-        <div class="pc-clients-panel hidden" id="pc-clients-panel">
-            <div class="pc-dash-header">
-                <span class="pc-dash-title">[C] CLIENTS</span>
-                <div class="pc-dash-header-actions">
-                    <button onclick="window.clientsInit && clientsInit()" title="Reload">[~]</button>
-                </div>
-            </div>
-            <div class="pc-dash-body">
-                <div class="cl-root" id="pc-clients-body"></div>
-            </div>
-        </div>
 
         <!-- Automations (everything that runs by itself) Panel (hidden by default) -->
         <div class="pc-automations-panel hidden" id="pc-automations-panel">
@@ -1198,25 +1145,13 @@ function buildPCLayout() {
                 <span class="pc-dash-title">[!] NOTIFICATIONS</span>
                 <div class="pc-dash-header-actions">
                     <button onclick="window.notifsClearEverything && notifsClearEverything()"
-                            title="Dismiss every notification in all three sections (recoverable)">[Clear all]</button>
+                            title="Dismiss every notification in both sections (recoverable)">[Clear all]</button>
                     <button onclick="window.notifsInit && notifsInit()" title="Refresh">[~]</button>
                 </div>
             </div>
             <div class="pc-dash-body">
                 <div class="nf-root" id="pc-notifs-body"></div>
             </div>
-        </div>
-
-        <div class="pc-studio-panel hidden" id="pc-studio-panel">
-            <div id="pc-studio-body"></div>
-        </div>
-
-        <div class="pc-playlist-panel hidden" id="pc-playlist-panel">
-            <div id="pc-playlist-body"></div>
-        </div>
-
-        <div class="pc-lurk-panel hidden" id="pc-lurk-panel">
-            <div id="pc-lurk-body"></div>
         </div>
 
         <!-- HANDS ON: the inverse of HANDS FREE. Claude publishes a plan, you
@@ -2710,15 +2645,9 @@ function pcSelectAll() {
 // ==============================================
 const SURFACES = {
     terminal:   { title: 'Terminal',   el: null,                    css: null,         init: null,             teardown: null,                where: 'main' },
-    factory:    { title: 'Factory',    el: 'pc-factory-panel',      css: 'factory',    init: 'fxInit',         teardown: 'fxTeardown',   where: 'main' },
-    tasks:      { title: 'Tasks',      el: 'pc-tasks-panel',        css: 'dashboard',  init: 'dashInit',       teardown: 'dashTeardown',      where: 'main' },
-    clients:    { title: 'Clients',    el: 'pc-clients-panel',      css: 'clients',    init: 'clientsInit',    teardown: 'clientsTeardown',   where: 'main' },
     automations:{ title: 'Automations',el: 'pc-automations-panel',  css: 'automations',init: 'automationsInit',teardown: 'automationsTeardown', where: 'main' },
     codemap:    { title: 'Codemap',    el: 'pc-codemap-panel',      css: 'codemap',    init: 'codemapInit',    teardown: 'codemapTeardown',   where: 'main' },
     notifs:     { title: 'Notifs',     el: 'pc-notifs-panel',       css: 'notifs',     init: 'notifsInit',     teardown: 'notifsTeardown',    where: 'main' },
-    lurk:       { title: 'NULL',       el: 'pc-lurk-panel',         css: 'lurk',       init: 'lurkInit',       teardown: 'lurkTeardown',      where: 'main' },
-    studio:     { title: 'Studio',     el: 'pc-studio-panel',       css: 'studio',     init: 'studioInit',     teardown: 'studioTeardown',    where: 'main' },
-    playlist:   { title: 'Labs',       el: 'pc-playlist-panel',     css: 'playlist',   init: 'playlistInit',   teardown: 'playlistTeardown',  where: 'main' },
     handson:    { title: 'Hands On',   el: 'pc-handson-panel',      css: 'handson',    init: 'hoInit',         teardown: 'hoTeardown',        where: 'main' },
     // NOTE: morning is deliberately NOT a surface. The brief is read once and
     // acted on, not switched to, so it is an overlay ([A] in the header) that

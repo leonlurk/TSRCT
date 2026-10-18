@@ -135,7 +135,6 @@ for (const entry of m) {
             permissionDesk: require('../lib/permissionDesk'),
             sessionWeight: require('../lib/sessionWeight'),
             usage: require('../lib/usage'),
-            clientHealth: require('../lib/clientHealth'),
             paneKeys: require('../lib/paneKeys'),
         };
         const src = fs.readFileSync(path.join(__dirname, '..', 'lib', 'actions.js'), 'utf8');

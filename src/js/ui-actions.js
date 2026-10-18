@@ -11,8 +11,8 @@
 //   the build if the two lists stop agreeing.
 //
 //   IT KNOWS WHICH SKIN IS ON. The same sentence means two different controls:
-//   on the desktop "pasame a tareas" is pcSwitchTab('tasks'), on the phone the
-//   tasks panel does not exist at all. So each handler picks the control for the
+//   on the desktop "pasame a notificaciones" is pcSwitchTab('notifs'), on the phone
+//   that panel does not exist at all. So each handler picks the control for the
 //   layout it is in, and when there is none it FAILS IN WORDS — the assistant
 //   then says so out loud instead of leaving "listo" standing over nothing.
 //
@@ -38,14 +38,12 @@
     const HANDLERS = {
         go_tab: ({ tab }) => {
             if (pc()) return call('pcSwitchTab', tab);
-            // On the phone the "tabs" that exist are rooms; the rest do not.
-            const asRoom = { studio: 'studio', lurk: 'lurk', playlist: 'playlist' };
+            // On the phone the only "tab" is the terminal; the rest are desktop panels.
             if (tab === 'terminal') {
                 const open = window.WorldManager && WorldManager.activeRoom;
                 if (open) return WorldManager.close(open);
                 return true;                       // already on the terminal
             }
-            if (asRoom[tab] && window.WorldManager) return WorldManager.open(asRoom[tab]);
             throw new Error(`${tab} en el telefono no existe, es una pantalla de la compu`);
         },
         open_room: ({ room }) => {

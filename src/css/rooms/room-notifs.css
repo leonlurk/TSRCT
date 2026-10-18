@@ -89,7 +89,7 @@
 .nf-ev-ts { color: var(--text-muted, var(--text-muted)); font-size: 0.66rem; white-space: nowrap; }
 .nf-ev-body { color: var(--text, #00ff41); font-size: 0.72rem; margin-top: 3px; overflow-wrap: anywhere; opacity: 0.85; }
 
-/* ── dismiss control (shared by Syften + activity rows) ── */
+/* ── dismiss control (shared by audit + activity rows) ── */
 .nf-x {
     background: transparent;
     border: none;
@@ -111,36 +111,6 @@
 }
 .nf-btn-ghost:hover:not([disabled]) { color: var(--cyan, var(--cyan)); }
 
-/* ── Syften mention rows ── */
-.nf-sy-list { display: flex; flex-direction: column; gap: 6px; }
-.nf-sy-row {
-    padding: 8px 12px;
-    border-left: 3px solid var(--amber, #ffb000);
-    background: rgba(255,176,0,0.05);
-}
-.nf-sy-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-.nf-sy-where { color: var(--amber, #ffb000); font-size: 0.7rem; letter-spacing: 1px; }
-.nf-sy-filter {
-    color: var(--cyan, var(--cyan));
-    font-size: 0.64rem;
-    border: 1px solid rgba(0,212,255,0.35);
-    padding: 1px 6px;
-    overflow-wrap: anywhere;
-}
-.nf-sy-ts { color: var(--text-muted, var(--text-muted)); font-size: 0.66rem; white-space: nowrap; margin-left: auto; }
-.nf-sy-title-line { margin-top: 4px; }
-.nf-sy-link, .nf-sy-title { color: var(--cyan, var(--cyan)); font-size: 0.78rem; overflow-wrap: anywhere; }
-.nf-sy-link:hover { text-decoration: underline; }
-.nf-sy-body {
-    color: var(--text, #00ff41);
-    font-size: 0.72rem;
-    margin-top: 4px;
-    line-height: 1.45;
-    opacity: 0.85;
-    overflow-wrap: anywhere;
-}
-.nf-sy-meta { color: var(--text-muted, var(--text-muted)); font-size: 0.66rem; margin-top: 4px; }
-
 /* ── unread badge on the [!] Notifs tab ── */
 .nf-tab-badge {
     display: inline-block;
@@ -160,107 +130,4 @@
 @media (max-width: 1100px) {
     .nf-audit-row { grid-template-columns: 1fr; gap: 4px; }
     .nf-audit-ts { justify-self: start; }
-    .nf-sy-ts { margin-left: 0; }
-}
-
-/* ── WORTH ANSWERING — the daily read's verdicts ──────────────────────────
-   Deliberately louder than a Syften mention row above it: a mention is
-   something that matched, this is something to act on today. Green for the
-   ones to answer, muted for the skips — the skips stay visible on purpose,
-   because a shortlist you cannot see the rejects of is one you stop trusting. */
-.nf-dy-row {
-    padding: 8px 12px;
-    border-left: 3px solid var(--text-muted, var(--text-muted));
-    background: rgba(0, 0, 0, 0.15);
-    opacity: 0.72;
-}
-.nf-dy-row.nf-dy-yes {
-    border-left-color: var(--green, #00ff41);
-    background: rgba(0, 255, 65, 0.06);
-    opacity: 1;
-}
-.nf-dy-verdict {
-    font-size: 0.66rem;
-    letter-spacing: 1px;
-    color: var(--text-muted, var(--text-muted));
-    white-space: nowrap;
-}
-.nf-dy-yes .nf-dy-verdict { color: var(--green, #00ff41); }
-.nf-dy-brand {
-    font-size: 0.62rem;
-    letter-spacing: 1px;
-    color: var(--amber, #ffb000);
-    border: 1px solid rgba(255, 176, 0, 0.35);
-    padding: 1px 6px;
-}
-.nf-dy-angle {
-    margin-top: 4px;
-    font-size: 0.72rem;
-    color: var(--amber, #ffb000);
-    overflow-wrap: anywhere;
-}
-
-/* The day's verdict, in words, before any row. Added 2026-09-01 after Leon read
-   two [-] skip rows as recommendations and opened both — one of them deleted. */
-.nf-dy-none {
-    padding: 10px 12px;
-    color: var(--text-muted, var(--text-muted));
-    border-left: 3px solid rgba(0, 212, 255, 0.25);
-    font-size: 0.8rem;
-}
-.nf-dy-skipbar { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-/* A skipped thread's title is TEXT, never a link. The link is the small one
-   after it, and it is labelled as going against the advice on purpose. */
-.nf-dy-skip-title { color: var(--text-muted, var(--text-muted)); font-size: 0.78rem; overflow-wrap: anywhere; }
-.nf-dy-open { color: rgba(0, 212, 255, 0.55); font-size: 0.64rem; white-space: nowrap; }
-.nf-dy-open:hover { color: var(--cyan, var(--cyan)); }
-
-/* ── the run, while it runs ────────────────────────────────────────────────
-   Added 2026-09-02: a run is minutes of silence (a page every six seconds,
-   then Claude), and the panel showed the same nothing whether it was working
-   or had died. The dot is the proof of life, the bar is the position, and the
-   clock is the only thing that keeps moving between polls. */
-.nf-dy-live {
-    padding: 9px 12px;
-    margin-bottom: 8px;
-    border-left: 3px solid var(--cyan, var(--cyan));
-    background: rgba(0, 212, 255, 0.05);
-}
-.nf-dy-live-head { display: flex; align-items: center; gap: 8px; }
-.nf-dy-live-text { color: var(--cyan, var(--cyan)); font-size: 0.8rem; flex: 1; }
-.nf-dy-live-time {
-    color: var(--text-muted, var(--text-muted));
-    font-size: 0.7rem;
-    font-variant-numeric: tabular-nums;   /* so the clock does not jitter */
-}
-.nf-dy-dot {
-    width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%;
-    background: var(--cyan, var(--cyan));
-    animation: nf-dy-pulse 1.4s ease-in-out infinite;
-}
-@keyframes nf-dy-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
-
-.nf-dy-bar {
-    height: 3px; margin-top: 7px;
-    background: rgba(0, 212, 255, 0.12);
-    overflow: hidden;
-}
-.nf-dy-bar > i { display: block; height: 100%; background: var(--cyan, var(--cyan)); transition: width 0.4s ease; }
-/* No count to show — Claude answers when it answers. A bar that crawls to 90%
-   and stops there is a lie; this one just sweeps. */
-.nf-dy-bar-idle > i { width: 35%; animation: nf-dy-sweep 1.6s ease-in-out infinite; }
-@keyframes nf-dy-sweep { 0% { margin-left: -35%; } 100% { margin-left: 100%; } }
-
-.nf-dy-live-sub { color: var(--text-muted, var(--text-muted)); font-size: 0.68rem; margin-top: 6px; }
-.nf-dy-live-url {
-    color: rgba(0, 212, 255, 0.4);
-    font-size: 0.64rem; margin-top: 3px;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-
-/* Motion is information here, but not at the cost of somebody who cannot take
-   it: the dot and the sweep stop, the numbers keep updating. */
-@media (prefers-reduced-motion: reduce) {
-    .nf-dy-dot, .nf-dy-bar-idle > i { animation: none; }
-    .nf-dy-bar > i { transition: none; }
 }

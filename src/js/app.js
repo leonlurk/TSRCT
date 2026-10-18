@@ -360,10 +360,3 @@ window.TSRCT_PROJECTS_ROOT = (document.querySelector('meta[name="tsrct-projects-
         // Restore on load
         if (localStorage.getItem('navyTheme') === '1') document.body.classList.add('theme-navy');
 
-        // Presence for Hours Recall (2026-10-11): while this window is visible, tell the
-        // server once a minute that Leon can see TSRCT. Supervising an automatic run
-        // without typing still counts as his time (lib/presence.js). No data is sent.
-        setInterval(() => {
-            if (document.visibilityState !== 'visible' || typeof token === 'undefined' || !token) return;
-            fetch('/api/presence/beat', { method: 'POST', headers: { Authorization: token } }).catch(() => {});
-        }, 60 * 1000);

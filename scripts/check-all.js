@@ -15,8 +15,8 @@ const CHECKS = [
     'check-syntax',
     'check-taste', 'check-assets', 'check-handlers', 'check-restricted', 'check-paneshape',
     'check-plainbrief', 'check-push', 'check-persona', 'check-actions', 'check-talk',
-    'check-ui', 'check-clients', 'check-automations', 'check-brain', 'check-tesla-log',
-    'check-progress', 'check-appkey', 'check-desk', 'check-desk-paths', 'check-hours',
+    'check-ui', 'check-automations', 'check-brain', 'check-tesla-log',
+    'check-appkey', 'check-desk', 'check-desk-paths',
     'check-projector', 'check-layout', 'check-routes', 'check-state', 'check-css', 'check-size', 'check-colors', 'check-docs', 'check-turns', 'check-functions', 'check-route-calls', 'check-public',
 ];
 

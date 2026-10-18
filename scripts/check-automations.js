@@ -135,29 +135,29 @@ const MON = at(2026, 9, 21, 7, 0);
     ok(automations.clean('Filed 4 new') === 'Filed 4 new', 'ordinary text passes');
 
     // ── loop pause persists ───────────────────────────────────────────────
-    automations.setPaused('syften', true);
-    ok(automations.isPaused('syften'), 'pause written');
+    automations.setPaused('codemap', true);
+    ok(automations.isPaused('codemap'), 'pause written');
     let started = false;
-    ok(automations.bootLoop('syften', () => { started = true; }) === false && !started, 'a paused loop is not started at boot');
-    automations.setPaused('syften', false);
-    ok(automations.bootLoop('syften', () => { started = true; }) === true && started, 'an unpaused loop starts');
+    ok(automations.bootLoop('codemap', () => { started = true; }) === false && !started, 'a paused loop is not started at boot');
+    automations.setPaused('codemap', false);
+    ok(automations.bootLoop('codemap', () => { started = true; }) === true && started, 'an unpaused loop starts');
 
     // ── voice ─────────────────────────────────────────────────────────────
     const u = require('../lib/understand');
     const heard = (t) => u.parse(t) || {};
-    ok(heard('apagá syften').name === 'set_automation' && heard('apagá syften').args.on === false, 'voice: "apaga syften" turns it off');
+    ok(heard('apagá el codemap').name === 'set_automation' && heard('apagá el codemap').args.on === false, 'voice: "apaga el codemap" turns it off');
     ok(heard('prendé la auditoria').args.on === true, 'voice: "prende" turns on');
     ok(heard('apaga las voces').name === 'mute_voices', 'voice: a bare "apaga" without an automation is not this');
     ok(heard('como andan las automatizaciones').name === 'automations_status', 'voice: status question');
     ok(heard('contame las tareas de hoy').name === 'today_tasks', 'voice: today\'s tasks still go to today_tasks');
     const acts = require('../lib/actions');
     ok(acts.TYPES.automation('la rutina de la mañana') === 'morning-routine', 'voice: "la rutina de la mañana" resolves');
-    ok(acts.TYPES.automation('lectura diaria de menciones') === 'syften-daily', 'voice: the specific syften one wins');
+    ok(acts.TYPES.automation('el monitor de sesiones') === 'session-monitor', 'voice: a longer name resolves to its own automation');
     let refused = false;
     try { acts.TYPES.automation('secretco guard'); } catch { refused = true; }
     ok(refused, 'voice: hooks cannot be named for a switch');
-    const r = await acts.run('set_automation', { automation: 'syften', on: false });
-    ok(r.needsConfirm && /apagar Brand mentions/.test(r.says), 'voice: a switch always confirms, naming the thing');
+    const r = await acts.run('set_automation', { automation: 'codemap', on: false });
+    ok(r.needsConfirm && /apagar Codemap autopilot/.test(r.says), 'voice: a switch always confirms, naming the thing');
 
     // ── wiring ────────────────────────────────────────────────────────────
     const root = path.join(__dirname, '..');
@@ -169,7 +169,7 @@ const MON = at(2026, 9, 21, 7, 0);
     ok(html.includes('/src/js/automations.js'), 'script tag');
     ok(sw.includes('/src/js/automations.js') && sw.includes('/src/css/rooms/room-automations.css'), 'service worker caches the tab');
     ok(/automations\.registerJobs\(scheduler\)/.test(srv), 'server registers the moved cron jobs');
-    for (const id of ['syften', 'factory', 'session-monitor', 'clickup-sync', 'analyst']) {
+    for (const id of ['session-log', 'session-monitor', 'analyst']) {
         ok(srv.includes(`automations.bootLoop('${id}'`), `server starts ${id} through bootLoop`);
     }
     const fe = read('src/js/automations.js');

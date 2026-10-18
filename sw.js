@@ -1,7 +1,7 @@
 // TSRCT - Tesseract Service Worker
 // Enables PWA installation and offline caching
 
-const CACHE_NAME = 'tsrct-v421';
+const CACHE_NAME = 'tsrct-v422';
 
 // Keep this list in sync with the <link> and <script> tags in src/index.html.
 // It used to hold only the LAZY room assets, so `/` was cached but nothing `/`
@@ -40,15 +40,9 @@ const ASSETS_TO_CACHE = [
   '/src/css/rooms/room-remote.css',
   '/src/css/rooms/room-runners.css',
   '/src/css/rooms/room-sfcli.css',
-  '/src/css/rooms/room-factory.css',
-  '/src/css/rooms/room-dashboard.css',
   '/src/css/rooms/room-codemap.css',
-  '/src/css/rooms/room-clients.css',
   '/src/css/rooms/room-automations.css',
   '/src/css/rooms/room-notifs.css',
-  '/src/css/rooms/room-studio.css',
-  '/src/css/rooms/room-lurk.css',
-  '/src/css/rooms/room-playlist.css',
   '/src/css/rooms/room-handson.css',
   '/src/css/rooms/room-morning.css',
   // Core scripts -- in index.html load order
@@ -63,17 +57,9 @@ const ASSETS_TO_CACHE = [
   '/src/js/remote-desktop-vr.js',
   '/src/js/sf-cli.js',
   '/src/js/runners.js',
-  '/src/js/factory.js',
-  '/src/js/dashboard.js',
   '/src/js/codemap.js',
-  '/src/js/clients.js',
   '/src/js/automations.js',
   '/src/js/notifications.js',
-  '/src/js/lurk.js',
-  '/src/js/studio.js',
-  // Vendored 3D engine for the LURK Catalog GPU reactor (offline-safe)
-  '/src/js/vendor/three.min.js',
-  '/src/js/playlist.js',
   '/src/js/omni.js',
   '/src/js/handson.js',
   '/src/js/morning.js',

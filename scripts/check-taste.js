@@ -11,6 +11,11 @@ const path = require('path');
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'taste-'));
 process.env.TASTE_FILE = path.join(tmp, 'taste.json');
+// A new install starts with no seeds, so the check brings its own.
+fs.writeFileSync(process.env.TASTE_FILE, JSON.stringify({
+    seeds: [{ text: 'LORN', why: '', at: 1 }, { text: 'deadmau5', why: '', at: 1 }],
+    reactions: [], traits: [], pool: [], played: [], rejected: [], last: null, learnedAt: 0, sinceLearn: 0,
+}));
 
 const ROOT = path.join(__dirname, '..');
 const taste = require(path.join(ROOT, 'lib', 'tasteBrain'));

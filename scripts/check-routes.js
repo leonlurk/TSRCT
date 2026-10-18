@@ -112,7 +112,7 @@ function listAfter(name) {
     return [...pre.slice(at, end).matchAll(/'([^']+)'|\/\^(\\\/[^\s)]+)\//g)]
         .map(m => m[1] || 're:' + m[2].replace(/\\\//g, '/')).sort();
 }
-const SSE = ['/api/projector/stream', '/api/studio/gpu/stream', 're:/api/hf/output/', 're:/api/studio/progress/'];
+const SSE = ['/api/projector/stream', 're:/api/hf/output/'];
 const BOOTSTRAP = ['/api/auth/login', '/api/auth/logout', '/api/auth/refresh',
     '/api/auth/webauthn/login/options', '/api/auth/webauthn/login/verify'];
 ok(JSON.stringify(listAfter('isSSERequest')) === JSON.stringify([...SSE].sort()),

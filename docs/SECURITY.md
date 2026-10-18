@@ -40,7 +40,7 @@ compromised device on the same tailnet, is still inside. So the server does not 
 ## Layer 2 - the server trusts nobody on the tailnet either
 
 - **One gate in front of every `/api/*` route** (`handleAPI` in `server.js`). `scripts/check-routes.js`
-  fails the build if a route escapes it, and `scripts/check-route-calls.js` replays all 257 routes on
+  fails the build if a route escapes it, and `scripts/check-route-calls.js` replays all 170 routes on
   every commit and fails if any status or reply changes.
 - **Login, per device:**
   - **Windows Hello / WebAuthn (passkeys)** is the primary login. Each credential is bound to the

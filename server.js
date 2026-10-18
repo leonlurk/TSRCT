@@ -40,22 +40,6 @@ const paneShape = require('./lib/paneShape');
 // standalone, never through `dispatcher.*`, so the warning does not silently
 // depend on an optional subsystem having loaded.
 const sessionWeight = require('./lib/sessionWeight');
-// Syften mention feed for the Notifs tab. Standalone like sessionWeight: a
-// Syften outage must never take down anything else.
-const syften = require('./lib/syften');
-// Ranks those mentions into "worth answering". Separate from syften.js on
-// purpose: the feed must keep working even if the scoring is being rewritten.
-const syftenTriage = require('./lib/syften-triage');
-// The once-a-day pass: reads the threads Syften delivered and asks Claude which
-// are worth answering. Off unless SYFTEN_DAILY_HOUR is set in .env.
-const syftenDaily = require('./lib/syften-daily');
-// The software factory's window: watches personal/factory's git remote for the
-// researcher's live file and new findings. Standalone like syften: a factory
-// failure must never take anything else down.
-const factory = require('./lib/factory');
-// Verde Soap card-testing watch (2026-10-05): every 30 min over the last hour
-// of abandoned checkouts, through Shopify CLI's stored login. Standalone.
-const shopWatch = require('./lib/shopWatch');
 // HANDS ON plan store. Standalone for the same reason, and durable on disk
 // because a half-typed lesson must survive a server restart.
 const handson = require('./lib/handson');
@@ -76,10 +60,6 @@ const uiLayout = require('./lib/uiLayout');
 const jsonJob = require('./lib/jsonJob');
 // The 6am routine itself: ask once, then open what it named.
 const morningRoutine = require('./lib/morningRoutine');
-// The Clients tab: facts from the morning run (or its own refresh), health decided here.
-const clientHealth = require('./lib/clientHealth');
-// The [R] button on the split tabs: today's work of one tab vs what was asked.
-const progressReport = require('./lib/progressReport');
 // [PB] plain-brief: which sessions are under the brevity rules. Standalone and
 // durable on disk because the two Claude Code hooks that ENFORCE it read the
 // file directly -- the gate has to keep gating while this server is restarting.
@@ -164,7 +144,7 @@ const restrictedGuard = require('./lib/dispatcher/restrictedGuard');
 // The PROJECTOR (2026-10-12): live view of a separate browser a session drives.
 const projector = require('./lib/projector');
 
-// Dispatcher: Slack/ClickUp watcher → Hermes local pipeline → tmux routing.
+// Dispatcher: session monitor, codemap, the job runner and the local model.
 // Loaded lazily so a missing module doesn't break the rest of the server.
 let dispatcher = null;
 try {
@@ -174,14 +154,8 @@ try {
         hermes: require('./lib/dispatcher/hermes'),
         projects: require('./lib/dispatcher/projectContext'),
         tmux: require('./lib/dispatcher/tmuxAdapter'),
-        // Productivity Dashboard (Increment 1): deterministic ClickUp task poller +
-        // the on-demand intelligent completion analyst (cc-tsrct-analyst session).
-        clickupSync: require('./lib/dispatcher/clickupSync'),
+        // The background `claude -p` job runner (every headless job goes through it).
         clickupAnalyst: require('./lib/dispatcher/clickupAnalyst'),
-        // Increment 2 (worklogs) + Increment 3 (vault digest + note routing).
-        worklogEngine: require('./lib/dispatcher/worklogEngine'),
-        hoursEstimator: require('./lib/dispatcher/hoursEstimator'),
-        digestEngine: require('./lib/dispatcher/digestEngine'),
         // Codemap: repo-map MAP.md freshness + session priming (SecretCo fail-closed).
         codemapEngine: require('./lib/dispatcher/codemapEngine'),
         // Phase 2:
@@ -203,19 +177,6 @@ try {
     console.warn('[dispatcher] modules failed to load:', e.message);
 }
 
-// Generative AI Studio backend (ComfyUI control + GPU telemetry + workflow builders).
-// Loaded independently so a studio failure never affects the dispatcher.
-let studio = null;
-try {
-    studio = {
-        comfy: require('./lib/studio/comfy'),
-        gpu: require('./lib/studio/gpu'),
-        workflows: require('./lib/studio/workflows'),
-        scenes: require('./lib/studio/scenes'),
-    };
-} catch (e) {
-    console.warn('[studio] modules failed to load:', e.message);
-}
 
 // Load .env file. BRIDGE_TOKEN is forced from .env (it is the single source of
 // truth for auth) so a stale exported BRIDGE_TOKEN in the launching shell can't
@@ -1413,16 +1374,6 @@ morningRoutine.configure({
     ring,
     hermes: dispatcher ? dispatcher.hermes : null,
 });
-clientHealth.configure({
-    analyst: dispatcher ? dispatcher.clickupAnalyst : null,
-    jsonJob,
-});
-progressReport.configure({
-    analyst: dispatcher ? dispatcher.clickupAnalyst : null,
-    jsonJob,
-    paneCwd: (session) => tmux(['display-message', '-t', session, '-p', '#{pane_current_path}']).trim(),
-    morning: () => morningRoutine.loadState(),
-});
 
 // TALK gets the same model the rest of the server uses, plus the two things
 // worth knowing when he asks a question out loud: what the brief said this
@@ -1467,13 +1418,12 @@ actions.configure({
     // The saved boards: a setup is a list of the actions above, said once.
     setups,
     morningRoutine,
-    gpu: studio ? studio.gpu : require('./lib/studio/gpu'),
+    gpu: require('./lib/gpu'),
     // BULK (2026-09-24): the permission cards, the weight badge and handoff,
     // today's usage, the Clients tab, keys to many panes, and git per folder.
     permissionDesk,
     sessionWeight,
     usage,
-    clientHealth,
     paneKeys,
     promptWriter,
     teslaHands,
@@ -1569,7 +1519,8 @@ talk.configure({
 // 2026-10-11 windows, layouts, workspaces, zones and named shortcuts
 // (lib/deskWire.js connects them the same way for the CLI).
 require('./lib/deskWire').wire({ direct: true, pcDirect: {
-    transcriptFor: (session) => progressReport._transcriptFor(session),
+    transcriptFor: (session) => require('./lib/pastSessions').transcriptFor(session,
+        (s) => tmux(['display-message', '-t', s, '-p', '#{pane_current_path}']).trim()),
     resolveProject: (spoken) => { try { return projectRegistry.resolve(spoken); } catch { return null; } },
 } });
 paneKeys.configure({ tmux: (args) => tmux(args), serverSession: () => SERVER_SESSION });
@@ -2074,7 +2025,7 @@ class HFSession {
         this.stats = { cost: 0, messages: 0, startTime: Date.now() };
         this.lastResponse = '';
         this.lastAssistantDone = null; // Buffer for reconnecting clients
-        // Optional priming (Studio advisor uses this): a system primer appended to
+        // Optional priming: a system primer appended to
         // every turn, and a read-only tool allowlist. When both are null the
         // session behaves EXACTLY as before (--dangerously-skip-permissions).
         this.systemPrompt = opts.systemPrompt || null;
@@ -2132,7 +2083,7 @@ class HFSession {
             // Build Claude command args
             // Note: -p with --output-format=stream-json requires --verbose
             const args = ['-p', message, '--output-format', 'stream-json', '--verbose'];
-            // Permission model: a primed/read-only session (Studio advisor) restricts
+            // Permission model: a primed/read-only session restricts
             // tools to an allowlist; the default HF session keeps the original
             // execute-everything behavior via --dangerously-skip-permissions.
             if (this.allowedTools) {
@@ -2440,115 +2391,6 @@ function jsonResp(res, code, obj) {
     res.end(JSON.stringify(obj));
 }
 
-
-// API handlers
-// ═══════════════════════════════════════════════════════════════════════
-// NULL ENGINE (LURK mode) — proxy to the warm VRTX daemon (voice + chat)
-// The daemon (personal/VRTX/null_daemon.py) holds XTTS + qwen resident so the
-// browser gets NULL's voice in ~2s. Lazy-spawned on first use; /power off kills
-// it to free the shared 8GB GPU. All routes here are auth-gated by handleAPI.
-// ═══════════════════════════════════════════════════════════════════════
-const NULL_VRTX = process.env.NULL_VRTX_DIR || path.join(paths.PROJECTS_ROOT, 'VRTX');
-const NULL_PY = require('os').homedir() + '/.venvs/vrtx/bin/python';
-const NULL_PORT = 8765;
-let nullDaemonProc = null;
-
-function nullDaemonHealth(timeoutMs = 1500) {
-    return new Promise((resolve) => {
-        const r = http.request({ host: '127.0.0.1', port: NULL_PORT, path: '/health', method: 'GET', timeout: timeoutMs }, (resp) => {
-            let d = ''; resp.on('data', c => d += c);
-            resp.on('end', () => { try { resolve(JSON.parse(d)); } catch (e) { resolve(null); } });
-        });
-        r.on('error', () => resolve(null));
-        r.on('timeout', () => { r.destroy(); resolve(null); });
-        r.end();
-    });
-}
-
-async function ensureNullDaemon() {
-    const h = await nullDaemonHealth();
-    if (h && h.ok) return true;
-    if (!nullDaemonProc) {
-        nullDaemonProc = spawn(NULL_PY, ['null_daemon.py', '--warm'], { cwd: NULL_VRTX, stdio: 'ignore' });
-        nullDaemonProc.on('exit', () => { nullDaemonProc = null; });
-    }
-    for (let i = 0; i < 60; i++) {          // wait up to ~120s for XTTS load
-        await new Promise(r => setTimeout(r, 2000));
-        const hh = await nullDaemonHealth();
-        if (hh && hh.ok) return true;
-    }
-    return false;
-}
-
-function proxyToNull(pathOnDaemon, bodyObj, res, binary) {
-    return new Promise((resolve, reject) => {
-        const payload = Buffer.from(JSON.stringify(bodyObj || {}));
-        const r = http.request({ host: '127.0.0.1', port: NULL_PORT, path: pathOnDaemon, method: 'POST', timeout: 120000,
-            headers: { 'Content-Type': 'application/json', 'Content-Length': payload.length } }, (dresp) => {
-            if (binary) {
-                res.writeHead(dresp.statusCode || 200, { 'Content-Type': dresp.headers['content-type'] || 'audio/wav' });
-                dresp.pipe(res);
-                dresp.on('end', resolve); dresp.on('error', reject);
-            } else {
-                let d = ''; dresp.on('data', c => d += c);
-                dresp.on('end', () => { if (!res.writableEnded) { res.writeHead(dresp.statusCode || 200, { 'Content-Type': 'application/json' }); res.end(d); } resolve(); });
-                dresp.on('error', reject);
-            }
-        });
-        r.on('error', reject);
-        r.on('timeout', () => { r.destroy(); reject(new Error('null daemon timeout')); });
-        r.write(payload); r.end();
-    });
-}
-
-async function handleNullRoute(req, res, pathname) {
-    // GET /api/null/lines — the scripted-line bank (no daemon needed)
-    if (pathname === '/api/null/lines' && req.method === 'GET') {
-        try {
-            const md = fs.readFileSync(path.join(NULL_VRTX, 'null-lines-es.md'), 'utf8');
-            const groups = []; let cur = null;
-            md.split('\n').forEach(line => {
-                const g = line.match(/^##+\s+(.+)/);
-                const it = line.match(/^\s*\d+\.\s+(.+)/);
-                if (g) { cur = { title: g[1].trim(), lines: [] }; groups.push(cur); }
-                else if (it && cur) cur.lines.push(it[1].trim());
-            });
-            return jsonResp(res, 200, { groups: groups.filter(x => x.lines.length) });
-        } catch (e) { return jsonResp(res, 500, { error: String(e) }); }
-    }
-    // GET /api/null/status — is the engine (daemon) actually up? (survives tab switches)
-    if (pathname === '/api/null/status' && req.method === 'GET') {
-        const h = await nullDaemonHealth();
-        return jsonResp(res, 200, { on: !!(h && h.ok) });
-    }
-    // POST /api/null/power {on:bool} — start (warm) or stop (free VRAM) the engine
-    if (pathname === '/api/null/power' && req.method === 'POST') {
-        const b = JSON.parse((await readBody(req)) || '{}');
-        if (b.on === false) {
-            const h = await nullDaemonHealth();
-            if (h && h.ok) { try { return await proxyToNull('/shutdown', {}, res); } catch (e) {} }
-            return jsonResp(res, 200, { ok: true, off: true });
-        }
-        const up = await ensureNullDaemon();
-        return jsonResp(res, up ? 200 : 503, { ok: up });
-    }
-    // POST /api/null/tts {text,lang} — NULL voice WAV
-    if (pathname === '/api/null/tts' && req.method === 'POST') {
-        const b = JSON.parse((await readBody(req)) || '{}');
-        if (!b.text) return jsonResp(res, 400, { error: 'no text' });
-        if (!(await ensureNullDaemon())) return jsonResp(res, 503, { error: 'NULL engine not ready' });
-        return proxyToNull('/tts', { text: b.text, lang: b.lang || 'es' }, res, true);
-    }
-    // POST /api/null/chat {text} — live NULL AI (qwen + null.md)
-    if (pathname === '/api/null/chat' && req.method === 'POST') {
-        const b = JSON.parse((await readBody(req)) || '{}');
-        if (!b.text) return jsonResp(res, 400, { error: 'no text' });
-        if (!(await ensureNullDaemon())) return jsonResp(res, 503, { error: 'NULL engine not ready' });
-        return proxyToNull('/chat', { text: b.text }, res, false);
-    }
-    return jsonResp(res, 404, { error: 'not found' });
-}
-
 // Returned by a route group that does not own the request (see handleAPI).
 const NOT_MINE = Symbol('not this route group');
 
@@ -2563,10 +2405,8 @@ function handleAPI(req, res, pathname) {
     //   - /api/auth/refresh: trusted-device fast path (validates the device token itself)
     const auth = req.headers.authorization;
     // SSE endpoints self-validate ?token= (EventSource can't send headers):
-    // HF output, plus the Studio GPU telemetry + generation-progress streams.
+    // HF output and the projector's frames.
     const isSSERequest = pathname.match(/^\/api\/hf\/output\//)
-        || pathname === '/api/studio/gpu/stream'
-        || pathname.match(/^\/api\/studio\/progress\//)
         || pathname === '/api/projector/stream';
     const isPublicImage = pathname.startsWith('/images/');
     // Logout is a bootstrap route on purpose: it is self-authorizing (it only
@@ -2672,7 +2512,6 @@ const S = {
     get cborDecode() { return cborDecode; },
     get checkClientData() { return checkClientData; },
     get clearLoginFails() { return clearLoginFails; },
-    get clientHealth() { return clientHealth; },
     get clientIp() { return clientIp; },
     get coseToJwk() { return coseToJwk; },
     get createDevice() { return createDevice; },
@@ -2684,7 +2523,6 @@ const S = {
     get ensureSessionHooks() { return ensureSessionHooks; },
     get execFileSync() { return execFileSync; },
     get execSync() { return execSync; },
-    get factory() { return factory; },
     get findPowershell() { return findPowershell; },
     get fs() { return fs; },
     get generateHFSessionId() { return generateHFSessionId; },
@@ -2696,7 +2534,6 @@ const S = {
     get gitCwd() { return gitCwd; },
     get gitOut() { return gitOut; },
     get handleDispatcherRoute() { return handleDispatcherRoute; },
-    get handleNullRoute() { return handleNullRoute; },
     get handson() { return handson; },
     get hfSSEClients() { return hfSSEClients; },
     get hfSessions() { return hfSessions; },
@@ -2714,7 +2551,6 @@ const S = {
     get permissionQueue() { return permissionQueue; },
     get pickInitialSession() { return pickInitialSession; },
     get plainBrief() { return plainBrief; },
-    get progressReport() { return progressReport; },
     get projectRegistry() { return projectRegistry; },
     get projector() { return projector; },
     get promptWriter() { return promptWriter; },
@@ -2747,17 +2583,12 @@ const S = {
     get sfRun() { return sfRun; },
     get sfSaveWorkspaces() { return sfSaveWorkspaces; },
     get sha256() { return sha256; },
-    get shopWatch() { return shopWatch; },
     get soloAmbiguous() { return soloAmbiguous; },
     get soloKept() { return soloKept; },
     get soloModeOrder() { return soloModeOrder; },
     get spawn() { return spawn; },
     get spawnSync() { return spawnSync; },
     get speech() { return speech; },
-    get studio() { return studio; },
-    get syften() { return syften; },
-    get syftenDaily() { return syftenDaily; },
-    get syftenTriage() { return syftenTriage; },
     get takeChallenge() { return takeChallenge; },
     get talk() { return talk; },
     get teslaLog() { return teslaLog; },
@@ -2940,111 +2771,6 @@ const server = http.createServer((req, res) => {
     }
 });
 
-// Syften mention feed. Each new mention becomes a normal in-app event, so the
-// existing Notifs stream and the global poller both see it with no extra plumbing.
-function startSyften(loops) {
-    try {
-        const onSyftenFresh = (fresh) => {
-            for (const m of fresh) {
-                addEvent({
-                    type: 'syften_mention',
-                    title: `[syften] ${m.backend}${m.community ? ' · ' + m.community : ''} — ${m.filter || 'match'}`,
-                    body: m.title,
-                    url: m.url,
-                });
-            }
-            console.log(`[syften] ${fresh.length} new mention(s)`);
-        };
-        loops.syften = {
-            start: () => syften.start(onSyftenFresh),
-            stop: () => syften.stop(),
-            runNow: () => syften.poll(),
-            status: () => {
-                const l = syften.list(false);
-                if (!l.configured) return { summary: 'Not set up (no Syften token)' };
-                return { lastRun: l.lastPoll || 0, error: l.lastError || '', summary: `${l.items.length} open mention(s)` };
-            },
-        };
-        if (automations.bootLoop('syften', loops.syften.start)) {
-            console.log(`[syften] poller started${process.env.SYFTEN_TOKEN ? '' : ' (no SYFTEN_TOKEN — idle)'}`);
-        }
-        const onSyftenDaily = (r) => {
-            const n = (r.worth || []).length;
-            console.log(`[syften-daily] read ${r.read || 0}, worth answering ${n}`);
-            if (n) addEvent({
-                type: 'syften_daily',
-                title: `[syften] ${n} thread${n === 1 ? '' : 's'} worth answering`,
-                body: (r.worth || []).map(w => `${w.room} — ${w.title}`).join(' | '),
-                url: (r.worth || [])[0]?.url || '',
-            });
-        };
-        let dailyOn = false;
-        const startDaily = () => {
-            const d = syftenDaily.startDaily(() => syften.list(false).items, onSyftenDaily);
-            dailyOn = !!d.started;
-            return d;
-        };
-        loops['syften-daily'] = {
-            isOn: () => dailyOn,
-            setOn: (on) => {
-                automations.setPaused('syften-daily', !on);
-                if (!on) { syftenDaily.stopDaily(); dailyOn = false; return { ok: true }; }
-                const d = startDaily();
-                return d.started ? { ok: true } : { ok: false, error: 'Not set up: SYFTEN_DAILY_HOUR is missing in .env' };
-            },
-            status: () => {
-                if (!Number.isInteger(Number(process.env.SYFTEN_DAILY_HOUR)) || process.env.SYFTEN_DAILY_HOUR === undefined) {
-                    return { summary: 'Not set up (SYFTEN_DAILY_HOUR is missing in .env)', cannotToggle: true };
-                }
-                const last = (syftenDaily.lastRuns(1) || {});
-                return { lastRun: last.lastRun ? Date.parse(last.lastRun) : 0, summary: `Every day at ${process.env.SYFTEN_DAILY_HOUR}:00` };
-            },
-        };
-        let d = { started: false, reason: 'paused from the Automations tab' };
-        if (!automations.isPaused('syften-daily')) d = startDaily();
-        console.log(`[syften-daily] ${d.started ? 'scheduled for ' + d.hour + ':00 local' : d.reason}`);
-    } catch (e) {
-        console.log('[syften] failed to start: ' + e.message);
-    }
-}
-
-
-// The software factory: run started / finding written / run finished /
-// new candidates pulled all become ordinary in-app events, so Notifs and
-// the global poller see them with no extra plumbing.
-function startFactoryWatcher(loops) {
-    try {
-        loops.factory = {
-            start: () => factory.start(addEvent),
-            stop: () => factory.stop(),
-            runNow: () => factory.tick(),
-            status: () => {
-                const snap = factory.snapshot();
-                return { lastRun: snap.lastFetch || 0, error: snap.lastError || '' };
-            },
-        };
-        let f = null;
-        automations.bootLoop('factory', () => { f = factory.start(addEvent); });
-        if (f) console.log(`[factory] watching ${f.dir}${f.present ? '' : ' (not found - tab will say NO LINK)'}`);
-    } catch (e) {
-        console.log('[factory] failed to start: ' + e.message);
-    }
-}
-
-
-// Presence for Hours Recall (2026-10-11): one PowerShell polling Windows' idle
-// clock every 30 s, so supervising an automatic run without typing still counts.
-function startPresence(loops) {
-    try {
-        const presence = require('./lib/presence');
-        loops.presence = { start: () => presence.start(), stop: () => presence.stop(), status: () => presence.status() };
-        if (automations.bootLoop('presence', loops.presence.start)) console.log('[presence] watching PC input for Hours Recall');
-    } catch (e) {
-        console.log('[presence] failed to start: ' + e.message);
-    }
-}
-
-
 // Session memory (2026-10-14): name -> folder -> conversation for every live
 // session, plus an audit line per change, so a crash or a reboot can be undone.
 function startSessionLog(loops) {
@@ -3064,29 +2790,6 @@ function startSessionLog(loops) {
 }
 
 
-// PV card-testing watch: an alert is an ordinary in-app event (Notifs)
-// plus one phone push through the standalone ntfy sender.
-function startPvCardWatch(loops) {
-    try {
-        const shopDeps = {
-            addEvent,
-            push: (m) => require('./lib/dispatcher/ntfyPush').send(m),
-        };
-        loops['pv-card-watch'] = {
-            start: () => shopWatch.start(shopDeps),
-            stop: () => shopWatch.stop(),
-            runNow: () => shopWatch.tick(),
-            status: () => shopWatch.status(),
-        };
-        if (automations.bootLoop('pv-card-watch', loops['pv-card-watch'].start)) {
-            console.log('[shopwatch] PV card-testing watch started (every 30 min)');
-        }
-    } catch (e) {
-        console.log('[shopwatch] failed to start: ' + e.message);
-    }
-}
-
-
 // ── The clock: named jobs that fire at a time of day ────────────────────
 // Registration is here, in the listen callback, so a job can never fire
 // before the server is actually serving. The scheduler itself only decides
@@ -3097,8 +2800,8 @@ function startScheduler(loops) {
             name: 'morning-routine',
             at: process.env.MORNING_AT || '06:00',
             window: 5,          // owed until 11:00; past that it waits for tomorrow
-            description: 'Ask headless Claude what is pending across ClickUp, Slack, mail, '
-                + 'calendar, the vault and past sessions, then open the sessions it names.',
+            description: 'Ask headless Claude what is pending across your connected tools, '
+                + 'the vault and past sessions, then open the sessions it names.',
             enabled: process.env.MORNING_ENABLED !== '0',
             run: (ctx) => morningRoutine.run({ manual: ctx.manual }),
         });
@@ -3182,24 +2885,16 @@ function startDispatcher(loops) {
         // multi-line markdown prompt into a bare bash shell had their preconditions
         // ever held. Nothing referenced them from the frontend. History is in git;
         // see vault wiki/TSRCT Invariants.md.
-        // Productivity Dashboard (Increment 1): ClickUp poller (deterministic) +
-        // the on-demand completion analyst poll loop.
-        loops['clickup-sync'] = {
-            start: () => dispatcher.clickupSync.start(),
-            stop: () => dispatcher.clickupSync.stop(),
-            runNow: () => dispatcher.clickupSync.tick(),
-            status: () => (dispatcher.clickupSync.getToken() ? { summary: 'Connected' } : { error: 'No ClickUp token set' }),
-        };
+        // The background job runner's poll loop.
         loops.analyst = {
             start: () => dispatcher.clickupAnalyst.start(),
             stop: () => dispatcher.clickupAnalyst.stop(),
             status: () => ({ summary: 'Waits for jobs' }),
         };
         try {
-            automations.bootLoop('clickup-sync', loops['clickup-sync'].start);
             automations.bootLoop('analyst', loops.analyst.start);
         } catch (e) {
-            console.error('[dispatcher] clickup dashboard start failed:', e.message);
+            console.error('[dispatcher] job runner start failed:', e.message);
         }
         // TOWER: RETIRED 2026-09-19 (Leon: "kill the tower completely"), and
         // DELETED with the Slack pipeline the same day. It was the first of three
@@ -3254,11 +2949,7 @@ server.listen(PORT, BIND_HOST, () => {
     // the Automations tab stays paused across restarts; `loops` is how the tab
     // switches and reads them.
     const loops = {};
-    startSyften(loops);
-    startFactoryWatcher(loops);
-    startPresence(loops);
     startSessionLog(loops);
-    startPvCardWatch(loops);
     startScheduler(loops);
     startDispatcher(loops);
     automations.configure({ loops });

@@ -74,10 +74,6 @@ notes.push(`${sfSites} sf alias sites guarded`);
 // ── 4. the model-dispatch choke points ──
 const mustGuard = [
     ['lib/dispatcher/clickupAnalyst.js', 'submitJob', 'every analyst job kind reaches `claude -p` here'],
-    // 2026-09-30: worklogs may now CREATE a ClickUp task from a model-written name,
-    // and the list catalogue is handed to the analyst job file and the browser.
-    ['lib/dispatcher/clickupSync.js', 'createTask', 'a model-suggested task name/description is written to ClickUp here'],
-    ['lib/dispatcher/clickupSync.js', 'listCatalogue', 'the list names reach the analyst job file and an HTTP response'],
     // promptPolisher: DELETED 2026-09-19 with the Slack intake pipeline (its UI
     // lived in the DISPATCHER tab). It dispatched `claude -p` on a non-Bedrock
     // session, so if a polisher comes back, it comes back with a guard and a

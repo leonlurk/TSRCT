@@ -133,7 +133,7 @@ function standInS() {
 }
 
 // Inside a route file, fs, child_process and the two lazily required modules are recorders.
-const FAKE_MODULES = new Set(['fs', 'child_process', '../presence', './lib/dispatcher/worklogEvidence']);
+const FAKE_MODULES = new Set(['fs', 'child_process']);
 function fakeRequires() {
     const load = Module._load;
     const routesDir = path.join(ROOT, 'lib', 'routes') + path.sep;
@@ -274,7 +274,7 @@ record().then(({ groups, out }) => {
     const owned = Object.values(out).filter(v => !v.startsWith('none ')).length;
     const total = Object.keys(out).length;
     // A floor, so the check cannot pass on nothing (a guard check once read 0 routes and stayed green).
-    if (groups < 15 || owned < 450) {
+    if (groups < 15 || owned < 200) {
         realLog(`check-route-calls: FAILED - only ${groups} route groups and ${owned} answered requests found; the chain in server.js was not read`);
         realExit(1);
     }
