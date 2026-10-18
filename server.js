@@ -1354,6 +1354,14 @@ projectRegistry.configure({
     setConfig: (k, v) => { if (dispatcher && dispatcher.db) dispatcher.db.setConfig(k, v); },
 });
 
+// The automations a person adds from the tab: a visible session with a prompt,
+// or a script from the projects folder (lib/customJobs.js).
+require('./lib/customJobs').configure({
+    spawn: (o) => sessionSpawn.createPrimedSession(o),
+    sessionExists: (name) => sessionExists(name),
+    runScript: (o) => require('./lib/shellJob').runScript(o),
+});
+
 // The morning routine: headless Claude decides, sessionSpawn opens. The analyst
 // is the ONLY `claude -p` runner it may use, because that is where the SecretCo
 // choke point lives.

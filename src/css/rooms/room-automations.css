@@ -158,6 +158,23 @@
 .au-hist-when { color: var(--text-muted, #6aa06a); flex: 0 0 auto; }
 .au-hist-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 
+/* [+] New: your own automation */
+.au-new {
+    display: flex; flex-direction: column; gap: 8px;
+    margin: 10px 0 16px; padding: 10px 12px;
+    border: 1px solid var(--border, #1a3a1a);
+    font-size: 0.75rem; color: var(--text-muted, #6aa06a);
+}
+.au-new label { display: flex; flex-direction: column; gap: 3px; }
+.au-new input, .au-new select, .au-new textarea {
+    background: transparent; color: var(--cyan, var(--cyan));
+    border: 1px solid var(--border, #1a3a1a);
+    font-family: var(--mono); font-size: 0.75rem; padding: 4px 6px; color-scheme: dark;
+}
+.au-new-days { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.au-new-days label { flex-direction: row; align-items: center; gap: 3px; }
+.au-new .hidden { display: none; }
+
 /* mobile room */
 #automations-room .room-body { padding: 12px 16px; overflow-y: auto; }
 #automations-room .au-grid { grid-template-columns: 1fr; }

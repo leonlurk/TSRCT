@@ -24,6 +24,7 @@
     let badgeTimer = null;
     const openCards = new Set();
     const busy = new Set();          // ids with a request in flight
+    let newOpen = false;             // the [+] New form is showing
 
     function tokenHeaders() { return { Authorization: (typeof token !== 'undefined' ? token : '') || '' }; }
     function jsonHeaders() { return { 'Content-Type': 'application/json', ...tokenHeaders() }; }
@@ -125,9 +126,11 @@
 
     function card(it) {
         const isOpen = openCards.has(it.id);
-        const runBtn = it.canRun
+        const runBtn = (it.canRun
             ? '<button class="au-run" data-id="' + esc(it.id) + '" onclick="event.stopPropagation();auRun(this)" title="Run it now">[&gt;] Run</button>'
-            : '';
+            : '') + (it.canDelete
+            ? '<button class="au-run" data-id="' + esc(it.id) + '" onclick="event.stopPropagation();auDelete(this)" title="Delete this automation">[x] Delete</button>'
+            : '');
         return '<div class="au-card au-card-' + esc(it.state) + (isOpen ? ' open' : '') + '" data-id="' + esc(it.id) + '" onclick="auOpen(this)">' +
             '<div class="au-head">' +
                 '<span class="au-dot au-dot-' + esc(it.state) + '" title="' + esc(STATE_WORD[it.state] || '') + '"></span>' +
@@ -156,7 +159,9 @@
             html = '<div class="au-bar"><span class="au-summary">' +
                 '<b>' + on + '</b> on · <b>' + off + '</b> off' +
                 (bad.length ? ' · <b class="au-red">' + bad.length + '</b> need attention' : ' · all good') +
-                '</span><button class="au-btn" onclick="auReload()" title="Reload">[~]</button></div>';
+                '</span><button class="au-btn" onclick="auNewToggle()" title="Add your own automation">[+] New</button>' +
+                '<button class="au-btn" onclick="auReload()" title="Reload">[~]</button></div>';
+            if (newOpen) html += newForm();
             if (loadError) html += '<div class="au-warn">Last refresh failed: ' + esc(loadError) + '</div>';
             if (bad.length) {
                 html += '<div class="au-group au-attention"><div class="au-group-h">Needs attention</div><div class="au-grid">' +
@@ -170,6 +175,31 @@
             }
         }
         mounts.forEach(m => { m.innerHTML = html; });
+    }
+
+    // Your own automation: at a time, open a Claude Code session in a project
+    // folder with a prompt, or run a script from the projects folder. The server
+    // checks every field again (lib/customJobs.js); this only collects them.
+    const DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    function newForm() {
+        const root = (window.TSRCT_PROJECTS_ROOT || '').replace(/\/$/, '') + '/';
+        return '<div class="au-new">' +
+            '<div class="au-group-h">New automation</div>' +
+            '<label>Name <input class="au-new-title" maxlength="60" placeholder="Morning tests"></label>' +
+            '<label>Time <input class="au-new-at" type="time" value="09:00"></label>' +
+            '<div class="au-new-days">' + DAY_NAMES.map((d, i) =>
+                '<label><input type="checkbox" class="au-new-day" value="' + i + '"' + (i >= 1 && i <= 5 ? ' checked' : '') + '>' + d + '</label>').join('') +
+            ' <span class="au-blurb">(none ticked = every day)</span></div>' +
+            '<label>What it does <select class="au-new-kind" onchange="auKind(this)">' +
+                '<option value="session">Open a Claude Code session with a prompt</option>' +
+                '<option value="script">Run a script</option></select></label>' +
+            '<div class="au-new-session"><label>Project folder <input class="au-new-cwd" value="' + esc(root) + '"></label>' +
+                '<label>Prompt <textarea class="au-new-prompt" rows="3" placeholder="Run the tests and tell me what failed"></textarea></label></div>' +
+            '<div class="au-new-script hidden"><label>Script <input class="au-new-file" value="' + esc(root) + '"></label></div>' +
+            '<div class="au-actions"><button class="au-run" onclick="auCreate(this)">[+] Save</button>' +
+                '<button class="au-run" onclick="auNewToggle()">Cancel</button></div>' +
+            '<div class="au-blurb">A session opens like any other: its permission questions come to you. Folders and scripts must be inside your projects folder.</div>' +
+        '</div>';
     }
 
     function setBadge(n) {
@@ -231,6 +261,44 @@
         try {
             await post('time', { id, at: el.value });
             note((it ? it.title : id) + ' now at ' + el.value);
+        } catch (e) {
+            note(e.message, 'error');
+        }
+        await refresh();
+    }
+
+    function auNewToggle() { newOpen = !newOpen; render(); }
+
+    function auKind(el) {
+        const box = el.closest('.au-new');
+        box.querySelector('.au-new-session').classList.toggle('hidden', el.value !== 'session');
+        box.querySelector('.au-new-script').classList.toggle('hidden', el.value !== 'script');
+    }
+
+    async function auCreate(el) {
+        const box = el.closest('.au-new');
+        const v = (c) => (box.querySelector(c) || {}).value || '';
+        const body = {
+            title: v('.au-new-title'), at: v('.au-new-at'), kind: v('.au-new-kind'),
+            days: Array.from(box.querySelectorAll('.au-new-day')).filter(x => x.checked).map(x => Number(x.value)),
+            cwd: v('.au-new-cwd'), prompt: v('.au-new-prompt'), file: v('.au-new-file'),
+        };
+        try {
+            await post('create', body);
+            note(body.title + ' added');
+            newOpen = false;
+        } catch (e) {
+            note(e.message, 'error');
+        }
+        await refresh();
+    }
+
+    async function auDelete(el) {
+        const it = item(el.dataset.id);
+        if (!it || !confirm('Delete "' + it.title + '"?')) return;
+        try {
+            await post('delete', { id: it.id });
+            note(it.title + ' deleted');
         } catch (e) {
             note(e.message, 'error');
         }
@@ -299,4 +367,8 @@
     window.auOpen = auOpen;
     window.auSetTime = auSetTime;
     window.auReload = auReload;
+    window.auNewToggle = auNewToggle;
+    window.auKind = auKind;
+    window.auCreate = auCreate;
+    window.auDelete = auDelete;
 })();

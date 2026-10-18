@@ -22,6 +22,10 @@ const tmp = path.join(os.tmpdir(), `tsrct-check-automations-${process.pid}`);
 fs.mkdirSync(tmp, { recursive: true });
 process.env.SCHEDULER_STATE_FILE = path.join(tmp, 'scheduler.json');
 process.env.AUTOMATIONS_STATE_FILE = path.join(tmp, 'automations.json');
+process.env.CUSTOM_AUTOMATIONS_FILE = path.join(tmp, 'custom.json');
+process.env.PROJECTS_ROOT = path.join(tmp, 'projects');
+fs.mkdirSync(path.join(tmp, 'projects', 'shop'), { recursive: true });
+fs.writeFileSync(path.join(tmp, 'projects', 'shop', 'backup.sh'), 'echo done\n');
 
 const scheduler = require('../lib/scheduler');
 const automations = require('../lib/automations');
@@ -175,6 +179,53 @@ const MON = at(2026, 9, 21, 7, 0);
     const fe = read('src/js/automations.js');
     for (const fn of ['automationsInit', 'automationsTeardown', 'auToggle', 'auRun', 'auOpen', 'auSetTime', 'auReload']) {
         ok(fe.includes(`window.${fn} = ${fn}`), `frontend exports ${fn}`);
+    }
+
+    // ── your own automations (lib/customJobs.js) ──────────────────────────
+    // A person can add a job from the tab: at a time, open a Claude Code session
+    // in a project folder with a prompt, or run a script from the projects folder.
+    // It must stay inside PROJECTS_ROOT, refuse restricted projects, and land in
+    // the same scheduler and the same cards as the built-in jobs.
+    {
+        let custom = null;
+        try { custom = require('../lib/customJobs'); } catch (e) { ok(false, 'lib/customJobs.js does not load: ' + e.message); }
+        if (custom) {
+            const spawned = [], scripts = [];
+            custom.configure({
+                scheduler,
+                spawn: async (o) => { spawned.push(o); return { ok: true, session: o.name }; },
+                sessionExists: () => false,
+                runScript: async (o) => { scripts.push(o); return { code: 0, tail: 'done' }; },
+            });
+            const P = path.join(tmp, 'projects');
+            const bad = [
+                [{ title: 'x', at: '25:00', kind: 'session', cwd: path.join(P, 'shop'), prompt: 'hi' }, 'a bad time'],
+                [{ title: 'x', at: '09:00', kind: 'session', cwd: '/etc', prompt: 'hi' }, 'a folder outside the projects folder'],
+                [{ title: 'x', at: '09:00', kind: 'session', cwd: path.join(P, '..'), prompt: 'hi' }, 'a folder above it'],
+                [{ title: 'x', at: '09:00', kind: 'session', cwd: path.join(P, 'shop'), prompt: 'work on secretco' }, 'a restricted project in the prompt'],
+                [{ title: 'x', at: '09:00', kind: 'script', file: '/bin/sh' }, 'a script outside the projects folder'],
+                [{ title: 'x', at: '09:00', kind: 'shell', file: 'x' }, 'an unknown kind'],
+                [{ title: '', at: '09:00', kind: 'session', cwd: path.join(P, 'shop'), prompt: 'hi' }, 'no name'],
+            ];
+            for (const [input, why] of bad) ok(custom.create(input).ok === false, `refuses ${why}`);
+            const a = custom.create({ title: 'Morning tests', at: '09:30', days: [1, 2, 3, 4, 5], kind: 'session', cwd: path.join(P, 'shop'), prompt: 'run the tests and tell me what failed' });
+            ok(a.ok && /^my-/.test(a.id), `a session job is created (${a.error || a.id})`);
+            const b = custom.create({ title: 'Nightly backup', at: '23:00', kind: 'script', file: path.join(P, 'shop', 'backup.sh') });
+            ok(b.ok, `a script job is created (${b.error || b.id})`);
+            ok(!!scheduler.view(a.id) && scheduler.view(a.id).at === '09:30', 'it is registered with the scheduler at its time');
+            ok(JSON.parse(fs.readFileSync(process.env.CUSTOM_AUTOMATIONS_FILE, 'utf8')).length === 2, 'both are saved to disk');
+            const cards = (await automations.list()).groups.flatMap(g => g.items);
+            const card = cards.find(c => c.id === a.id);
+            ok(card && card.canDelete && card.group === 'mine', 'it shows as a card you can delete, in its own group');
+            await scheduler.runJob(a.id, { manual: true });
+            ok(spawned.length === 1 && spawned[0].cwd === path.join(P, 'shop') && /run the tests/.test(spawned[0].prompt), 'running it opens a session in that folder with that prompt');
+            ok(/^auto-/.test(spawned[0].name), `the session gets an auto- name (${spawned[0].name})`);
+            await scheduler.runJob(b.id, { manual: true });
+            ok(scripts.length === 1 && scripts[0].file === path.join(P, 'shop', 'backup.sh'), 'running the script job runs that script, no shell');
+            ok(custom.remove(a.id).ok && !scheduler.view(a.id), 'deleting it unregisters it');
+            ok(JSON.parse(fs.readFileSync(process.env.CUSTOM_AUTOMATIONS_FILE, 'utf8')).length === 1, 'and removes it from disk');
+            ok(custom.remove('morning-routine').ok === false, 'a built-in job cannot be deleted');
+        }
     }
 
     fs.rmSync(tmp, { recursive: true, force: true });
