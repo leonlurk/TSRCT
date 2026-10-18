@@ -439,8 +439,8 @@ ok(!desk.restrictedPaneRecently(Date.now() + 3 * 60 * 1000), 'and open again a f
         ['check the window in front before typing (the Notepad lesson)', /ANTES de escribir, confirma en "front"/],
         ['never type into his existing files unasked', /Nunca escribas en un documento o archivo suyo/],
         ['ask before anything that cannot be undone', /PARA y preguntale antes de cualquier paso que no se puede deshacer/],
-        ['stop when he takes the mouse', /Leon tomo el mouse: PARA/],
-        ['look again and go on after he moves the mouse', /Leon movio el mouse y paro: mira la pantalla de nuevo/],
+        ['stop when he takes the mouse', /\$\{OWNER\} tomo el mouse: PARA/],
+        ['look again and go on after he moves the mouse', /\$\{OWNER\} movio el mouse y paro: mira la pantalla de nuevo/],
     ]) ok(re.test(recipe), `the do_on_pc recipe says: ${rule}`);
 }
 

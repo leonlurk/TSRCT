@@ -1941,7 +1941,10 @@ function getMobileHTML() {
         if (fs.existsSync(modularPath)) {
             // PROJECTS_ROOT goes into the page for the browser code (app.js reads it)
             const root = String(PROJECTS_ROOT).replace(/[&"<>]/g, c => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' }[c]));
-            return fs.readFileSync(modularPath, 'utf8').replace('</head>', `    <meta name="tsrct-projects-root" content="${root}">\n</head>`);
+            // ...and the owner's language (OWNER_LANG), so the voice starts in it.
+            const lang = require('./lib/owner').LANG;
+            return fs.readFileSync(modularPath, 'utf8').replace('</head>',
+                `    <meta name="tsrct-projects-root" content="${root}">\n    <meta name="tsrct-lang" content="${lang}">\n</head>`);
         }
         // Fallback to monolithic ui.html
         return fs.readFileSync(path.join(__dirname, 'ui.html'), 'utf8');

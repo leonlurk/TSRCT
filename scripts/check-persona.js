@@ -64,7 +64,8 @@ if (!built.includes('TRABAJO DE PRUEBA')) fail('persona.system() dropped the cal
 else ok();
 // The cast, by the assistant's CURRENT name — "Hermes" is the engine and Leon
 // does not use it; he says House, dr casa, doc. The check follows the name.
-for (const marker of [persona.NAME.toUpperCase(), 'LEON', 'CLAUDE']) {
+const OWNER = (() => { try { return require(path.join(ROOT, 'lib/owner.js')).NAME; } catch { return 'the owner'; } })();
+for (const marker of [persona.NAME.toUpperCase(), OWNER.toUpperCase(), 'CLAUDE']) {
     if (!built.toUpperCase().includes(marker)) fail(`the assembled prompt never names ${marker} — the cast has to be stated`);
     else ok();
 }
@@ -104,6 +105,63 @@ for (const fn of ['converse', 'narrateSession']) {
     else ok();
     if (!/temperature/.test(body)) fail(`hermes.js: ${fn}() does not set a temperature, so it inherits the classifier's 0.2 and speaks flat`);
     else ok();
+}
+
+// ── 5. whose assistant: OWNER_NAME, never a name written into the code ──────
+// Tesla was written for one person, and 72 lines of her prompts said "Leon":
+// anyone else who installed TSRCT was called Leon. The name now comes from
+// OWNER_NAME (lib/owner.js); here it is set to another name in a fresh process.
+{
+    const { spawnSync } = require('child_process');
+    const probe = spawnSync(process.execPath, ['-e', `
+        const p = require('./lib/persona'); const o = require('./lib/owner');
+        console.log(JSON.stringify({ name: o.NAME, identity: p.IDENTITY, built: p.system('X') }));
+    `], { cwd: ROOT, env: { ...process.env, OWNER_NAME: 'Ana' }, encoding: 'utf8' });
+    let got = null;
+    try { got = JSON.parse(probe.stdout); } catch { fail(`lib/owner.js or persona does not load with OWNER_NAME set: ${(probe.stderr || '').split('\n').find(Boolean) || ''}`); }
+    if (got) {
+        if (got.name !== 'Ana') fail(`lib/owner.js NAME is "${got.name}", not the OWNER_NAME given`); else ok();
+        if (!/Ana/.test(got.built) || /\bLeon\b/i.test(got.built)) fail('the assembled prompt does not name the owner from OWNER_NAME'); else ok();
+    }
+    // No line of code may spell a person's name: every prompt reads lib/owner.js.
+    const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
+    const files = [...walk(path.join(ROOT, 'lib')).filter(f => f.endsWith('.js')), path.join(ROOT, 'server.js')];
+    const named = [];
+    for (const f of files) {
+        fs.readFileSync(f, 'utf8').split('\n').forEach((l, i) => {
+            const code = l.replace(/^\s*(\/\/|\*|--).*$/, '').replace(/\s\/\/\s.*$/, '');
+            if (/\bLeon\b|\bLEON\b/.test(code)) named.push(`${path.relative(ROOT, f)}:${i + 1}`);
+        });
+    }
+    if (named.length) fail(`${named.length} line(s) of code still say "Leon" instead of reading lib/owner.js: ${named.slice(0, 8).join(', ')}${named.length > 8 ? ' ...' : ''}`); else ok();
+}
+
+// ── 6. which language: OWNER_LANG is the default, what he speaks still wins ──
+// Spanish was written into the prompts, the spoken brief and the browser's
+// recogniser. OWNER_LANG (es | en) is the language Tesla uses until the person
+// speaks another one; the page learns it from a meta tag the server writes.
+{
+    const { spawnSync } = require('child_process');
+    const probe = spawnSync(process.execPath, ['-e', `
+        const o = require('./lib/owner');
+        console.log(JSON.stringify({ lang: o.LANG, name: o.LANG_NAME }));
+    `], { cwd: ROOT, env: { ...process.env, OWNER_LANG: 'en' }, encoding: 'utf8' });
+    let got = null;
+    try { got = JSON.parse(probe.stdout); } catch { fail('lib/owner.js does not load with OWNER_LANG set'); }
+    if (got) { if (got.lang !== 'en' || got.name !== 'English') fail(`OWNER_LANG=en reads as ${JSON.stringify(got)}`); else ok(); }
+    const src = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
+    const rules = [
+        ['lib/talk.js', /state\.lang \|\| OWNER_LANG\b/, 'the voice falls back to OWNER_LANG, not to Spanish'],
+        ['lib/haikuBrain.js', /\(lang \|\| OWNER_LANG\) === 'en'/, 'the brain answers in OWNER_LANG unless he speaks another language'],
+        ['lib/morningRoutine.js', /\$\{LANG_NAME\}/, 'the spoken brief is written in OWNER_LANG'],
+        ['lib/promptWriter.js', /\$\{LANG_NAME\}/, 'the prompt writer summarises in OWNER_LANG'],
+        ['server.js', /tsrct-lang/, 'the page is told the language (meta tsrct-lang)'],
+        ['src/js/desktop.js', /tsrct-lang/, 'the recogniser starts in that language'],
+    ];
+    for (const [f, re, what] of rules) { if (!re.test(src(f))) fail(`${f}: ${what}`); else ok(); }
+    for (const f of ['lib/morningRoutine.js', 'lib/promptWriter.js', 'lib/tasteBrain.js']) {
+        if (/in neutral Latin American Spanish|sentence in Spanish|\(Spanish,/.test(src(f))) fail(`${f} still asks for Spanish by name`); else ok();
+    }
 }
 
 if (failures) {

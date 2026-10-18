@@ -133,7 +133,7 @@ const Desktop = {
         recognition: null,
         isRecording: false,
         wantRecording: false,
-        lang: 'es-ES', // Default language
+        lang: window.TSRCT_LANG || 'es-ES', // the owner's language (meta tsrct-lang)
     },
 
     // Combined Terminals (multi-session split view)

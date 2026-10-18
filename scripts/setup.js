@@ -111,8 +111,20 @@ async function stepSettings() {
     say(`[*] ${file} written${r.backup ? ` (old copy: ${path.basename(r.backup)})` : ''}`);
 }
 
+async function stepAboutYou() {
+    say('\n== 3. About you ==');
+    const cur = checks.settings() || {};
+    say('Tesla, the voice assistant, calls you by name and speaks your language.');
+    const login = (() => { try { const u = os.userInfo().username; return u.charAt(0).toUpperCase() + u.slice(1); } catch { return ''; } })();
+    const name = await ask('What should Tesla call you?', cur.OWNER_NAME || login);
+    const lang = (await ask('Language for Tesla, es (Spanish) or en (English):', cur.OWNER_LANG || 'en')).toLowerCase().startsWith('es') ? 'es' : 'en';
+    if (DRY) { say(`    (dry run: would write OWNER_NAME=${name}, OWNER_LANG=${lang})`); return; }
+    lib.writeEnv(checks.ENV_FILE, { OWNER_NAME: name, OWNER_LANG: lang }, { backup: false });
+    say(`[*] Tesla will call you ${name} and speak ${lang === 'en' ? 'English' : 'Spanish'}. Speaking the other language still works.`);
+}
+
 async function stepHooks() {
-    say('\n== 3. Claude Code hooks ==');
+    say('\n== 4. Claude Code hooks ==');
     const c = checks.all().core.find(x => x.id === 'hooks');
     if (c.ok) { say('[*] already installed'); return; }
     say('These let TSRCT see each session\'s permission requests so you can approve them from your phone.');
@@ -135,12 +147,16 @@ async function optPhone() {
 
 async function optMorning() {
     const at = await ask('    At what time? (24h)', '06:00');
-    if (!DRY) lib.writeEnv(checks.ENV_FILE, { MORNING_ENABLED: '1', MORNING_AT: at }, { backup: false });
-    say('    It uses Claude Code\'s connectors (mail, calendar, task tools) that you have connected.');
+    say('    Besides your notes and your recent Claude Code work, it can read these, through the');
+    say('    connectors you have set up in Claude Code: clickup, slack, gmail, calendar.');
+    const raw = await ask('    Which ones? (comma-separated, Enter for none)', (checks.settings() || {}).MORNING_SOURCES || '');
+    const sources = raw.split(',').map(s => s.trim().toLowerCase()).filter(s => ['clickup', 'slack', 'gmail', 'calendar'].includes(s)).join(',');
+    if (!DRY) lib.writeEnv(checks.ENV_FILE, { MORNING_ENABLED: '1', MORNING_AT: at, MORNING_SOURCES: sources }, { backup: false });
+    say(`    [*] every day at ${at}, reading ${sources || 'only your notes and Claude Code work'}`);
 }
 
 async function stepOptional() {
-    say('\n== 4. Optional parts ==  (each one is a yes or no; nothing breaks if you say no)');
+    say('\n== 5. Optional parts ==  (each one is a yes or no; nothing breaks if you say no)');
     for (const c of checks.all().optional) {
         if (c.ok) { say(`[*] ${c.title}${c.detail ? ' - ' + c.detail : ''}`); continue; }
         if (!await yes(`\nSet up: ${c.title}?`)) continue;
@@ -167,6 +183,7 @@ function finish() {
     say('Every step asks first. Ctrl+C stops at any point; what is done stays done.');
     await stepPrograms();
     await stepSettings();
+    await stepAboutYou();
     await stepHooks();
     await stepOptional();
     finish();

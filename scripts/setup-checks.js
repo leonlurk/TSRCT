@@ -95,6 +95,8 @@ function optional(p, env) {
           fix: { url: 'https://ollama.com/download' } },
         ...(p.wsl ? [{ id: 'vnc', title: 'Remote desktop (TightVNC on Windows)', ok: fs.existsSync(vnc),
           fix: { url: 'https://www.tightvnc.com/download.php', note: 'install the server part on Windows' } }] : []),
+        { id: 'owner', title: 'Your name and language for Tesla', ok: !!e.OWNER_NAME, detail: e.OWNER_NAME ? `${e.OWNER_NAME}, ${e.OWNER_LANG || 'es'}` : 'not set (Tesla uses your login name)',
+          fix: { note: 'npm run setup asks for them' } },
         // Same rule as the server (server.js startScheduler): on unless it says 0.
         { id: 'morning', title: 'Morning routine', ok: e.MORNING_ENABLED !== '0', detail: e.MORNING_ENABLED !== '0' ? `at ${e.MORNING_AT || '06:00'}` : 'off',
           fix: { note: 'npm run setup can turn it on' } },

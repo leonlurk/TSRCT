@@ -454,7 +454,7 @@ function hfInitRecognition() {
     HF.recognition = createSpeechRecognizer({
         continuous: false,
         interimResults: true,
-        lang: 'es-ES',
+        lang: window.TSRCT_LANG || 'es-ES',
         maxAlternatives: 1,
         onStart: () => {
             HF.listening = true;
@@ -996,7 +996,7 @@ function hfSpeak(text, callback = null) {
 
     const utter = new SpeechSynthesisUtterance(text);
     utter.voice = HF.voice;
-    utter.lang = HF.voice?.lang || 'es-ES';
+    utter.lang = HF.voice?.lang || window.TSRCT_LANG || 'es-ES';
     utter.rate = 1.15;
     utter.pitch = 1;
     utter.volume = 1;

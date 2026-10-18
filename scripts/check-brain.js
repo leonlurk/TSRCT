@@ -130,7 +130,7 @@ ok(/isHiddenSession = \(name\) => isRoSession\(name\) \|\| String\(name \|\| ''\
     ok(!/secretco/i.test(map), 'SecretCo never reaches the map');
     ok(/- harbor \(HARBOR\): The Salesforce work for a farm-equipment distributor, allocating products\./.test(map), `his vault note wins over the README, a wrapped sentence whole (got ${JSON.stringify((map.match(/- harbor .*/) || [''])[0])})`);
     fs.rmSync(fx, { recursive: true, force: true });
-    ok(/CARPETAS DE LEON/.test(src) && /projectRegistry\.mapText\(\)/.test(src), 'the brain is handed the folder map when it starts');
+    ok(/CARPETAS DE \$\{OWNER_UP\}/.test(src) && /projectRegistry\.mapText\(\)/.test(src), 'the brain is handed the folder map when it starts');
 }
 
 // ── a question the brain never took (Tesla review #3, 2026-10-07 00:44) ─────

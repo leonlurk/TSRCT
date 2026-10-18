@@ -6,6 +6,8 @@
 // Where his projects live, from PROJECTS_ROOT in .env: the server writes it into
 // the page (getMobileHTML) so no path on a particular machine is spelled out here.
 window.TSRCT_PROJECTS_ROOT = (document.querySelector('meta[name="tsrct-projects-root"]') || {}).content || '';
+// The owner's language (OWNER_LANG, written by the server): what the voice starts in.
+window.TSRCT_LANG = ((document.querySelector('meta[name="tsrct-lang"]') || {}).content === 'en') ? 'en-US' : 'es-ES';
 
 // Register Service Worker for PWA installation
         if ('serviceWorker' in navigator) {

@@ -99,5 +99,32 @@ if (setup) {
     fs.rmSync(tmp, { recursive: true, force: true });
 }
 
+// ── the morning routine reads only the sources you chose (MORNING_SOURCES) ──
+// It was written around one person's tools: ClickUp, Slack, Gmail, Calendar.
+// Anyone else got a brief that opened with "I could not read ClickUp" every day.
+{
+    const { spawnSync } = require('child_process');
+    const probe = (sources) => {
+        const r = spawnSync(process.execPath, ['-e', `
+            const m = require('./lib/morningRoutine');
+            const text = m.buildInstruction({ today: '2026-01-01', projects: [], vaultNotes: [], claudeWork: [], live: [] });
+            console.log(JSON.stringify({ text, tools: m.MORNING_TOOLS }));
+        `], { cwd: ROOT, env: { ...process.env, MORNING_SOURCES: sources }, encoding: 'utf8' });
+        try { return JSON.parse(r.stdout); } catch { return { error: (r.stderr || '').split('\n').find(Boolean) }; }
+    };
+    const none = probe('');
+    ok(!none.error, `the routine loads with no sources: ${none.error || ''}`);
+    if (!none.error) {
+        ok(!/ClickUp|Slack|Gmail|Google Calendar/.test(none.text), 'with no sources chosen, the brief names none of them');
+        ok(!none.tools.some(t => t.startsWith('mcp__')), 'and the job gets no connector tools');
+        ok(/vault/i.test(none.text) && /Claude Code work/.test(none.text), 'the vault and his own Claude work are always read');
+    }
+    const two = probe('gmail,calendar');
+    if (!two.error) {
+        ok(/Gmail/.test(two.text) && /Google Calendar/.test(two.text) && !/ClickUp|Slack/.test(two.text), 'gmail,calendar: only those two are named');
+        ok(two.tools.some(t => t.includes('Gmail')) && !two.tools.some(t => /ClickUp|Slack/.test(t)), 'and only their tools are allowed');
+    } else ok(false, 'the routine does not load with MORNING_SOURCES=gmail,calendar');
+}
+
 console.log(`[check-setup] ${pass}/${pass + fail}`);
 process.exit(fail ? 1 : 0);

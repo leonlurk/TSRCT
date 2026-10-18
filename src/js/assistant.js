@@ -197,7 +197,7 @@
         try {
             if (!window.speechSynthesis) return false;
             const u = new SpeechSynthesisUtterance(text);
-            u.rate = 1; u.lang = 'es-AR';
+            u.rate = 1; u.lang = window.TSRCT_LANG === 'en-US' ? 'en-US' : 'es-AR';
             window.speechSynthesis.cancel();
             // Resolves when it has finished talking, like say() — the microphone
             // waits on this one too.
@@ -1087,7 +1087,7 @@
     let heard = '';
     let pauseTimer = null;
     let recLang = '';
-    const inputLang = () => (CFG.lang && CFG.lang()) || (window.Desktop && window.Desktop.voice && window.Desktop.voice.lang) || 'es-ES';
+    const inputLang = () => (CFG.lang && CFG.lang()) || (window.Desktop && window.Desktop.voice && window.Desktop.voice.lang) || window.TSRCT_LANG || 'es-ES';
     function showHeard() {
         talk.draft = heard.trim();
         const box = document.querySelector('#asst-panel [data-act="asst-input"]');

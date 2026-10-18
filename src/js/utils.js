@@ -26,7 +26,7 @@ function createSpeechRecognizer(opts) {
     const rec = new SR();
     rec.continuous = !!o.continuous;
     rec.interimResults = !!o.interimResults;
-    rec.lang = o.lang || 'es-ES';
+    rec.lang = o.lang || window.TSRCT_LANG || 'es-ES';
     if (o.maxAlternatives) rec.maxAlternatives = o.maxAlternatives;
     if (o.onStart) rec.onstart = o.onStart;
     if (o.onEnd) rec.onend = o.onEnd;
