@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 'use strict';
+// Research is checked with every connector on (CONNECTORS is per machine).
+process.env.CONNECTORS = 'clickup,slack,gmail,calendar';
 // ── The sentences he actually says, and what each one has to do ─────────────
 //
 // This is the regression suite for the assistant's UNDERSTANDING, and it is the

@@ -118,8 +118,12 @@ async function stepAboutYou() {
     const login = (() => { try { const u = os.userInfo().username; return u.charAt(0).toUpperCase() + u.slice(1); } catch { return ''; } })();
     const name = await ask('What should Tesla call you?', cur.OWNER_NAME || login);
     const lang = (await ask('Language for Tesla, es (Spanish) or en (English):', cur.OWNER_LANG || 'en')).toLowerCase().startsWith('es') ? 'es' : 'en';
-    if (DRY) { say(`    (dry run: would write OWNER_NAME=${name}, OWNER_LANG=${lang})`); return; }
-    lib.writeEnv(checks.ENV_FILE, { OWNER_NAME: name, OWNER_LANG: lang }, { backup: false });
+    say('Which of these do you have connected in Claude Code (claude.ai connectors)? The morning');
+    say('brief and Tesla\'s research read them; anything else is never opened.');
+    const raw = await ask('clickup, slack, gmail, calendar (comma-separated, Enter for none):', cur.CONNECTORS || '');
+    const connectors = raw.split(',').map(s => s.trim().toLowerCase()).filter(s => ['clickup', 'slack', 'gmail', 'calendar'].includes(s)).join(',');
+    if (DRY) { say(`    (dry run: would write OWNER_NAME=${name}, OWNER_LANG=${lang}, CONNECTORS=${connectors})`); return; }
+    lib.writeEnv(checks.ENV_FILE, { OWNER_NAME: name, OWNER_LANG: lang, CONNECTORS: connectors }, { backup: false });
     say(`[*] Tesla will call you ${name} and speak ${lang === 'en' ? 'English' : 'Spanish'}. Speaking the other language still works.`);
 }
 
@@ -147,12 +151,9 @@ async function optPhone() {
 
 async function optMorning() {
     const at = await ask('    At what time? (24h)', '06:00');
-    say('    Besides your notes and your recent Claude Code work, it can read these, through the');
-    say('    connectors you have set up in Claude Code: clickup, slack, gmail, calendar.');
-    const raw = await ask('    Which ones? (comma-separated, Enter for none)', (checks.settings() || {}).MORNING_SOURCES || '');
-    const sources = raw.split(',').map(s => s.trim().toLowerCase()).filter(s => ['clickup', 'slack', 'gmail', 'calendar'].includes(s)).join(',');
-    if (!DRY) lib.writeEnv(checks.ENV_FILE, { MORNING_ENABLED: '1', MORNING_AT: at, MORNING_SOURCES: sources }, { backup: false });
-    say(`    [*] every day at ${at}, reading ${sources || 'only your notes and Claude Code work'}`);
+    if (!DRY) lib.writeEnv(checks.ENV_FILE, { MORNING_ENABLED: '1', MORNING_AT: at }, { backup: false });
+    const sources = (checks.settings() || {}).CONNECTORS || '';
+    say(`    [*] every day at ${at}, reading your notes, your Claude Code work${sources ? ' and ' + sources : ''}`);
 }
 
 async function stepOptional() {

@@ -99,7 +99,7 @@ if (setup) {
     fs.rmSync(tmp, { recursive: true, force: true });
 }
 
-// ── the morning routine reads only the sources you chose (MORNING_SOURCES) ──
+// ── the morning routine reads only the sources you chose (CONNECTORS) ──
 // It was written around one person's tools: ClickUp, Slack, Gmail, Calendar.
 // Anyone else got a brief that opened with "I could not read ClickUp" every day.
 {
@@ -109,7 +109,7 @@ if (setup) {
             const m = require('./lib/morningRoutine');
             const text = m.buildInstruction({ today: '2026-01-01', projects: [], vaultNotes: [], claudeWork: [], live: [] });
             console.log(JSON.stringify({ text, tools: m.MORNING_TOOLS }));
-        `], { cwd: ROOT, env: { ...process.env, MORNING_SOURCES: sources }, encoding: 'utf8' });
+        `], { cwd: ROOT, env: { ...process.env, CONNECTORS: sources }, encoding: 'utf8' });
         try { return JSON.parse(r.stdout); } catch { return { error: (r.stderr || '').split('\n').find(Boolean) }; }
     };
     const none = probe('');
@@ -123,7 +123,7 @@ if (setup) {
     if (!two.error) {
         ok(/Gmail/.test(two.text) && /Google Calendar/.test(two.text) && !/ClickUp|Slack/.test(two.text), 'gmail,calendar: only those two are named');
         ok(two.tools.some(t => t.includes('Gmail')) && !two.tools.some(t => /ClickUp|Slack/.test(t)), 'and only their tools are allowed');
-    } else ok(false, 'the routine does not load with MORNING_SOURCES=gmail,calendar');
+    } else ok(false, 'the routine does not load with CONNECTORS=gmail,calendar');
 }
 
 console.log(`[check-setup] ${pass}/${pass + fail}`);
