@@ -1034,6 +1034,7 @@ function buildPCLayout() {
                 <button class="pc-pb-toggle" id="pc-pb-toggle" onclick="togglePlainBrief()" title="Plain brief: force short, plain answers in this session">PB</button>
                 <button class="pc-mute-toggle" id="pc-mute-toggle" onclick="toggleVoiceMute()" title="Mute every voice TSRCT can make (session alerts and hands-free)">MUTE</button>
                 <button class="pc-morning-btn" id="pc-morning-btn" onclick="mrnToggle()" title="Morning brief: what the 06:00 routine found and which sessions it wants to open">[A]</button>
+                <button class="pc-morning-btn" onclick="tourStart()" title="A one-minute look at what each part does">[?]</button>
                 <button class="pc-eye-protect" onclick="toggleEyeProtect()" title="Eye protection mode" style="padding:3px 8px;border:1px solid #d4a040;color:#d4a040;background:transparent;font-size:0.55rem;font-family:var(--mono);cursor:pointer;">EYE</button>
                 <button class="pc-navy-theme" onclick="toggleNavyTheme()" title="leonlurk navy theme" style="padding:3px 8px;border:1px solid #22a7ff;color:#22a7ff;background:transparent;font-size:0.55rem;font-family:var(--mono);cursor:pointer;">NAVY</button>
                 <button class="pc-restart-btn" onclick="showRestartConfirm()" title="Restart the TSRCT bridge server (native splash)" style="display:flex;align-items:center;padding:3px 7px;border:1px solid var(--amber,#ffb000);color:var(--amber,#ffb000);background:transparent;cursor:pointer;">

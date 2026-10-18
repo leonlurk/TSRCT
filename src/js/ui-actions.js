@@ -56,6 +56,7 @@
             if (!open) throw new Error('no hay ninguna abierta');
             return WorldManager.close(open);
         },
+        start_tour: () => { if (!call('tourStart')) throw new Error('no hay nada en pantalla para mostrar'); return true; },
         show_session: ({ session }) => call('switchSession', session),
         // The split panel showing `place` gets `session`; no split view = a plain switch.
         put_in_panel: ({ session, place }) => (pc() ? call('pcCombineReplaceSession', place, session) : call('switchSession', session)),

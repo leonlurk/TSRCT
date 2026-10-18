@@ -34,6 +34,8 @@
     <link rel="stylesheet" href="/src/css/restart.css">
     <!-- The assistant dock: present in every room and both layouts, never modal. -->
     <link rel="stylesheet" href="/src/css/assistant.css">
+    <!-- The guided first look (optional): src/js/tour.js. -->
+    <link rel="stylesheet" href="/src/css/tour.css">
     <link rel="stylesheet" href="/src/css/rooms/room-sfcli.css">
 </head>
 <body>
@@ -259,6 +261,7 @@
             <button class="quick-btn" onclick="WorldManager.open('sfcli')" style="color:#00a8ff;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>SF</button>
             <button class="quick-btn" onclick="mrnToggle()" style="color:#ffd166;border-color:rgba(255,209,102,0.4)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>BRIEF</button>
             <button class="quick-btn" onclick="WorldManager.open('automations')" style="color:#00ff41;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>AUTO<span id="au-quick-badge" style="display:none;width:7px;height:7px;margin-left:3px;border-radius:50%;background:#ff0040;vertical-align:top"></span></button>
+            <button class="quick-btn" onclick="tourStart()" style="color:#46e0ff;" title="A one-minute look at what each part does"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><line x1="12" y1="17" x2="12" y2="17.5"/></svg>TOUR</button>
             <button class="quick-btn" onclick="projectorOpen()" style="color:#46e0ff;" title="Watch (and drive) the separate browser a session is using"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><polygon points="10 8 15 10 10 12"/></svg>PROJ</button>
             <button class="quick-btn" onclick="toggleNavyTheme()" style="color:#22a7ff;border-color:rgba(34,167,255,0.4)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l6.5 8a6.5 6.5 0 1 1-13 0z"/></svg>NAVY</button>
         </div>
@@ -1237,6 +1240,7 @@
          already defined; it builds its own DOM, so it needs no markup here. -->
     <!-- The buttons the assistant may press, with its own allowlist. Before
          assistant.js, which is what drains the queue of presses. -->
+    <script src="/src/js/tour.js"></script>
     <script src="/src/js/ui-actions.js"></script>
     <script src="/src/js/assistant.js"></script>
     <script src="/src/js/windows.js"></script>

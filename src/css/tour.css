@@ -1,0 +1,37 @@
+/* tour.css — the guided first look (src/js/tour.js). */
+.tour-layer { position: fixed; inset: 0; z-index: 2000; pointer-events: auto; }
+/* The spot is a hole in the dark: its huge shadow is the dim around it. */
+.tour-spot {
+    position: fixed;
+    border: 2px solid var(--cyan);
+    border-radius: 6px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.62);
+    transition: all 0.25s ease;
+    pointer-events: none;
+}
+.tour-tip, .tour-offer {
+    position: fixed;
+    max-width: min(340px, calc(100vw - 24px));
+    background: var(--bg);
+    border: 1px solid var(--cyan);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-family: var(--mono);
+    color: var(--text);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+}
+.tour-offer { right: 16px; bottom: 16px; z-index: 2000; }
+.tour-title { color: var(--cyan); font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 6px; }
+.tour-text { font-size: 0.78rem; line-height: 1.5; }
+.tour-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+.tour-btns button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--cyan);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.tour-btns .tour-next { border-color: var(--cyan); }
