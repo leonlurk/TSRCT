@@ -261,6 +261,15 @@ function promptChecks() {
     ok(brain._stripAction('La palabra ACCION no es una orden.').say === 'La palabra ACCION no es una orden.', 'the word on its own, mid-sentence, is left alone');
 }
 
+// ── Tesla review (2026-10-23 23:20, from the runner app): Haiku wrote its accents
+// as literal escapes - "Terminó la corrida 30 ... más rápido" - and
+// she read 21.9 s of codes out loud. clean() turns them back into the letters.
+{
+    const said = brain._clean('Termin\\u00f3 la corrida 30, la parte f\\u00e1cil bien y el tramo final m\\u00e1s r\\u00e1pido.');
+    ok(said === 'Terminó la corrida 30, la parte fácil bien y el tramo final más rápido.', `a literal \\u escape is spoken as its letter (got ${JSON.stringify(said)})`);
+    ok(brain._clean('Listo, abrí la sesión.') === 'Listo, abrí la sesión.', 'and real accents are untouched');
+}
+
 // ── Tesla review #16 (2026-10-14 00:02): he said "nada" and she said out loud
 // 'Leon dijo "nada", asi que no hago nada. (nada)'. An answer that ends in the
 // "(nada)" marker is silence, not a sentence about him. Not '' - talk.js reads an

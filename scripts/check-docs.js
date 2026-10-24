@@ -39,5 +39,14 @@ const MUST_KEEP = [
 for (const [phrase, why] of MUST_KEEP) ok(claude.includes(phrase), `CLAUDE.md lost "${phrase}" (${why})`);
 ok(/^## 9o\. /m.test(docs), 'DOCUMENTATION.md has no §9o, so the pointer in CLAUDE.md leads nowhere');
 
+// The two counts CLAUDE.md states, read from the files they describe (round 4:
+// it said 33 checks while the suite ran 36).
+const all = fs.readFileSync(path.join(__dirname, 'check-all.js'), 'utf8');
+const checks = (/const CHECKS = \[([\s\S]*?)\];/.exec(all) || [, ''])[1].match(/'check-[\w-]+'/g) || [];
+const said = /\*\*(\d+) checks\*\*/.exec(claude);
+ok(said && Number(said[1]) === checks.length, `CLAUDE.md says ${said ? said[1] : 'no number of'} checks, scripts/check-all.js runs ${checks.length}`);
+const cache = /CACHE_NAME\s*=\s*'([^']+)'/.exec(fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8'));
+ok(cache && claude.includes(`\`${cache[1]}\``), `CLAUDE.md does not name the current sw.js cache (${cache ? cache[1] : '?'})`);
+
 console.log(`check-docs: ${pass}/${pass + fail} ${fail ? 'FAILED' : 'ok'} - CLAUDE.md ${lines} lines`);
 process.exit(fail ? 1 : 0);

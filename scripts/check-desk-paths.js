@@ -371,6 +371,7 @@ async function main() {
         ok(route('busca bad bunny en spotify') === 'spotify_search', 'searching (to look at the results) stays spotify_search');
         ok(route('abri spotify') === 'open_app' && route('pone spotify a la derecha') === 'arrange_window', 'opening and placing Spotify are unchanged');
         const brainSrc = fs.readFileSync(path.join(ROOT, 'lib/haikuBrain.js'), 'utf8');
+        ok(/nunca digas que ya suena/i.test(brainSrc), 'asked again for a song, she plays it again: she never says it is already playing');
         ok(/play_music/.test(brainSrc) && /sorprend/.test(brainSrc), 'the brain plays music with play_music and picks by itself on "sorprendeme"');
     }
 
