@@ -17,6 +17,8 @@ const CEILINGS = {
     'src/js/remote-desktop.js': 2850,  // VR moved out 2026-10-16
     'src/js/remote-desktop-vr.js': 2450,
     'lib/talk.js': 2000,
+    'src/js/main.js': 1600,            // sound, auto-accept, abbreviations moved out 2026-10-24
+    'src/js/sessions.js': 1260,        // was gallery.js; the gallery itself moved to attachments.js 2026-10-24
     'src/css/desktop.css': 2100,        // split by surface 2026-10-17, same order (desktop-*.css)
 };
 

@@ -606,7 +606,7 @@
         poll();
     }
 
-    // Badge markup for the session list (gallery.js renderSessions and
+    // Badge markup for the session list (sessions.js renderSessions and
     // desktop.js pcRenderSessionItem call this). Clicking it opens the modal.
     function badge(sessionName) {
         const row = rowFor(sessionName);

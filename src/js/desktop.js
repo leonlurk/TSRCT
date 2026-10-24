@@ -1402,7 +1402,7 @@ function handleInputChange(e) {
         Object.entries(userCommands).forEach(([abbr, cmd]) => {
             if (abbr.toLowerCase().startsWith(lower)) {
                 const display = cmd.type === 'ctrl' ? `^${cmd.key.toUpperCase()}` : (cmd.value || cmd);
-                suggestions.push({ type: 'abbr', text: abbr, expand: display, icon: '⚡' });
+                suggestions.push({ type: 'abbr', text: abbr, expand: display, icon: '↯' });
             }
         });
     }
@@ -2724,7 +2724,7 @@ function pcStartDesktop() {
     ready.then(() => {
         let hs = null;
         try { hs = sessionStorage.getItem('tsrct_home_session'); } catch (e) {}
-        // gallery.js read the session on screen before the restore landed.
+        // sessions.js read the session on screen before the restore landed.
         if (hs && !window.homeSession) window.homeSession = hs;
         initDesktopMode();
     });

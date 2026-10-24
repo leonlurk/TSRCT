@@ -112,34 +112,6 @@ body.pc-mode .pc-gallery-modal.hidden {
     display: none;
 }
 
-body.pc-mode .pc-gallery-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-}
-
-body.pc-mode .pc-gallery-header span {
-    font-family: var(--mono);
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text);
-}
-
-body.pc-mode .pc-gallery-header button {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-family: var(--mono);
-    font-size: 0.8rem;
-    cursor: pointer;
-}
-
-body.pc-mode .pc-gallery-header button:hover {
-    color: var(--red);
-}
-
 body.pc-mode .pc-gallery-hint {
     font-family: var(--mono);
     font-size: 0.55rem;
@@ -245,41 +217,6 @@ body.pc-mode .pc-gallery-error {
 
 body.pc-mode .pc-gallery-error {
     color: var(--red);
-}
-
-body.pc-mode .pc-gallery-actions {
-    display: flex;
-    gap: 8px;
-    padding: 12px 16px;
-    border-top: 1px solid var(--border);
-}
-
-body.pc-mode .pc-gallery-actions button {
-    flex: 1;
-    padding: 10px;
-    border-radius: 6px;
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-}
-
-body.pc-mode .pc-gallery-actions .cancel {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-}
-
-body.pc-mode .pc-gallery-actions .cancel:hover {
-    border-color: var(--text);
-    color: var(--text);
-}
-
-body.pc-mode .pc-gallery-actions .attach {
-    background: var(--neon);
-    border: none;
-    color: #000;
 }
 
 body.pc-mode .pc-gallery-actions .attach:hover:not(:disabled) {
@@ -392,34 +329,6 @@ body.pc-mode .pc-file-modal.hidden {
     display: none;
 }
 
-body.pc-mode .pc-file-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-}
-
-body.pc-mode .pc-file-header span {
-    font-family: var(--mono);
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text);
-}
-
-body.pc-mode .pc-file-header button {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-family: var(--mono);
-    font-size: 0.8rem;
-    cursor: pointer;
-}
-
-body.pc-mode .pc-file-header button:hover {
-    color: var(--red);
-}
-
 body.pc-mode .pc-file-tabs {
     display: flex;
     border-bottom: 1px solid var(--border);
@@ -477,15 +386,6 @@ body.pc-mode .pc-file-field {
 body.pc-mode .pc-file-field:last-child {
     flex: 1;
     min-height: 0;
-}
-
-body.pc-mode .pc-file-field label {
-    font-family: var(--mono);
-    font-size: 0.55rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
 body.pc-mode .pc-file-field input {
@@ -697,41 +597,3 @@ body.pc-mode .pc-file-error {
     color: var(--red);
 }
 
-body.pc-mode .pc-file-actions {
-    display: flex;
-    gap: 8px;
-    padding: 12px 16px;
-    border-top: 1px solid var(--border);
-}
-
-body.pc-mode .pc-file-actions button {
-    flex: 1;
-    padding: 10px;
-    border-radius: 6px;
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-}
-
-body.pc-mode .pc-file-actions .cancel {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-}
-
-body.pc-mode .pc-file-actions .cancel:hover {
-    border-color: var(--text);
-    color: var(--text);
-}
-
-body.pc-mode .pc-file-actions .attach {
-    background: var(--neon);
-    border: none;
-    color: #000;
-}
-
-body.pc-mode .pc-file-actions .attach:hover {
-    box-shadow: 0 0 15px var(--neon-glow);
-}

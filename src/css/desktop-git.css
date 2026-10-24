@@ -221,21 +221,6 @@ body.pc-mode .pc-git-modal-content {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px var(--neon-glow);
 }
 
-body.pc-mode .pc-git-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-}
-
-body.pc-mode .pc-git-modal-header span {
-    font-family: var(--mono);
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text);
-}
-
 body.pc-mode .pc-git-modal-header button {
     background: none;
     border: 1px solid var(--border);
@@ -271,15 +256,6 @@ body.pc-mode .pc-git-field {
     display: flex;
     flex-direction: column;
     gap: 4px;
-}
-
-body.pc-mode .pc-git-field label {
-    font-family: var(--mono);
-    font-size: 0.55rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
 body.pc-mode .pc-git-field input,
@@ -352,45 +328,6 @@ body.pc-mode .pc-git-file-name {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-body.pc-mode .pc-git-modal-footer {
-    display: flex;
-    gap: 8px;
-    padding: 12px 16px;
-    border-top: 1px solid var(--border);
-}
-
-body.pc-mode .pc-git-modal-footer button {
-    flex: 1;
-    padding: 10px;
-    border-radius: 6px;
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-}
-
-body.pc-mode .pc-git-modal-footer .cancel {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-}
-
-body.pc-mode .pc-git-modal-footer .cancel:hover {
-    border-color: var(--text);
-    color: var(--text);
-}
-
-body.pc-mode .pc-git-modal-footer .primary {
-    background: var(--neon);
-    border: none;
-    color: #000;
-}
-
-body.pc-mode .pc-git-modal-footer .primary:hover {
-    box-shadow: 0 0 15px var(--neon-glow);
 }
 
 body.pc-mode .pc-git-modal-footer .primary:disabled {

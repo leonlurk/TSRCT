@@ -2206,7 +2206,7 @@ function rdUpdateOverlayAttachIndicator() {
 }
 
 // ── Overlay Server Gallery ─────────────────────────────────────
-// Shared on window so gallery.js (non-module) can access them
+// Shared on window so attachments.js (non-module) can access them
 window.rdOverlayGalleryMode = false;
 
 function rdOverlayServerGallery() {

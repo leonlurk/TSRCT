@@ -1002,7 +1002,7 @@
             <span class="ifs-title">> PROMPT</span>
             <button class="ifs-close" onclick="closeInputFs()">X</button>
         </div>
-        <div class="ifs-attach hidden" id="ifs-attach">📷 <span></span> <button onclick="clearAttachment();updateIfsAttach()">×</button></div>
+        <div class="ifs-attach hidden" id="ifs-attach">[img] <span></span> <button onclick="clearAttachment();updateIfsAttach()">×</button></div>
         <textarea id="ifs-input" class="ifs-textarea" placeholder="Type or dictate..."></textarea>
         <div class="ifs-actions">
             <button class="ifs-btn" onclick="$('ifs-camera').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>CAM</button>
@@ -1211,7 +1211,8 @@
     <script src="/src/js/terminal-images.js"></script>
     <script src="/src/js/world-manager.js"></script>
     <script src="/src/js/hands-free.js"></script>
-    <script src="/src/js/gallery.js"></script>
+    <script src="/src/js/sessions.js"></script>
+    <script src="/src/js/attachments.js"></script>
     <script type="module" src="/src/js/remote-desktop.js"></script>
     <!-- sf-cli.js loaded on demand via loadSfCli() -->
     <script src="/src/js/runners.js"></script>
@@ -1224,6 +1225,9 @@
     <script src="/src/js/session-voice.js"></script>
     <script src="/src/js/session-weight.js"></script>
     <script src="/src/js/usage.js"></script>
+    <script src="/src/js/sound.js"></script>
+    <script src="/src/js/auto-accept.js"></script>
+    <script src="/src/js/abbreviations.js"></script>
     <script src="/src/js/main.js"></script>
     <script src="/src/js/webauthn.js"></script>
     <script src="/src/js/restart.js"></script>

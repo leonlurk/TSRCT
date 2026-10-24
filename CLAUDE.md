@@ -176,8 +176,10 @@ pull a file out from under the running server (`scripts/check-state.js`). The la
 4. `terminal-images.js` — `TermImg`, renders image paths in terminal output
 5. `world-manager.js` — the `WorldManager` singleton (room registry + lazy room CSS)
 6. `hands-free.js` — zero-touch voice mode (`HF`)
-7. `gallery.js` — attachments, server gallery, shared `toast`/`getCurrentTargetSession`,
-   multi-window presence (`BroadcastChannel('tsrct-windows')`), live `homeSession` proxy
+7. `sessions.js` (was `gallery.js` until 2026-10-24) — shared `toast`/`getCurrentTargetSession`,
+   multi-window presence (`BroadcastChannel('tsrct-windows')`), live `homeSession` proxy, the mobile
+   sessions modal, fullscreen input + mic, the phone deck. Then `attachments.js` — the server
+   gallery, files picker, uploads and attachment chips (cut out of it 2026-10-24, loads right after)
 8. `remote-desktop.js` — VNC. `type="module"`, so it is scope-isolated; it exports ~70
    `window.rd*` names one per line instead of a curated block. VR is its own module,
    `remote-desktop-vr.js` (the two import each other; the VR one is evaluated first, so its top
@@ -185,8 +187,9 @@ pull a file out from under the running server (`scripts/check-state.js`). The la
 9. Room/panel modules: `runners.js`, `codemap.js`, `automations.js`, `notifications.js`, `omni.js`,
    `handson.js`, `morning.js`
 10. `session-voice.js` — session attention TTS (`SessionVoice`)
-11. `main.js` — terminal UI, permission cards, abbreviations, sound bus, prompt drafts,
-    `send`/`sendCtrl`/`playSound`/`vibe`/`auth`
+11. `sound.js` (`playSound`/`vibe`), `auto-accept.js`, `abbreviations.js` — cut out of `main.js`
+    2026-10-24 and loaded just before it. `main.js` — terminal UI, permission cards, prompt drafts,
+    `send`/`sendCtrl`/`auth`
 12. `webauthn.js` — Windows Hello login/enroll
 13. `restart.js` — restart confirm modal + boot splash
 14. `desktop-git.js`, `desktop-runners.js` (+ nano mode), `desktop-attach.js`, `desktop-notes.js`,
@@ -271,7 +274,7 @@ to do SecretCo work while protecting nothing — the pane content only becomes a
 model or an external service, and every one of those paths is now guarded above.
 
 **When you add any route or engine that reads a path, a cwd, a session name, or dispatches a
-prompt, route it through the choke point above.** Fail closed. `npm run check` (`scripts/check-all.js`, **32 checks**, runs
+prompt, route it through the choke point above.** Fail closed. `npm run check` (`scripts/check-all.js`, **33 checks**, runs
 every one and fails at the end; a new check goes in its list, and check-docs fails until this count matches; `npm run check:fast` skips check-brain and is
 what the pre-commit hook from `npm run hooks` runs) runs `scripts/check-syntax.js` (every .js parses), `scripts/check-routes.js` (route inventory + auth gate) and
 `scripts/check-restricted.js`, which fails if a new `/api/git/*` route skips `gitCwd`, if an sf alias is
@@ -287,7 +290,7 @@ in the code. (It is implemented now.)
 - **NEVER use emojis in any code, comments, or UI elements**
 - Use text symbols: `[*]`, `[+]`, `[-]`, `[!]`, `[?]`, `[>]`, `[x]`, `[S]`, `[i]`
 - For icons, use monospace characters or inline SVG
-- (Known violation: `gallery.js` `renderSessions` still prints a shield emoji.)
+- `scripts/check-emoji.js` enforces it (Unicode's colour-picture characters; Claude Code's own `❯ ✻ ✢` stay).
 
 ### CSS Architecture
 - Mobile-first: mobile base lives in `base.css` / `layout.css` / `main.css`
@@ -326,7 +329,7 @@ in the code. (It is implemented now.)
 - Preferences go through `pcPrefGet/pcPrefSet(key, value, scope)`:
   `window`→`sessionStorage` (default), `browser`→`localStorage`, `server`→the `config` table.
   Scope is a per-window vs per-browser decision, not a durability one.
-- **Any frontend change must bump `sw.js` `CACHE_NAME` (currently `tsrct-v426`).**
+- **Any frontend change must bump `sw.js` `CACHE_NAME` (currently `tsrct-v427`).**
 
 ### Service Worker
 `sw.js` caches the PWA shell, room CSS and room JS. Bump `CACHE_NAME` on every asset change and add

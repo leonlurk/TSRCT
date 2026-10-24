@@ -2100,7 +2100,7 @@ against above 5 kHz; the rebuilt tap moved that ratio from **0.33 to 4.9**.
 
 `localStorage.tsrct_draft` holds whatever is typed in `#prompt` / `#fs-prompt` (debounced
 200 ms, the two inputs mirror each other). It is cleared only by a **successful** send
-(`clearPromptDraft()`, exported on `window` for `gallery.js`'s fullscreen send) or by the
+(`clearPromptDraft()`, exported on `window` for `sessions.js`'s fullscreen send) or by the
 user emptying the box — an empty input is a deliberate discard, not a candidate for
 restore.
 
@@ -2482,7 +2482,7 @@ in the other direction: the code existed and the behaviour didn't.
 **`/api/status` shipped a whole terminal that nothing on that code path read.** `poll()`
 (`main.js`) calls it purely for `sessionExists` + `project`. Only three callers ever
 wanted the capture — first paint in `connect()`, the no-session panel fallback
-(`gallery.js`), the restart splash (`restart.js`) — and they now pass `?output=1`.
+(`sessions.js`), the restart splash (`restart.js`) — and they now pass `?output=1`.
 
 **The polls are not equal, and must not be throttled equally.** `poll()` STOPS while
 `document.hidden`: terminal output nobody can see is worth nothing at any price.
@@ -2493,7 +2493,7 @@ to pay for the bandwidth. `visibilitychange` fires both immediately on return.
 Both loops now reschedule through `schedulePoll()`/`schedulePerms()`, which `clearTimeout`
 first. That also fixed a latent duplicate: `connect()` called `poll()` directly while
 `send()`/`sendKey()` each started their own `setTimeout(poll, …)`, so several full-freight
-chains could run at once. `gallery.js` pokes the same two helpers.
+chains could run at once. `sessions.js` pokes the same two helpers.
 
 **Silence is not free in raw PCM.** Leaving audio on with a silent PC cost exactly as much
 as streaming a film. The gate (`SILENCE_FLOOR = 8`, about −72 dBFS; `HANGOVER_MS = 400`)

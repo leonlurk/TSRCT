@@ -112,7 +112,7 @@ const SessionVoice = (() => {
     }
 
     function toast(msg) {
-        // gallery.js exports `toast`; `showToast` does not exist in this tree, so
+        // sessions.js exports `toast`; `showToast` does not exist in this tree, so
         // on its own this helper was a no-op and every message here was lost.
         if (typeof window.toast === 'function') window.toast(msg, 'info', false);
         else if (typeof window.showToast === 'function') window.showToast(msg);

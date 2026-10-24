@@ -7,7 +7,7 @@
 //
 // Everything here rides infrastructure that already exists:
 //   - presence + session claims over BroadcastChannel('tsrct-windows')
-//     (gallery.js) -- two windows already know about each other and already
+//     (sessions.js) -- two windows already know about each other and already
 //     refuse to show the same session, so a second window is not a new problem.
 //   - GET /api/vnc/monitors -- the server reads the REAL Windows screen layout
 //     (Screen::AllScreens) for the VNC crop, so we can place a window without

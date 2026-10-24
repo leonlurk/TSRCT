@@ -153,7 +153,7 @@ function check(name, cond, detail) {
     check('a sidebar preference change is saved', /function pcPrefSet[\s\S]{0,500}pcLayout/.test(desk));
     check('a split-tab change is saved', /function pcSplitGroupsSave[\s\S]{0,300}pcLayout/.test(desk));
     check('a split-view change is saved', /function pcSplitSave[\s\S]{0,900}pcLayout/.test(desk));
-    check('the session on screen is saved', /tsrct_home_session[\s\S]{0,300}pcLayout/.test(read('src/js/gallery.js')));
+    check('the session on screen is saved', /tsrct_home_session[\s\S]{0,300}pcLayout/.test(read('src/js/sessions.js')));
     const html = read('src/index.html');
     check('index.html loads layout-memory.js before desktop.js and desktop-sessions.js', html.indexOf('/src/js/layout-memory.js') > 0 && html.indexOf('/src/js/layout-memory.js') < html.indexOf('/src/js/desktop.js')
         && html.indexOf('/src/js/layout-memory.js') < html.indexOf('/src/js/desktop-sessions.js'));
