@@ -71,6 +71,8 @@ const permissionDesk = require('./lib/permissionDesk');
 const paneKeys = require('./lib/paneKeys');
 const promptWriter = require('./lib/promptWriter');
 const teslaHands = require('./lib/teslaHands');
+const plans = require('./lib/plans');
+const planPilot = require('./lib/planPilot');
 const desk = require('./lib/desk');
 const pcDirect = require('./lib/pcDirect');
 // Reading text out loud on the CPU (Piper). Standalone and optional: if the
@@ -1515,9 +1517,21 @@ teslaHands.configure({
         }
     },
 });
+// His work plans (lib/plans.js): the /deeper pass runs on the same worker.
+plans.configure({
+    hands: teslaHands,
+    sessions: () => {
+        let names = [];
+        try { names = tmux(['list-sessions', '-F', '#{session_name}']).trim().split('\n').filter(Boolean); } catch { names = []; }
+        return names.filter(n => !isHiddenSession(n) && !/^(run-|hands$)/.test(n) && !restrictedGuard.mentionsRestricted(n))
+            .map(n => { let cwd = ''; try { cwd = getSessionPwd(n) || ''; } catch { cwd = ''; } return { name: n, cwd }; })
+            .filter(x => !restrictedGuard.mentionsRestricted(x.cwd));
+    },
+    projects: () => projectRegistry.list().filter(p => p.known && !restrictedGuard.mentionsRestricted(p.project + ' ' + p.cwd)).map(p => ({ name: p.project, cwd: p.cwd })),
+});
 talk.configure({
     background: () => [...teslaHands.list(), ...promptWriter.list()],
-    backgroundText: () => [teslaHands.describe(), promptWriter.describe()].filter(Boolean).join('; '),
+    backgroundText: () => [plans.describe(), teslaHands.describe(), promptWriter.describe()].filter(Boolean).join('; '),
     cleanFiles: (f) => promptWriter.cleanFiles(f),
     // The files the watched session just wrote, so "abrilo" has a path (lib/pcDirect.js).
     sessionFiles: (session) => pcDirect.filesLine(session),
@@ -2560,6 +2574,8 @@ const S = {
     get path() { return path; },
     get permissionQueue() { return permissionQueue; },
     get pickInitialSession() { return pickInitialSession; },
+    get plans() { return plans; },
+    get planPilot() { return planPilot; },
     get plainBrief() { return plainBrief; },
     get projectRegistry() { return projectRegistry; },
     get projector() { return projector; },
@@ -2799,6 +2815,73 @@ function startSessionLog(loops) {
     }
 }
 
+// Plan tracker (2026-10-25): steps of his approved plan marked done from a
+// commit or a file, never from a session's word (lib/planTracker.js).
+function startPlanTracker(loops) {
+    try {
+        const planTracker = require('./lib/planTracker');
+        planTracker.configure({
+            plans,
+            cwdOf: (session) => getSessionPwd(session),
+            projectsRoot: projectRegistry.PROJECTS_ROOT,
+            // argv git, the same two rules as gitCwd(): an allowed root and never restricted.
+            commits: (cwd, sinceMs) => {
+                if (!require('./lib/dispatcher/tmuxAdapter').isCwdAllowed(cwd) || restrictedGuard.mentionsRestricted(cwd)) return [];
+                const out = execFileSync('git', ['log', `--since=@${Math.floor(sinceMs / 1000)}`, '--format=%H%x09%ct%x09%s', '-n', '50'],
+                    { encoding: 'utf8', cwd, stdio: ['pipe', 'pipe', 'ignore'], timeout: 8000 });
+                return out.split('\n').filter(Boolean).map(l => { const [hash, ct, ...rest] = l.split('\t'); return { hash, at: Number(ct) * 1000, subject: rest.join('\t') }; });
+            },
+            say: (line) => {
+                talk.announce(line);
+                if (!talk.someoneWatching()) {
+                    require('./lib/dispatcher/ntfyPush').send({ title: 'Tesla', body: String(line).slice(0, 300), tags: ['memo'] })
+                        .catch(e => console.warn('[planTracker] ntfy:', e.message));
+                }
+            },
+        });
+        loops['plan-tracker'] = {
+            start: () => planTracker.start(),
+            stop: () => planTracker.stop(),
+            runNow: () => planTracker.tick(),
+            status: () => ({ running: planTracker.running() }),
+        };
+        if (automations.bootLoop('plan-tracker', loops['plan-tracker'].start)) console.log('[plan-tracker] checking plan steps against commits and files');
+        // Autopilot (phase 4): types each step into its session, stops for him at
+        // every risk, and leaves "done" to the tracker above.
+        planPilot.configure({
+            plans,
+            exists: (n) => sessionExists(n),
+            working: (n) => { const st = paneWorkState(n); return !st.gone && !!st.working; },
+            waiting: (n) => actions.permissionWaiting(n),
+            send: (n, text) => sendToTmuxSession(text, n),
+            say: (line, opts) => {
+                talk.announce(line, opts);
+                if (!talk.someoneWatching() || (opts && opts.urgent)) {
+                    require('./lib/dispatcher/ntfyPush').send({ title: 'Tesla piloto', body: String(line).slice(0, 300), tags: ['airplane'], priority: opts && opts.urgent ? 5 : 3 })
+                        .catch(e => console.warn('[planPilot] ntfy:', e.message));
+                }
+            },
+        });
+        loops['plan-pilot'] = {
+            start: () => planPilot.start(),
+            stop: () => planPilot.stop(),
+            runNow: () => planPilot.tick(),
+            status: () => ({ running: planPilot.running() }),
+        };
+        if (automations.bootLoop('plan-pilot', loops['plan-pilot'].start)) console.log('[plan-pilot] ready; flies only a plan he switched on');
+        // The command center's read (phase 5): the same three looks the pilot uses.
+        require('./lib/planCenter').configure({
+            plans, pilot: planPilot,
+            exists: (n) => sessionExists(n),
+            working: (n) => { const st = paneWorkState(n); return !st.gone && !!st.working; },
+            waiting: (n) => actions.permissionWaiting(n),
+            pending: () => [...permissionQueue.values()].filter(p => p.status === 'pending' && !p.decision),
+        });
+    } catch (e) {
+        console.log('[plan-tracker] failed to start: ' + e.message);
+    }
+}
+
 
 // ── The clock: named jobs that fire at a time of day ────────────────────
 // Registration is here, in the listen callback, so a job can never fire
@@ -2960,6 +3043,7 @@ server.listen(PORT, BIND_HOST, () => {
     // switches and reads them.
     const loops = {};
     startSessionLog(loops);
+    startPlanTracker(loops);
     startScheduler(loops);
     startDispatcher(loops);
     automations.configure({ loops });
