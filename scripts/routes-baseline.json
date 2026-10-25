@@ -140,6 +140,8 @@
   "/api/talk/status",
   "/api/termimg",
   "/api/terminal/key",
+  "/api/tesla/center",
+  "/api/tesla/plans",
   "/api/tmux/pane",
   "/api/tower/",
   "/api/tower/activity/clear",

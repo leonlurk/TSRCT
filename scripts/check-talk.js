@@ -878,8 +878,39 @@ console.log('[check-talk] review 2026-10-05');
     {
         const tsrc = require('fs').readFileSync(path.join(ROOT, 'lib', 'talk.js'), 'utf8');
         const ra = tsrc.slice(tsrc.indexOf('async function runAction('), tsrc.indexOf('function sentSentence('));
-        if (!/followSent\(r\.value\)/.test(ra)) fail('a send to a session nobody watches starts watching it, so its answer comes back by itself'); else ok();
+        if (!/follow\(followTarget\(r\.action, r\.value\)\)/.test(ra)) fail('what she touches is what she watches, so its answer comes back by itself'); else ok();
         if (!/Te aviso cuando conteste/.test(tsrc)) fail('and she says she will tell him the answer'); else ok();
+    }
+    // 2026-10-24: no session picker any more. She follows the session she last
+    // TOUCHED (wrote to, or opened), even over one she was watching; one she only
+    // mentioned, or a batch of several, moves nothing.
+    {
+        const ft = talk._followTarget || (() => 'missing');
+        const cases = [
+            [['say_to_session', { sent: true, session: 'harbor' }], 'harbor', 'a send she made'],
+            [['say_to_session', { sent: false, session: 'harbor' }], '', 'a send that did not arrive'],
+            [['say_to_sessions', { sent: [{ ok: true, session: 'a' }, { ok: true, session: 'b' }] }], '', 'a send to several'],
+            [['open_session', { opened: [{ session: 'tsrct-2', ok: true }] }], 'tsrct-2', 'a session she opened'],
+            [['open_session', { opened: [{ session: 'x', ok: true }, { session: 'y', ok: true }] }], '', 'a batch she opened'],
+            [['open_session', { opened: [{ session: 'x', ok: false }] }], '', 'a session that did not open'],
+            [['reopen_sessions', { opened: [{ session: 'notes', ok: true }] }], 'notes', 'a session she reopened'],
+            [['play_music', { ok: true }], '', 'anything else'],
+        ];
+        for (const [[name, v], want, what] of cases) {
+            const got = ft(name, v);
+            if (got !== want) fail(`followTarget: ${what} -> ${JSON.stringify(want)} (got ${JSON.stringify(got)})`); else ok();
+        }
+        const tsrc = require('fs').readFileSync(path.join(ROOT, 'lib', 'talk.js'), 'utf8');
+        const fb = tsrc.slice(tsrc.indexOf('function follow('), tsrc.indexOf('function sentSentence('));
+        if (/state\.session && state\.watch\) return/.test(fb)) fail('following must not refuse because another session is watched'); else ok();
+        // "que hace esta sesion" still means the one on his screen: the page sends it
+        // as `home`, and she LOOKS at it for that turn without watching it (the rule:
+        // no news from a session she did not touch).
+        const route = require('fs').readFileSync(path.join(ROOT, 'lib', 'routes', 'tesla.js'), 'utf8');
+        if (!/talk\.ask\(\{[^}]*home: p\.home/.test(route)) fail('the say route passes the on-screen session as home'); else ok();
+        const at = tsrc.slice(tsrc.indexOf('async function askTurn('), tsrc.indexOf('async function decideTurn('));
+        if (!/if \(!target && home\)/.test(at)) fail('askTurn looks at the on-screen session only when it watches none'); else ok();
+        if (/attach\(\{ session: home/.test(at) || /openLight\(home/.test(at)) fail('the on-screen session is looked at, never watched'); else ok();
     }
     // Pending since review #6 (2026-10-08 22:52): "okay le puedes pedir hasta" was
     // sent after the 2.5 s pause while he was still thinking; he said it all again

@@ -19,7 +19,13 @@
  *   [o] listening    strip: state + the last thing said
  *   [~] thinking
  *   [)] speaking
- *   [...] expands the panel: which session, the switches, the log, a text box
+ *   [...] expands the panel: Tesla herself (tesla-sphere.js), the log, a text box
+ *
+ * NO PICKER, NO SWITCHES (2026-10-24). In 20 days he pointed the orb at a session
+ * by hand 94 times and never touched watch, live or relay: Tesla now follows the
+ * session she last touched (lib/follow.js) and looks at the one on his screen
+ * when he says "esta" (sent as `home`). Typing into a session is voice only
+ * ("mandale a X que ..."), and she still confirms first.
  *
  * THE CONVERSATION IS NOT HERE. It lives in the server (lib/talk.js), which owns
  * the model, the memory policy and the session watcher; this file is a mouth, a
@@ -93,8 +99,6 @@
         since: 0,
         queue: [],          // spoken lines taken from the server, not yet said
         expanded: false,
-        picking: false,    // the session list is open
-        home: '',          // the session the rest of TSRCT is showing
         name: 'Tesla',
         // What it JUST said, shown beside the orb for a few seconds and then
         // gone. The permanent strip that used to live here read as a disabled
@@ -254,7 +258,9 @@
         // Built here rather than in index.html for the reason the mobile BRIEF
         // button did nothing for weeks: markup that lives in one layout's
         // builder exists only in that layout. This one has to exist everywhere.
-        d.innerHTML = '<div class="asst-panel hidden" id="asst-panel"></div>'
+        // The sphere is its own layer: the body below it is redrawn on every poll,
+        // and a WebGL canvas redrawn that often would start over each time.
+        d.innerHTML = '<div class="asst-panel hidden" id="asst-panel"><div class="asst-sphere" id="asst-sphere"></div><div class="asst-body" id="asst-body"></div></div>'
             + '<div class="asst-cap hidden" id="asst-cap" data-act="asst-expand"></div>'
             + '<button class="asst-orb" id="asst-orb" data-act="asst-toggle"></button>';
         document.body.appendChild(d);
@@ -374,43 +380,6 @@
         return { cls: '', glyph: '[·]', label: 'off' };
     }
 
-    // The target: what it is pointed at, and a list to change it.
-    //
-    // This was a native <select>. On a phone that is an OS sheet in the OS's own
-    // blue, and on desktop a grey listbox — the one thing in TSRCT that did not
-    // look like TSRCT. It is now a row that opens a list drawn in the palette,
-    // and choosing is QUIET: the chosen row lights up and that is the whole
-    // feedback. It used to announce itself in the log, which read like a
-    // commitment for something that is only "look over there".
-    function renderTarget() {
-        if (!talk.picking) {
-            return `
-                <button class="asst-target" data-act="asst-pick" title="Which session it is pointed at">
-                    <span class="asst-target-k">${talk.session ? (talk.watch ? 'watching' : 'attached') : 'talking'}</span>
-                    <span class="asst-target-v ${talk.session ? '' : 'none'}">${esc(talk.session || 'no session')}</span>
-                    <span class="asst-target-c">[v]</span>
-                </button>`;
-        }
-        const row = (value, label, extra) => `
-            <button class="asst-opt ${value === talk.session ? 'sel' : ''}" data-act="asst-choose" data-session="${esc(value)}">
-                <span class="asst-opt-m">${value === talk.session ? '>' : ' '}</span>
-                <span class="asst-opt-n">${esc(label)}</span>
-                ${extra || ''}
-            </button>`;
-        return `
-            <div class="asst-pick">
-                <div class="asst-pick-h">
-                    <span>point it at</span>
-                    <span class="asst-gap"></span>
-                    <button class="asst-btn tiny" data-act="asst-pick">[x]</button>
-                </div>
-                <div class="asst-pick-l">
-                    ${row('', 'no session - just talk')}
-                    ${talk.sessions.map(sn => row(sn, sn, sn === talk.home ? '<span class="asst-opt-t">on screen</span>' : '')).join('')}
-                </div>
-            </div>`;
-    }
-
     function renderPanel() {
         const gate = CFG.gate && CFG.gate();
         if (gate) return gate;
@@ -420,31 +389,18 @@
                     : l.who === 'watch' ? (talk.session || 'session') : talk.name.toLowerCase();
             return `<div class="asst-line ${esc(l.who)}"><span class="asst-who">${esc(who)}</span><span class="asst-text">${esc(l.text)}</span></div>`;
         }).join('');
-        // The three switches, as switches: a name, what it does in his words, and
-        // a state you can read without hovering anything. Three identical buttons
-        // in a row said nothing about which were on.
-        const sw = (act, on, label, what, cls) => `
-            <button class="asst-sw ${on ? 'on' : ''} ${cls || ''}" data-act="${act}">
-                <span class="asst-sw-d">${on ? '[#]' : '[ ]'}</span>
-                <span class="asst-sw-b"><span class="asst-sw-n">${label}</span><span class="asst-sw-w">${what}</span></span>
-            </button>`;
         return `
             <div class="asst-head">
                 <span class="asst-name">${esc(talk.name.toUpperCase())}</span>
-                <span class="asst-sub">${esc(stateOf().label)}${talk.warm ? '' : (talk.on ? ' - waking up' : '')}</span>
+                <span class="asst-sub">${esc(stateOf().label)}${talk.warm ? '' : (talk.on ? ' - waking up' : '')}${talk.session && talk.watch ? ` · following ${esc(talk.session)}` : ''}</span>
                 <span class="asst-gap"></span>
                 ${CFG.headExtra ? CFG.headExtra() : ''}
                 ${playing() ? '<button class="asst-btn" data-act="asst-hush" title="Stop talking - the conversation stays on">[shh]</button>' : ''}
                 <button class="asst-btn" data-act="asst-end" title="Turn it off and give the memory back">[off]</button>
+                ${window.TeslaFull ? '<button class="asst-btn" data-act="asst-full" title="Full screen - Esc to come back">[full]</button>' : ''}
                 <button class="asst-btn" data-act="asst-collapse" title="Fold the panel - the conversation stays on">[-]</button>
             </div>
             ${talk.why ? `<div class="asst-why">${esc(talk.why)}</div>` : ''}
-            ${renderTarget()}
-            <div class="asst-sws">
-                ${sw('asst-relay', talk.toClaude, talk.toClaude ? 'typing into the session' : 'side by side', talk.toClaude ? 'what you say is sent as a prompt' : 'it listens, the session hears nothing', 'relay')}
-                ${sw('asst-watch', talk.watch, 'watch', 'tell me when it finishes')}
-                ${sw('asst-live', talk.live, 'live', 'and while it works')}
-            </div>
             ${renderJobs()}
             <div class="asst-log">${log || '<div class="asst-dim">say something, or type it below</div>'}</div>
             ${talk.files.length ? `<div class="asst-files">${talk.files.map((f, i) => `
@@ -646,7 +602,9 @@
         cap.className = `asst-cap ${showCap ? '' : 'hidden'} ${st.cls} ${talk.caption && talk.caption.typing ? 'typing' : ''}`.replace(/\s+/g, ' ').trim();
         if (showCap) cap.innerHTML = renderCaption();
         panel.classList.toggle('hidden', !talk.expanded);
+        sphereFor(panel, st.cls);
         if (talk.expanded) {
+            const body = panel.querySelector('#asst-body');
             // Keep the caret: a poll every three and a half seconds must not
             // take the sentence he is typing with it.
             // A field the app's gate drew (a pair code) is never redrawn under his thumb.
@@ -659,7 +617,7 @@
             // scrolleando hacia abajo"). Follow the bottom only if he was there.
             const oldLog = panel.querySelector('.asst-log');
             const keep = oldLog ? { top: oldLog.scrollTop, atBottom: oldLog.scrollHeight - oldLog.scrollTop - oldLog.clientHeight < 40 } : null;
-            panel.innerHTML = renderPanel();
+            body.innerHTML = renderPanel();
             if (typing) {
                 const box = panel.querySelector('[data-act="asst-input"]');
                 if (box) { box.focus(); box.setSelectionRange(box.value.length, box.value.length); }
@@ -683,6 +641,28 @@
         if (talk.lines.length > 40) talk.lines = talk.lines.slice(-40);
     }
 
+    // Tesla herself, at the top of the panel: mounted the first time the panel
+    // opens (no GL context for an orb nobody opens), running only while it is open.
+    let sphere = null;
+    const SPHERE_MODE = { think: 'think', speak: 'speak', listen: 'listen' };
+    function sphereFor(panel, cls) {
+        const open = talk.expanded && !(CFG.gate && CFG.gate()) && CFG.sphere !== false;
+        const el = panel.querySelector('#asst-sphere');
+        if (el) el.classList.toggle('hidden', !open);
+        if (!sphere && open && el && window.TeslaSphere) sphere = window.TeslaSphere.mount(el);
+        if (!sphere) return;
+        sphere.state(SPHERE_MODE[cls] || 'idle');
+        sphere.run(open);
+    }
+
+    // The session on his screen right now: what "esta sesion" means to her.
+    function onScreen() {
+        try {
+            const cur = typeof window.getCurrentTargetSession === 'function' ? window.getCurrentTargetSession() : '';
+            return cur && (!talk.sessions.length || talk.sessions.includes(cur)) ? cur : '';
+        } catch (e) { return ''; }
+    }
+
     // ── the conversation ─────────────────────────────────────────────────────
     let sessionsAt = 0;
     async function loadSessions() {
@@ -693,12 +673,7 @@
             const d = await r.json().catch(() => ({}));
             const list = Array.isArray(d) ? d : (d.sessions || []);
             talk.sessions = list.map(s => (typeof s === 'string' ? s : s.name)).filter(Boolean);
-            if (typeof window.getCurrentTargetSession === 'function') {
-                const cur = window.getCurrentTargetSession();
-                talk.home = (cur && talk.sessions.includes(cur)) ? cur : '';
-                if (!talk.session && talk.home) talk.session = talk.home;
-            }
-        } catch (e) { /* the picker just offers "no session" */ }
+        } catch (e) { /* onScreen() then takes the screen's word for it */ }
     }
 
     async function start(opts) {
@@ -934,11 +909,8 @@
         // detaches the session mid-conversation, and a panel that goes on
         // showing the session it no longer has is a panel that lies.
         let changed = false;
-        // Not for a few seconds after he changed something here: this answer may
-        // have left the server before his change arrived.
-        const fresh = Date.now() - attachAt < 5000;
-        const sync = (k, v) => { if (!fresh && v !== undefined && talk[k] !== v) { talk[k] = v; changed = true; } };
-        // A session opened a minute ago has to be in the picker.
+        const sync = (k, v) => { if (v !== undefined && talk[k] !== v) { talk[k] = v; changed = true; } };
+        // A session opened a minute ago may be the one on his screen.
         if (Date.now() - sessionsAt > 20000) { sessionsAt = Date.now(); loadSessions().then(() => { if (talk.expanded) render(); }).catch(() => {}); }
         sync('session', d.session === undefined ? undefined : (d.session || ''));
         sync('watch', d.watch === undefined ? undefined : !!d.watch);
@@ -1273,7 +1245,7 @@
                 // `where`: a view he is inside can say so (the VR headset sets
                 // body[data-tesla-where="vr"], src/js/remote-desktop.js), and the
                 // brain reads "abri..." as his PC there (lib/haikuBrain.js).
-                body: JSON.stringify({ text, via: via || 'voice', session: talk.session, toClaude: talk.toClaude, files: talk.files.map(f => f.path),
+                body: JSON.stringify({ text, via: via || 'voice', session: talk.session, home: onScreen(), toClaude: talk.toClaude, files: talk.files.map(f => f.path),
                     where: (document.body && document.body.dataset.teslaWhere) || '' }),
             });
             if (refused(r)) return;
@@ -1315,40 +1287,6 @@
             render();
             resume();
         }
-    }
-
-    // A choice in the panel takes effect NOW, and says so. It used to be unclear
-    // when it did: the picker kept the focus, which froze the panel's redraw; a
-    // status poll already in flight could put the old session back; and a
-    // refusal from the server was never read, so the panel showed a session the
-    // server had not taken.
-    let attachAt = 0;
-    async function attach(patch) {
-        logEvent('switch', JSON.stringify(patch).slice(0, 200));
-        const before = { session: talk.session, watch: talk.watch, toClaude: talk.toClaude, live: talk.live };
-        Object.assign(talk, patch);
-        attachAt = Date.now();
-        render();
-        if (!talk.on) return;           // off: it is sent when he starts it
-        try {
-            const r = await fetch(api('/talk/attach'), {
-                method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }),
-                body: JSON.stringify({ session: talk.session, watch: talk.watch, toClaude: talk.toClaude, live: talk.live }),
-            });
-            if (refused(r)) return;
-            const d = await r.json().catch(() => ({}));
-            if (!r.ok || !d.ok) {
-                Object.assign(talk, before);
-                setWhy(shortWhy(d.why || d.error) || 'that change was not taken');
-            } else {
-                // The server's answer is the truth, not what was asked for.
-                talk.session = d.session || '';
-                talk.watch = !!d.watch; talk.toClaude = !!d.toClaude; talk.live = !!d.live;
-                setWhy('');
-            }
-        } catch (e) { Object.assign(talk, before); setWhy(shortWhy(e.message)); }
-        attachAt = Date.now();
-        render();
     }
 
     function sendDraft() {
@@ -1438,24 +1376,8 @@
             return;
         }
         if (act === 'asst-expand') { talk.expanded = true; render(); return; }
-        if (act === 'asst-pick') {
-            talk.picking = !talk.picking;
-            render();
-            // The list is refreshed every 20s in the background; opening it must
-            // not show a session that died or miss one that was just opened.
-            if (talk.picking) loadSessions().then(() => { if (talk.picking) render(); }).catch(() => {});
-            return;
-        }
-        if (act === 'asst-choose') {
-            const next = el.dataset.session || '';
-            talk.picking = false;
-            // Changing session disarms the relay: what he armed for one session
-            // is not permission for the next one.
-            if (next !== talk.session) attach({ session: next, toClaude: false });
-            else render();
-            return;
-        }
         if (act === 'asst-collapse') { talk.expanded = false; render(); return; }
+        if (act === 'asst-full') { talk.expanded = false; render(); if (window.TeslaFull) window.TeslaFull.open(); return; }
         if (act === 'asst-attach') { pickFiles(); return; }
         if (act === 'asst-unfile') { talk.files.splice(Number(el.dataset.i), 1); render(); return; }
         if (act === 'asst-job-start' || act === 'asst-job-drop') { jobOp(el.dataset.key, act === 'asst-job-start' ? 'start' : 'drop'); return; }
@@ -1470,17 +1392,6 @@
             } else listen();
             return;
         }
-        if (act === 'asst-relay') {
-            // Arming this types what he says into a live session, so it asks —
-            // once, per conversation. The pair moves together: side by side
-            // without live is a conversation about a session that never speaks.
-            const on = !talk.toClaude;
-            if (on && !window.confirm(`Everything you say will be TYPED INTO ${talk.session || 'the selected session'} as a prompt.\n\nArm it?`)) return;
-            attach({ toClaude: on, live: !on ? true : talk.live });
-            return;
-        }
-        if (act === 'asst-watch') { attach({ watch: !talk.watch }); return; }
-        if (act === 'asst-live') { attach({ live: !talk.live }); return; }
     }
 
     function onChange() { /* nothing changes without a click any more */ }
@@ -1569,9 +1480,10 @@
     }
 
     window.Assistant = {
-        start, stop, ask, attach, render, adopt, halt, setWhy,
+        start, stop, ask, render, adopt, halt, setWhy, hush,
         toggle: () => (talk.on ? stop('toggle') : start()),
         open: () => { talk.expanded = true; render(); },
-        state: () => ({ ...talk }),
+        // mode: idle / ready / listen / think / speak, as the orb shows it (tesla-full.js)
+        state: () => ({ ...talk, speaking: playing(), mode: stateOf().cls || 'idle' }),
     };
 })();

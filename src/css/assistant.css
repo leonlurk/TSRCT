@@ -2,10 +2,8 @@
    point: no backdrop, nothing that swallows a click meant for the terminal, and
    it sits in the corner of every room and every layout, phone included.
 
-   Palette from variables.css. The one deliberate colour decision here: ARMED
-   relay is amber, the same amber the rest of the app uses for "this is doing
-   something", because it is the only control in this dock with a side effect on
-   his machine. */
+   Palette from variables.css. Amber means "this is doing something" (thinking,
+   background work, a line typed into a session), as everywhere else in TSRCT. */
 
 .asst {
     position: fixed;
@@ -146,110 +144,20 @@
 .asst-foot { color: var(--text-muted); font-size: 0.54rem; letter-spacing: .3px; }
 
 .asst-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-/* ── the target row and its list ──────────────────────────────────────────── */
-/* This replaced a native <select>: on a phone that is the OS's own sheet in the
-   OS's own blue, and it was the one control in TSRCT that did not look like
-   TSRCT. Everything here is drawn from the palette. */
-.asst-target {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: rgba(0, 0, 0, 0.35);
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 0.66rem;
-    text-align: left;
-    cursor: pointer;
-}
-.asst-target:hover { border-color: var(--neon); }
-.asst-target-k {
-    color: var(--text-muted);
-    font-size: 0.52rem;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-}
-.asst-target-v { flex: 1 1 auto; color: var(--neon); font-size: 0.74rem; overflow-wrap: anywhere; }
-.asst-target-v.none { color: var(--text-muted); }
-.asst-target-c { color: var(--text-muted); font-size: 0.6rem; }
-
-.asst-pick {
-    border: 1px solid var(--neon);
-    border-radius: var(--radius);
-    background: var(--bg-darker);
-    overflow: hidden;
-    /* Never shrink: with overflow hidden a flex child's minimum height is 0, so
-       the panel's height cap squeezed THIS box to two rows and the rest of the
-       sessions were cut off with no scrollbar. The log gives way instead. */
+/* ── Tesla herself (src/js/tesla-sphere.js) ─────────────────────────────────
+   The top of the panel is hers: a sphere that breathes, listens, thinks and
+   speaks. Its own layer, so the redraw of the log below never restarts it. */
+.asst-sphere {
+    position: relative;
     flex: 0 0 auto;
-}
-.asst-pick-h {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 6px 9px;
+    height: 150px;
+    margin: -4px -4px 0;
     border-bottom: 1px solid var(--border);
-    color: var(--text-muted);
-    font-size: 0.52rem;
-    letter-spacing: 1.4px;
-    text-transform: uppercase;
+    background: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.07) 0%, transparent 70%);
 }
-.asst-pick-l { max-height: min(40vh, 300px); overflow-y: auto; }
-.asst-opt {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    width: 100%;
-    padding: 9px 10px;
-    border: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    background: none;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    text-align: left;
-    cursor: pointer;
-}
-.asst-opt:last-child { border-bottom: 0; }
-.asst-opt:hover { background: rgba(0, 255, 65, 0.06); }
-.asst-opt.sel { background: rgba(0, 255, 65, 0.09); color: var(--neon); }
-.asst-opt-m { width: 0.7em; color: var(--neon); }
-.asst-opt-n { flex: 1 1 auto; overflow-wrap: anywhere; }
-.asst-opt-t { color: var(--cyan); font-size: 0.5rem; letter-spacing: 1px; text-transform: uppercase; }
-
-/* ── the switches ─────────────────────────────────────────────────────────── */
-/* Three identical buttons in a row said nothing about which were on, or what
-   any of them would do. Each one now carries its own sentence. */
-.asst-sws { display: flex; flex-direction: column; gap: 5px; }
-.asst-sw {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    width: 100%;
-    padding: 7px 9px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: rgba(0, 0, 0, 0.25);
-    color: var(--text-dim);
-    font-family: var(--mono);
-    text-align: left;
-    cursor: pointer;
-}
-.asst-sw:hover { border-color: var(--text-muted); }
-.asst-sw.on { border-color: var(--neon); color: var(--text); background: rgba(0, 255, 65, 0.06); }
-.asst-sw-d { color: var(--text-muted); font-size: 0.62rem; line-height: 1.5; }
-.asst-sw.on .asst-sw-d { color: var(--neon); }
-.asst-sw-b { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.asst-sw-n { font-size: 0.64rem; letter-spacing: 1px; text-transform: uppercase; }
-.asst-sw-w { color: var(--text-muted); font-size: 0.58rem; line-height: 1.4; }
-/* ARMED relay is amber, the same amber the rest of the app uses for "this is
-   doing something": it is the only control here with a side effect. */
-.asst-sw.relay.on { border-color: var(--amber); color: var(--amber); background: rgba(255, 176, 0, 0.07); }
-.asst-sw.relay.on .asst-sw-d { color: var(--amber); }
-.asst-sw.relay.on .asst-sw-w { color: rgba(255, 176, 0, 0.75); }
+.asst-sphere.hidden, .asst-sphere.lost { display: none; }
+.asst-sphere-c { display: block; width: 100%; height: 100%; }
+.asst-body { display: flex; flex-direction: column; gap: 7px; min-height: 0; }
 
 .asst-in {
     flex: 1 1 120px;
@@ -281,12 +189,6 @@
 .asst-btn:hover { border-color: var(--neon); color: var(--neon); }
 .asst-btn.on { border-color: var(--neon); color: var(--neon); background: rgba(0, 255, 65, 0.08); }
 .asst-btn:disabled { opacity: .35; cursor: default; }
-/* Armed relay is not a neutral toggle: it types into a live session. */
-.asst-btn.relay.armed {
-    border-color: var(--amber);
-    color: var(--amber);
-    background: rgba(245, 166, 35, 0.10);
-}
 
 /* ── background work (2026-09-24) ────────────────────────────────────────
    One row per job: the model it chose, what it is for, the clock, and its
@@ -395,12 +297,7 @@
     .asst-orb { width: 52px; height: 52px; font-size: 0.86rem; }
     .asst-panel { width: calc(100vw - 24px); max-height: min(62vh, var(--asst-room, 100vh)); font-size: 0.7rem; }
     .asst-in { font-size: 0.78rem; padding: 8px; }
-    .asst-opt { padding: 11px 12px; font-size: 0.76rem; }
-    .asst-target { padding: 10px 11px; }
-    .asst-target-v { font-size: 0.8rem; }
-    .asst-sw { padding: 9px 10px; }
-    .asst-sw-n { font-size: 0.7rem; }
-    .asst-sw-w { font-size: 0.62rem; }
+    .asst-sphere { height: 120px; }
     .asst-btn { font-size: 0.62rem; padding: 5px 9px; }
     .asst-cap { width: calc(100vw - 24px); padding: 11px 13px; }
     .asst-cap-text { font-size: 0.86rem; }

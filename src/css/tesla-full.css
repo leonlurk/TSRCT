@@ -1,0 +1,232 @@
+/* tesla-full.css — Tesla full screen (src/js/tesla-full.js).
+   Her sphere big in the middle, what he said above it, what she says below it.
+   The left column is his plan (tesla-plan.js); the two right zones are kept
+   for the live command center. Palette from variables.css. */
+
+.tf {
+    position: fixed;
+    inset: 0;
+    z-index: 9450;              /* over the orb's dock (9400), under the morning overlay (9500) */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: calc(14px + env(safe-area-inset-top, 0px)) calc(18px + env(safe-area-inset-right, 0px))
+             calc(16px + env(safe-area-inset-bottom, 0px)) calc(18px + env(safe-area-inset-left, 0px));
+    background: radial-gradient(ellipse at 50% 45%, rgba(0, 212, 255, 0.06) 0%, transparent 60%), var(--bg);   /* solid: --bg-darker lets the page show through on a phone */
+    font-family: var(--mono);
+    color: var(--text);
+}
+.tf.hidden { display: none; }
+body.tf-open .asst { display: none; }
+
+.tf-top { display: flex; align-items: baseline; gap: 10px; }
+.tf-name { font-weight: 700; letter-spacing: 4px; color: var(--neon); font-size: 0.9rem; }
+.tf-sub { color: var(--text-muted); font-size: 0.62rem; letter-spacing: 1px; text-transform: uppercase; }
+.tf-gap { flex: 1 1 auto; }
+
+.tf-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.2fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "plan stage ne" "plan stage se";
+    gap: 14px;
+}
+.tf-zone-plan { grid-area: plan; }
+.tf-zone-ne { grid-area: ne; }
+.tf-zone-se { grid-area: se; }
+.tf-zone { min-width: 0; overflow: auto; }
+.tf-stage {
+    grid-area: stage;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.tf-sphere { position: relative; width: 100%; flex: 1 1 auto; min-height: 220px; max-height: 70vh; }
+.tf-sphere canvas { display: block; width: 100%; height: 100%; }
+.tf-heard {
+    min-height: 1.5em;
+    max-width: 60ch;
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+/* What she says is white, as in the orb's caption: the only white text in TSRCT. */
+.tf-say {
+    min-height: 1.6em;
+    max-width: 46ch;
+    color: #eef4ee;
+    font-size: clamp(0.95rem, 1.8vw, 1.35rem);
+    line-height: 1.5;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+.tf-say.typing::after { content: '▌'; color: var(--neon); animation: tf-caret .7s steps(1) infinite; }
+@keyframes tf-caret { 50% { opacity: 0; } }
+.tf[data-mode="think"] .tf-name, .tf[data-mode="think"] .tf-say.typing::after { color: var(--amber); }
+.tf[data-mode="listen"] .tf-name { color: var(--cyan); }
+
+.tf-row { display: flex; gap: 8px; max-width: 760px; width: 100%; margin: 0 auto; }
+.tf-in {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+}
+.tf-in:focus { outline: none; border-color: var(--cyan); }
+.tf-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+.tf-btn:hover { border-color: var(--neon); color: var(--neon); }
+
+/* Phone: one column, the stage first, the zones under it. */
+/* ── his plan, the left column (tesla-plan.js) ── */
+.tp { display: flex; flex-direction: column; gap: 8px; font-size: 0.7rem; }
+.tp-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.tp-label { color: var(--neon); letter-spacing: 3px; font-weight: 700; }
+.tp-pick { flex: 1 1 120px; min-width: 0; }
+.tp select, .tp input[type="date"] {
+    background: var(--bg-card);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 0.64rem;
+    padding: 3px 4px;
+    min-width: 0;
+}
+.tp-body { display: flex; flex-direction: column; gap: 8px; }
+.tp-head { display: flex; gap: 6px; align-items: center; }
+.tp-head input[type="date"] { flex: none; width: 10.5em; }
+.tp-head select { flex: none; }
+.tp-in {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    padding: 4px 6px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+}
+.tp-in:hover { border-color: var(--border); }
+.tp-in:focus { outline: none; border-color: var(--cyan); background: var(--bg-card); }
+.tp-title { font-weight: 700; font-size: 0.8rem; }
+.tp-notes { resize: vertical; color: var(--text-dim); }
+.tp-state { color: var(--text-muted); font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; }
+.tp-state[data-state="deepening"] { color: var(--amber); }
+.tp-state[data-state="proposed"] { color: var(--cyan); }
+.tp-state[data-state="approved"] { color: var(--neon); }
+.tp-goal { border-left: 2px solid var(--border); padding-left: 8px; display: flex; flex-direction: column; gap: 4px; }
+.tp-line { display: flex; gap: 4px; align-items: center; }
+.tp-n { color: var(--neon); font-weight: 700; }
+.tp-gtext, .tp-stext { resize: none; line-height: 1.35; }
+.tp-gtext { font-weight: 700; }
+.tp-line:has(.tp-stext) { align-items: flex-start; }
+/* the new-goal box looks like a box: in the first real test it read as a caption */
+.tp-newgoal .tp-in { border-color: var(--border); background: var(--bg-card); }
+.tp-beyond { color: var(--text-muted); font-style: italic; padding-left: 14px; }
+.tp-step { display: flex; flex-direction: column; gap: 2px; padding: 4px 0 4px 6px; border-top: 1px solid var(--border); }
+.tp-step[data-st="done"] .tp-in { color: var(--text-muted); text-decoration: line-through; }
+.tp-step[data-st="blocked"] .tp-mark { color: var(--amber); }
+.tp-meta { display: flex; gap: 4px; flex-wrap: wrap; padding-left: 26px; }
+.tp-done { color: var(--text-dim); font-size: 0.64rem; margin-left: 22px; width: calc(100% - 22px); }
+.tp-ev { color: var(--neon); font-size: 0.6rem; padding-left: 28px; }
+.tp-check { display: flex; gap: 4px; align-items: center; padding-left: 26px; color: var(--text-muted); font-size: 0.6rem; }
+.tp-check .tp-in { font-size: 0.62rem; }
+.tp .tp-risk { color: var(--amber); border-color: var(--amber); }
+.tp-mark, .tp-x, .tp-add {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    cursor: pointer;
+    padding: 2px;
+}
+.tp-mark { flex: none; white-space: nowrap; min-width: 3ch; }
+.tp-mark:hover, .tp-add:hover { color: var(--neon); }
+.tp-x { opacity: .4; }
+.tp-x:hover { opacity: 1; color: var(--amber); }
+.tp-add { align-self: flex-start; padding-left: 26px; }
+.tp-pilot { display: flex; flex-direction: column; gap: 4px; padding: 6px; border: 1px solid var(--border); border-radius: var(--radius); }
+.tp-pilot.on { border-color: var(--amber); }
+.tp-pilot.on .tf-btn { color: var(--amber); border-color: var(--amber); }
+.tp-allow { font-size: 0.62rem; resize: vertical; border-color: var(--border); }
+.tp-hint { color: var(--text-muted); font-size: 0.6rem; }
+.tp-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.tp-actions .tf-btn:disabled { opacity: .35; cursor: default; }
+.tp-actions .tp-sure { color: var(--amber); border-color: var(--amber); }
+.tp-empty, .tp-note { color: var(--text-muted); }
+
+/* ── the command center, right side (tesla-center.js) ── */
+.tc { display: flex; flex-direction: column; gap: 8px; font-size: 0.66rem; }
+.tc-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.tc-label { color: var(--neon); letter-spacing: 3px; font-weight: 700; font-size: 0.7rem; }
+.tc-sub { color: var(--text-muted); font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; }
+.tc-pilot { color: var(--amber); font-weight: 700; }
+.tc-empty { color: var(--text-muted); }
+.tc-net { display: flex; align-items: flex-start; gap: 0; }
+.tc-map { flex: none; width: 140px; overflow: visible; }
+.tc-hub { fill: var(--bg-card); stroke: var(--cyan); stroke-width: 1.5; }
+.tc-hubt { fill: var(--cyan); font-family: var(--mono); font-size: 10px; font-weight: 700; text-anchor: middle; }
+.tc-link { fill: none; stroke: var(--border); stroke-width: 1.4; }
+.tc-link[data-st="working"] { stroke: var(--cyan); stroke-dasharray: 4 4; animation: tc-flow 1s linear infinite; }
+.tc-link[data-st="waiting"] { stroke: var(--amber); }
+.tc-link[data-st="idle"] { stroke: var(--text-muted); }
+.tc-link[data-st="gone"] { stroke-dasharray: 2 5; opacity: .5; }
+.tc-node { fill: var(--text-muted); }
+.tc-node[data-st="working"] { fill: var(--cyan); }
+.tc-node[data-st="waiting"] { fill: var(--amber); }
+@keyframes tc-flow { to { stroke-dashoffset: -8; } }
+.tc-list { flex: 1 1 auto; min-width: 0; padding-top: 5px; }
+.tc-s { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.tc-sl { display: flex; gap: 6px; align-items: baseline; }
+.tc-sn { color: var(--text); font-weight: 700; }
+.tc-st { color: var(--text-muted); font-size: 0.58rem; text-transform: uppercase; letter-spacing: 1px; }
+.tc-s[data-st="working"] .tc-st { color: var(--cyan); }
+.tc-s[data-st="waiting"] .tc-st { color: var(--amber); }
+.tc-sc { margin-left: auto; color: var(--text-dim); }
+.tc-step { color: var(--text-dim); font-size: 0.6rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tc-card { border: 1px solid var(--amber); border-radius: var(--radius); padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; }
+.tc-ct b { color: var(--amber); }
+.tc-cw { color: var(--text-dim); overflow-wrap: anywhere; }
+.tc-cb { display: flex; gap: 6px; }
+.tc-ev { display: flex; gap: 6px; align-items: baseline; padding: 2px 0; border-top: 1px solid var(--border); }
+.tc-et { color: var(--text-muted); flex: none; }
+.tc-ek { flex: none; color: var(--text-dim); }
+.tc-ev[data-k="done"] .tc-ek, .tc-ev[data-k="finished"] .tc-ek { color: var(--neon); }
+.tc-ev[data-k="blocked"] .tc-ek, .tc-ev[data-k="asked"] .tc-ek { color: var(--amber); }
+.tc-ex { color: var(--text-dim); overflow-wrap: anywhere; }
+.tc-ex b { color: var(--text); }
+@media (prefers-reduced-motion: reduce) { .tc-link[data-st="working"] { animation: none; } }
+
+@media (max-width: 700px) {
+    .tf-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "stage" "plan" "ne" "se"; overflow-y: auto; }
+    .tf-sphere { min-height: 46vh; }
+    .tf-zone:empty { display: none; }
+    .tf-in { font-size: 0.9rem; }
+}
+@media (prefers-reduced-motion: reduce) { .tf-say.typing::after { animation: none; } }

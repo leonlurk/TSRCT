@@ -51,9 +51,13 @@ brain.configure({ cwdOf: () => '/tmp' });
 ok(brain._whereFor('x').name === 'tesla-general', 'a folder outside PROJECTS gets the general brain');
 ok(brain._whereFor('').name === 'tesla-general', '"no session - just talk" is the general brain, in PROJECTS');
 brain.configure({ cwdOf: () => path.join(ROOT) });
-// The repo's own brain is named after the folder it was cloned into, not a fixed name.
-const OWN_BRAIN = 'tesla-' + path.basename(ROOT).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-ok(brain._whereFor('tsrct').name === OWN_BRAIN, `a project folder gets its own brain (${OWN_BRAIN}, got ${brain._whereFor('tsrct').name})`);
+// One brain for everything (2026-10-24): one per folder made every move to another
+// project a 7-10 s cold start, and the owner had to point the orb at a session by
+// hand (94 picks in 20 days). It looks at a session through the screen it is handed.
+const OWN_BRAIN = 'tesla-general';
+const reg0 = require(path.join(ROOT, 'lib/projectRegistry'));
+ok(brain._whereFor('tsrct').name === OWN_BRAIN && brain._whereFor('tsrct').cwd === reg0.PROJECTS_ROOT,
+    `a session in a project folder uses the one general brain, in PROJECTS (got ${brain._whereFor('tsrct').name})`);
 ok(brain.isHidden('tesla-tsrct') && !brain.isHidden('tsrct'), 'tesla-* is hidden, his sessions are not');
 
 // ── no ghosts: boot and closeAll kill every tesla-*, and only those ─────────
@@ -101,6 +105,23 @@ const body = (name) => { const i = src.indexOf(`function ${name}(`); return i < 
 ok(/assertNotRestricted/.test(body('askIn')), 'askIn() checks the prompt for SecretCo before typing it');
 ok(/assertNotRestricted/.test(body('start')), 'start() refuses an SecretCo folder before opening a session');
 ok(/--disallowedTools[^']*Bash[^']*Edit[^']*Write/.test(src), 'the hidden session cannot run, edit or write');
+// Light and fenced (2026-10-24): one question cost 72-83k tokens of context, most of
+// it Claude Code's own tools, MCP servers, skills and the owner's hooks; and the
+// general brain, opened in PROJECTS with Read and Grep, had no rule keeping it out
+// of a restricted project's folder.
+{
+    const launch = typeof brain._launch === 'function' ? brain._launch('00000000-0000-4000-8000-000000000000') : '';
+    for (const flag of ['--tools Read,Grep,Glob', '--strict-mcp-config', '--disable-slash-commands', '--setting-sources local', '--permission-mode default'])
+        ok(launch.includes(flag), `the brain starts with ${flag}`);
+    const m = /--settings (\S+)/.exec(launch);
+    let deny = [];
+    try { deny = JSON.parse(fs.readFileSync(m[1], 'utf8')).permissions.deny; } catch { deny = []; }
+    const root = require(path.join(ROOT, 'lib/projectRegistry')).PROJECTS_ROOT;
+    const name = require(path.join(ROOT, 'lib/dispatcher/restrictedGuard')).NAMES[0];
+    const glob = [...name].map(c => /[a-z]/i.test(c) ? `[${c.toUpperCase()}${c.toLowerCase()}]` : c).join('');
+    ok(deny.some(r => r.startsWith(`Read(/${root}/**/*${glob}*`)), 'its settings deny every restricted path under PROJECTS');
+    ok(deny.some(r => r.includes('/.claude/projects/')), 'and in the session transcripts');
+}
 const server = require('./serverSource')();
 ok(/isHiddenSession = \(name\) => isRoSession\(name\) \|\| String\(name \|\| ''\)\.startsWith\('tesla-'\)/.test(server), 'server.js hides tesla-* sessions');
 
@@ -380,7 +401,54 @@ async function notFoundChecks() {
     ok(Date.now() - t0 < 3000, `a missing claude command gives up before the timeout (${Date.now() - t0} ms)`);
 }
 
-sweepDone.then(receiptChecks).then(promptChecks).then(spawnChecks).then(handoffChecks).then(restrictedPoisonChecks).then(notFoundChecks).catch(e => ok(false, `threw: ${e.stack}`)).then(finish);
+// ── a heavy brain is replaced in the background, with the thread ───────────
+// One brain all day would grow without end: every question carries a screen and
+// context. Past the budget a fresh one is started BEHIND it (no cold wait for him),
+// the next question goes to the fresh one with his last turns, and the old one goes.
+async function rotateChecks() {
+    const sessionSpawn = require(path.join(ROOT, 'lib/sessionSpawn.js'));
+    const real = { create: sessionSpawn.createPrimedSession, paste: sessionSpawn.pasteIntoPane };
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'check-rotate-'));
+    fs.mkdirSync(path.join(dir, 'proj'));
+    const ids = new Map(), live = new Set(), killed = [], prompts = [];
+    let used = 70000, typedInto = '';
+    sessionSpawn.createPrimedSession = async ({ name, command }) => { ids.set(name, /--session-id (\S+)/.exec(command)[1]); live.add(name); return { ok: true }; };
+    sessionSpawn.pasteIntoPane = (name, p) => { typedInto = name; prompts.push({ name, p }); return { success: true }; };
+    const tmux = (args) => {
+        const name = String(args[2] || '').replace(/^=/, '');
+        if (args[0] === 'has-session') { if (live.has(name)) return ''; throw new Error('no'); }
+        if (args[0] === 'kill-session') { live.delete(name); killed.push(name); return ''; }
+        if (args[0] === 'send-keys' && args.includes('Enter')) {
+            const f = path.join(dir, 'proj', `${ids.get(typedInto)}.jsonl`);
+            fs.appendFileSync(f, row({ type: 'user', message: { content: 'q' } })
+                + say('r' + prompts.length, 'end_turn', 'Dale.', { message: { id: 'r' + prompts.length, stop_reason: 'end_turn', content: [{ type: 'text', text: 'Dale.' }], usage: { input_tokens: 10, cache_read_input_tokens: used } } }));
+            return '';
+        }
+        return '';
+    };
+    brain.configure({ tmux, cwdOf: () => ROOT, projectsDir: dir, receiptMs: 300, ctxBudget: 50000 });
+    try {
+        brain._forget();
+        await brain.decide({ text: 'abrime una sesion en harbor', session: 'tsrct' });
+        const first = prompts[0] && prompts[0].name;
+        used = 9000;
+        await new Promise(r => setTimeout(r, 100));          // the fresh brain starts behind
+        await brain.decide({ text: 'dale', session: 'tsrct' });
+        const second = prompts[prompts.length - 1];
+        ok(first && second && second.name !== first, `past the budget the next question goes to a fresh brain (${first} -> ${second && second.name})`);
+        ok(second && /abrime una sesion en harbor/.test(second.p), 'and it is handed his last turns');
+        ok(killed.includes(first), `the heavy brain is closed (killed ${killed.join(',') || 'none'})`);
+        await brain.decide({ text: 'gracias', session: 'tsrct' });
+        ok(prompts[prompts.length - 1].name === second.name, 'a light brain is kept');
+    } finally {
+        sessionSpawn.createPrimedSession = real.create;
+        sessionSpawn.pasteIntoPane = real.paste;
+        brain.configure({ ctxBudget: undefined });
+        fs.rmSync(dir, { recursive: true, force: true });
+    }
+}
+
+sweepDone.then(receiptChecks).then(rotateChecks).then(promptChecks).then(spawnChecks).then(handoffChecks).then(restrictedPoisonChecks).then(notFoundChecks).catch(e => ok(false, `threw: ${e.stack}`)).then(finish);
 
 function finish() {
     if (fail) { console.error(`[check-brain] ${fail} failure(s) of ${pass + fail}`); process.exit(1); }

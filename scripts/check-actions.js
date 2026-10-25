@@ -19,6 +19,9 @@
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.join(__dirname, '..');
+// The batch-open tests must not depend on THIS machine's free memory: with a
+// render running they failed "opened 0 of 15 ... 1085 MB free" (2026-10-25).
+process.env.TALK_OPEN_MIN_FREE_MB = process.env.TALK_OPEN_MIN_FREE_MB || '0';
 const actions = require(path.join(ROOT, 'lib/actions.js'));
 
 let failures = 0;
