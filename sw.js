@@ -1,7 +1,7 @@
 // TSRCT - Tesseract Service Worker
 // Enables PWA installation and offline caching
 
-const CACHE_NAME = 'tsrct-v428';
+const CACHE_NAME = 'tsrct-v429';
 
 // Keep this list in sync with the <link> and <script> tags in src/index.html.
 // It used to hold only the LAZY room assets, so `/` was cached but nothing `/`
@@ -36,6 +36,8 @@ const ASSETS_TO_CACHE = [
   '/src/css/restart.css',
   '/src/css/assistant.css',
   '/src/css/tesla-full.css',
+  '/src/css/tesla-plan.css',
+  '/src/css/tesla-center.css',
   '/src/css/tour.css',
   // Room CSS (lazy loaded, cached for offline)
   '/src/css/rooms/rooms-base.css',

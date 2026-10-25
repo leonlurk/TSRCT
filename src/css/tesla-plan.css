@@ -1,0 +1,82 @@
+/* tesla-plan.css — his plan, the left column of Tesla's full screen (src/js/tesla-plan.js).
+   Linked right after tesla-full.css. Palette from variables.css. */
+
+.tp { display: flex; flex-direction: column; gap: 8px; font-size: 0.7rem; }
+.tp-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.tp-label { color: var(--neon); letter-spacing: 3px; font-weight: 700; }
+.tp-pick { flex: 1 1 120px; min-width: 0; }
+.tp select, .tp input[type="date"] {
+    background: var(--bg-card);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 0.64rem;
+    padding: 3px 4px;
+    min-width: 0;
+}
+.tp-body { display: flex; flex-direction: column; gap: 8px; }
+.tp-head { display: flex; gap: 6px; align-items: center; }
+.tp-head input[type="date"] { flex: none; width: 10.5em; }
+.tp-head select { flex: none; }
+.tp-in {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    padding: 4px 6px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+}
+.tp-in:hover { border-color: var(--border); }
+.tp-in:focus { outline: none; border-color: var(--cyan); background: var(--bg-card); }
+.tp-title { font-weight: 700; font-size: 0.8rem; }
+.tp-notes { resize: vertical; color: var(--text-dim); }
+.tp-state { color: var(--text-muted); font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; }
+.tp-state[data-state="deepening"] { color: var(--amber); }
+.tp-state[data-state="proposed"] { color: var(--cyan); }
+.tp-state[data-state="approved"] { color: var(--neon); }
+.tp-goal { border-left: 2px solid var(--border); padding-left: 8px; display: flex; flex-direction: column; gap: 4px; }
+.tp-line { display: flex; gap: 4px; align-items: center; }
+.tp-n { color: var(--neon); font-weight: 700; }
+.tp-gtext, .tp-stext { resize: none; line-height: 1.35; }
+.tp-gtext { font-weight: 700; }
+.tp-line:has(.tp-stext) { align-items: flex-start; }
+/* the new-goal box looks like a box: in the first real test it read as a caption */
+.tp-newgoal .tp-in { border-color: var(--border); background: var(--bg-card); }
+.tp-beyond { color: var(--text-muted); font-style: italic; padding-left: 14px; }
+.tp-step { display: flex; flex-direction: column; gap: 2px; padding: 4px 0 4px 6px; border-top: 1px solid var(--border); }
+.tp-step[data-st="done"] .tp-in { color: var(--text-muted); text-decoration: line-through; }
+.tp-step[data-st="blocked"] .tp-mark { color: var(--amber); }
+.tp-meta { display: flex; gap: 4px; flex-wrap: wrap; padding-left: 26px; }
+.tp-done { color: var(--text-dim); font-size: 0.64rem; margin-left: 22px; width: calc(100% - 22px); }
+.tp-ev { color: var(--neon); font-size: 0.6rem; padding-left: 28px; }
+.tp-check { display: flex; gap: 4px; align-items: center; padding-left: 26px; color: var(--text-muted); font-size: 0.6rem; }
+.tp-check .tp-in { font-size: 0.62rem; }
+.tp .tp-risk { color: var(--amber); border-color: var(--amber); }
+.tp-mark, .tp-x, .tp-add {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    cursor: pointer;
+    padding: 2px;
+}
+.tp-mark { flex: none; white-space: nowrap; min-width: 3ch; }
+.tp-mark:hover, .tp-add:hover { color: var(--neon); }
+.tp-x { opacity: .4; }
+.tp-x:hover { opacity: 1; color: var(--amber); }
+.tp-add { align-self: flex-start; padding-left: 26px; }
+.tp-pilot { display: flex; flex-direction: column; gap: 4px; padding: 6px; border: 1px solid var(--border); border-radius: var(--radius); }
+.tp-pilot.on { border-color: var(--amber); }
+.tp-pilot.on .tf-btn { color: var(--amber); border-color: var(--amber); }
+.tp-allow { font-size: 0.62rem; resize: vertical; border-color: var(--border); }
+.tp-hint { color: var(--text-muted); font-size: 0.6rem; }
+.tp-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.tp-actions .tf-btn:disabled { opacity: .35; cursor: default; }
+.tp-actions .tp-sure { color: var(--amber); border-color: var(--amber); }
+.tp-empty, .tp-note { color: var(--text-muted); }

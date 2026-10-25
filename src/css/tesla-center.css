@@ -1,0 +1,43 @@
+/* tesla-center.css — the command center, right side of Tesla's full screen (src/js/tesla-center.js).
+   Linked right after tesla-plan.css. Palette from variables.css. */
+
+.tc { display: flex; flex-direction: column; gap: 8px; font-size: 0.66rem; }
+.tc-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.tc-label { color: var(--neon); letter-spacing: 3px; font-weight: 700; font-size: 0.7rem; }
+.tc-sub { color: var(--text-muted); font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; }
+.tc-pilot { color: var(--amber); font-weight: 700; }
+.tc-empty { color: var(--text-muted); }
+.tc-net { display: flex; align-items: flex-start; gap: 0; }
+.tc-map { flex: none; width: 140px; overflow: visible; }
+.tc-hub { fill: var(--bg-card); stroke: var(--cyan); stroke-width: 1.5; }
+.tc-hubt { fill: var(--cyan); font-family: var(--mono); font-size: 10px; font-weight: 700; text-anchor: middle; }
+.tc-link { fill: none; stroke: var(--border); stroke-width: 1.4; }
+.tc-link[data-st="working"] { stroke: var(--cyan); stroke-dasharray: 4 4; animation: tc-flow 1s linear infinite; }
+.tc-link[data-st="waiting"] { stroke: var(--amber); }
+.tc-link[data-st="idle"] { stroke: var(--text-muted); }
+.tc-link[data-st="gone"] { stroke-dasharray: 2 5; opacity: .5; }
+.tc-node { fill: var(--text-muted); }
+.tc-node[data-st="working"] { fill: var(--cyan); }
+.tc-node[data-st="waiting"] { fill: var(--amber); }
+@keyframes tc-flow { to { stroke-dashoffset: -8; } }
+.tc-list { flex: 1 1 auto; min-width: 0; padding-top: 5px; }
+.tc-s { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.tc-sl { display: flex; gap: 6px; align-items: baseline; }
+.tc-sn { color: var(--text); font-weight: 700; }
+.tc-st { color: var(--text-muted); font-size: 0.58rem; text-transform: uppercase; letter-spacing: 1px; }
+.tc-s[data-st="working"] .tc-st { color: var(--cyan); }
+.tc-s[data-st="waiting"] .tc-st { color: var(--amber); }
+.tc-sc { margin-left: auto; color: var(--text-dim); }
+.tc-step { color: var(--text-dim); font-size: 0.6rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tc-card { border: 1px solid var(--amber); border-radius: var(--radius); padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; }
+.tc-ct b { color: var(--amber); }
+.tc-cw { color: var(--text-dim); overflow-wrap: anywhere; }
+.tc-cb { display: flex; gap: 6px; }
+.tc-ev { display: flex; gap: 6px; align-items: baseline; padding: 2px 0; border-top: 1px solid var(--border); }
+.tc-et { color: var(--text-muted); flex: none; }
+.tc-ek { flex: none; color: var(--text-dim); }
+.tc-ev[data-k="done"] .tc-ek, .tc-ev[data-k="finished"] .tc-ek { color: var(--neon); }
+.tc-ev[data-k="blocked"] .tc-ek, .tc-ev[data-k="asked"] .tc-ek { color: var(--amber); }
+.tc-ex { color: var(--text-dim); overflow-wrap: anywhere; }
+.tc-ex b { color: var(--text); }
+@media (prefers-reduced-motion: reduce) { .tc-link[data-st="working"] { animation: none; } }

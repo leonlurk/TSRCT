@@ -164,15 +164,12 @@ try {
         contextBuilder: require('./lib/dispatcher/contextBuilder'),
         outputParser: require('./lib/dispatcher/outputParser'),
         eventConsumer: require('./lib/dispatcher/eventConsumer'),
-        // Phase 3:
-        priorityScorer: require('./lib/dispatcher/priorityScorer'),
         // Phase 4:
         ntfyPush: require('./lib/dispatcher/ntfyPush'),
         sessionMonitor: require('./lib/dispatcher/sessionMonitor'),
         // Phase 5:
         // Quality levers:
         promptTemplates: require('./lib/dispatcher/promptTemplates'),
-        claudePolish: require('./lib/dispatcher/claudePolish'),
         activityLog: require('./lib/dispatcher/activityLog'),
     };
 } catch (e) {
@@ -1457,6 +1454,21 @@ permissionDesk.configure({ queue: () => permissionQueue });
 // His musical taste: the pool of picks is refilled by a background job through
 // the same choke point as every other `claude -p` job.
 require('./lib/tasteBrain').configure({ analyst: dispatcher ? dispatcher.clickupAnalyst : null, jsonJob });
+// How background work tells the owner something: shown in the orb (and spoken
+// in a conversation), and pushed to the phone when no TSRCT window would show it.
+// `speak`: said out loud even with no conversation, pushed only if nobody would
+// hear it. `pushUrgent`: an urgent line reaches the phone anyway, at priority 5
+// (the autopilot's stops). The call sites shared one pasted copy each.
+function teller(tag, { title = 'Tesla', tags = ['memo'], speak = false, pushUrgent = false } = {}) {
+    return (line, opts) => {
+        const urgent = !!(opts && opts.urgent);
+        talk.announce(line, speak ? { speak: true } : opts);
+        const unseen = speak ? !talk.heardAloud() : !talk.someoneWatching();
+        if (!unseen && !(pushUrgent && urgent)) return;
+        require('./lib/dispatcher/ntfyPush').send({ title, body: String(line).slice(0, 300), tags, ...(pushUrgent ? { priority: urgent ? 5 : 3 } : {}) })
+            .catch(e => console.warn(`[${tag}] ntfy:`, e.message));
+    };
+}
 // Opus writes the prompt in the background; the same job runner, the same
 // paste into a session, the same page button that fills his box.
 promptWriter.configure({
@@ -1469,13 +1481,7 @@ promptWriter.configure({
     draft: (text, session) => uiActions.CATALOG.find(a => a.name === 'draft_prompt').run({ text, session: session || '' }),
     // Told to him whether or not he is talking: the orb shows it (and speaks it
     // in a conversation), and with no TSRCT window watching it goes to his phone.
-    say: (line) => {
-        talk.announce(line);
-        if (!talk.someoneWatching()) {
-            require('./lib/dispatcher/ntfyPush').send({ title: 'Tesla', body: String(line).slice(0, 300), tags: ['memo'] })
-                .catch(e => console.warn('[promptWriter] ntfy:', e.message));
-        }
-    },
+    say: teller('promptWriter'),
     journal: stateFile('prompt-jobs.jsonl', '.tsrct-prompt-jobs.jsonl'),
     // The "Sam me pidio esto" flow: where the work could go, where to put a new
     // folder, and how to open the session once he says yes.
@@ -1509,13 +1515,7 @@ teslaHands.configure({
     // A permission it stops on is ASKED about (Tesla review #10), so his "si" approves it.
     permission: (session) => actions.permissionWaiting(session),
     offer: (name, args) => talk.propose(name, args),
-    say: (line, opts) => {
-        talk.announce(line, opts);
-        if (!talk.someoneWatching()) {
-            require('./lib/dispatcher/ntfyPush').send({ title: 'Tesla', body: String(line).slice(0, 300), tags: ['memo'] })
-                .catch(e => console.warn('[hands] ntfy:', e.message));
-        }
-    },
+    say: teller('hands'),
 });
 // His work plans (lib/plans.js): the /deeper pass runs on the same worker.
 plans.configure({
@@ -2817,6 +2817,8 @@ function startSessionLog(loops) {
 
 // Plan tracker (2026-10-25): steps of his approved plan marked done from a
 // commit or a file, never from a session's word (lib/planTracker.js).
+// Is that pane mid-turn right now? The pilot and the command center ask the same thing.
+const paneBusy = (n) => { const st = paneWorkState(n); return !st.gone && !!st.working; };
 function startPlanTracker(loops) {
     try {
         const planTracker = require('./lib/planTracker');
@@ -2831,13 +2833,7 @@ function startPlanTracker(loops) {
                     { encoding: 'utf8', cwd, stdio: ['pipe', 'pipe', 'ignore'], timeout: 8000 });
                 return out.split('\n').filter(Boolean).map(l => { const [hash, ct, ...rest] = l.split('\t'); return { hash, at: Number(ct) * 1000, subject: rest.join('\t') }; });
             },
-            say: (line) => {
-                talk.announce(line);
-                if (!talk.someoneWatching()) {
-                    require('./lib/dispatcher/ntfyPush').send({ title: 'Tesla', body: String(line).slice(0, 300), tags: ['memo'] })
-                        .catch(e => console.warn('[planTracker] ntfy:', e.message));
-                }
-            },
+            say: teller('planTracker'),
         });
         loops['plan-tracker'] = {
             start: () => planTracker.start(),
@@ -2851,16 +2847,10 @@ function startPlanTracker(loops) {
         planPilot.configure({
             plans,
             exists: (n) => sessionExists(n),
-            working: (n) => { const st = paneWorkState(n); return !st.gone && !!st.working; },
+            working: paneBusy,
             waiting: (n) => actions.permissionWaiting(n),
             send: (n, text) => sendToTmuxSession(text, n),
-            say: (line, opts) => {
-                talk.announce(line, opts);
-                if (!talk.someoneWatching() || (opts && opts.urgent)) {
-                    require('./lib/dispatcher/ntfyPush').send({ title: 'Tesla piloto', body: String(line).slice(0, 300), tags: ['airplane'], priority: opts && opts.urgent ? 5 : 3 })
-                        .catch(e => console.warn('[planPilot] ntfy:', e.message));
-                }
-            },
+            say: teller('planPilot', { title: 'Tesla piloto', tags: ['airplane'], pushUrgent: true }),
         });
         loops['plan-pilot'] = {
             start: () => planPilot.start(),
@@ -2873,7 +2863,7 @@ function startPlanTracker(loops) {
         require('./lib/planCenter').configure({
             plans, pilot: planPilot,
             exists: (n) => sessionExists(n),
-            working: (n) => { const st = paneWorkState(n); return !st.gone && !!st.working; },
+            working: paneBusy,
             waiting: (n) => actions.permissionWaiting(n),
             pending: () => [...permissionQueue.values()].filter(p => p.status === 'pending' && !p.decision),
         });

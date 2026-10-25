@@ -19,10 +19,10 @@ const { execFileSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
 const CEILINGS = {
-    exports: 139,  // measured 2026-10-24 (public copy)
-    // measured 2026-10-24: priorityScorer, claudePolish (Slack half deleted
-    // 2026-09-19), outputParser, promptTemplates (required directly where used)
-    loaded: 4,
+    exports: 118,  // measured 2026-10-25 (public copy; 139 before the Slack-era deletions)
+    // 2026-10-25: outputParser, promptTemplates (required directly where used).
+    // priorityScorer and claudePolish were deleted.
+    loaded: 2,
 };
 const LIST = process.argv.includes('--list');
 
